@@ -25,7 +25,7 @@ export default function LoadingScreen({
           Loading your experience...
         </Text>
       </View>
-      <StatusBar style="light" />
+      {/* <StatusBar style="light" /> */}
     </View>
   );
 }
