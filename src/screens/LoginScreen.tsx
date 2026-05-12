@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useState } from "react";
+import { Animated } from "react-native";
 import { LoginCredentials } from "../types";
 import SocialLoginButton from "../components/SocialLoginButton";
 // @ts-ignore
@@ -17,6 +18,20 @@ import TextField from "../components/TextField";
 import { StatusBar } from "expo-status-bar";
 
 export default function LoginScreen() {
+  const [selectedOption, setSelectedOption] = useState<"email" | "phone">(
+    "email",
+  );
+  const slideAnimation = useState(new Animated.Value(0))[0];
+
+  const handleOptionPress = (option: "email" | "phone") => {
+    setSelectedOption(option);
+    Animated.timing(slideAnimation, {
+      toValue: option === "email" ? 0 : 1,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  };
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-[#fafaf7]"
@@ -52,15 +67,32 @@ export default function LoginScreen() {
           <View className="w-[115px] h-px bg-[#9E9A90]" />
         </View>
 
-        <View className="flex-row justify-around bg-[#f5f4ef] py-[8px] mt-[14px] rounded-[10px]">
+        <View className="flex-row justify-around bg-[#f5f4ef] py-[8px] mt-[14px] rounded-[10px] relative overflow-hidden">
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  translateX: slideAnimation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-75, 75],
+                  }),
+                },
+              ],
+            }}
+            className="absolute top-[7px]  w-[170px] h-full bg-white rounded-[7px]"
+          />
           <TouchableOpacity
             activeOpacity={0.8}
-            className="flex-row items-center justify-center px-[43px] py-[13px] rounded-[7px] bg-white gap-2"
+            className="flex-row items-center justify-center px-[43px] py-[13px] rounded-[7px] gap-2 z-10"
+            onPress={() => handleOptionPress("email")}
           >
             <Ionicons name="mail" size={20} />
             <Text className="text-[16px] text-[#0A0A08]">Email</Text>
           </TouchableOpacity>
-          <TouchableOpacity className="flex-row items-center justify-center px-[43px] py-[13px] rounded-[7px]  gap-2">
+          <TouchableOpacity
+            className="flex-row items-center justify-center px-[43px] py-[13px] rounded-[7px] gap-2 z-10"
+            onPress={() => handleOptionPress("phone")}
+          >
             <Ionicons name="call" size={20} />
             <Text className="text-[16px] text-[#0A0A08]">Phone</Text>
           </TouchableOpacity>
