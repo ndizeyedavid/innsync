@@ -15,6 +15,8 @@ import SocialLoginButton from "../components/SocialLoginButton";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import TextField from "../components/TextField";
+import PhoneInput from "../components/PhoneInput";
+import OTPInput from "../components/OTPInput";
 import { StatusBar } from "expo-status-bar";
 
 export default function LoginScreen() {
@@ -22,14 +24,34 @@ export default function LoginScreen() {
     "email",
   );
   const slideAnimation = useState(new Animated.Value(0))[0];
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [showOTP, setShowOTP] = useState(false);
+  const [credentials, setCredentials] = useState<LoginCredentials>({
+    email: "",
+    password: "",
+  });
 
   const handleOptionPress = (option: "email" | "phone") => {
     setSelectedOption(option);
+    setShowOTP(false);
     Animated.timing(slideAnimation, {
       toValue: option === "email" ? 0 : 1,
       duration: 300,
       useNativeDriver: false,
     }).start();
+  };
+
+  const handlePhoneSubmit = () => {
+    console.log(phoneNumber.length);
+    if (phoneNumber.length >= 9) {
+      // Simulate OTP sending
+      setShowOTP(true);
+    }
+  };
+
+  const handleOTPComplete = (otp: string) => {
+    Alert.alert("Success", "OTP verification successful!");
+    // Handle successful OTP verification
   };
 
   return (
@@ -74,12 +96,13 @@ export default function LoginScreen() {
                 {
                   translateX: slideAnimation.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [-75, 75],
+                    // backup: outputRange: [-82, 82],
+                    outputRange: [-82, 82],
                   }),
                 },
               ],
             }}
-            className="absolute top-[7px]  w-[170px] h-full bg-white rounded-[7px]"
+            className="absolute top-[7px]  w-[160px] h-full bg-white rounded-[7px]"
           />
           <TouchableOpacity
             activeOpacity={0.8}
@@ -99,47 +122,81 @@ export default function LoginScreen() {
         </View>
 
         <View className="mt-[39px] gap-7">
-          <TextField
-            text="EMAIL ADDRESS"
-            icon="mail"
-            placeholder="e.g mellow@gmail.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextField
-            text="PASSWORD"
-            icon="lock-closed"
-            placeholder="********"
-            keyboardType="text"
-            autoCapitalize="none"
-            secureTextEntry={true}
-          />
+          {selectedOption === "email" ? (
+            <>
+              <TextField
+                text="EMAIL ADDRESS"
+                icon="mail"
+                placeholder="e.g mellow@gmail.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <TextField
+                text="PASSWORD"
+                icon="lock-closed"
+                placeholder="********"
+                keyboardType="text"
+                autoCapitalize="none"
+                secureTextEntry={true}
+              />
+            </>
+          ) : showOTP ? (
+            <OTPInput onComplete={handleOTPComplete} />
+          ) : (
+            <>
+              <PhoneInput value={phoneNumber} onChangeText={setPhoneNumber} />
+              <TouchableOpacity
+                activeOpacity={0.8}
+                className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
+                onPress={handlePhoneSubmit}
+              >
+                <Text className="text-white text-[24px]">Send OTP</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={23}
+                  style={{ color: "white" }}
+                />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
-        <TouchableOpacity>
-          <Text className="text-[15px] text-[#6E6B63] mt-[21px]">
-            Forgot password?
-          </Text>
-        </TouchableOpacity>
+        {selectedOption === "email" && (
+          <TouchableOpacity>
+            <Text className="text-[15px] text-[#6E6B63] mt-[21px]">
+              Forgot password?
+            </Text>
+          </TouchableOpacity>
+        )}
 
-        <TouchableOpacity
-          activeOpacity={0.8}
-          className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
-        >
-          <Text className="text-white text-[24px]">Sign in</Text>
-          <Ionicons name="arrow-forward" size={23} style={{ color: "white" }} />
-        </TouchableOpacity>
+        {selectedOption === "email" && (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
+          >
+            <Text className="text-white text-[24px]">Sign in</Text>
+            <Ionicons
+              name="arrow-forward"
+              size={23}
+              style={{ color: "white" }}
+            />
+          </TouchableOpacity>
+        )}
 
-        <View className="items-center mt-[12px]">
-          <Text className="items-center text-[#6E6B63] text-[15px]">
-            Don't have an account?{" "}
-            <TouchableOpacity>
-              <Text className="relative top-1 text-[#11110f]">Create one</Text>
-            </TouchableOpacity>
-          </Text>
-        </View>
+        {!showOTP && (
+          <View className="items-center mt-[14px]">
+            <Text className="items-center text-[#6E6B63] text-[15px]">
+              Don't have an account?{" "}
+              <TouchableOpacity>
+                <Text className="relative top-1 text-[#11110f]">
+                  Create one
+                </Text>
+              </TouchableOpacity>
+            </Text>
+          </View>
+        )}
 
-        <View className="items-center mt-[23px] w-full">
+        <View className="items-center w-full absolute bottom-7">
           <Text className="items-center text-[#6E6B63] text-[13px] text-center flex-row gap-2">
             By continuing you agree to our{" "}
             <TouchableOpacity>
