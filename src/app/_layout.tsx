@@ -1,7 +1,6 @@
 import "../global.css";
-
-import { Slot } from "expo-router";
+import AppNavigator from "../navigation/AppNavigator";
 
 export default function Layout() {
-  return <Slot />;
+  return <AppNavigator />;
 }
