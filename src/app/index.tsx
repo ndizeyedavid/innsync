@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 
 export default function App() {
   return (
-    <View className=" bg-white dark:bg-black items-center justify-center px-8">
+    <View className="flex-1 bg-white dark:bg-black items-center justify-center px-8">
       {/* Heading */}
       <Text className="text-4xl font-extrabold text-gray-800 dark:text-white mb-3 tracking-tight">
         🚀 Welcome
