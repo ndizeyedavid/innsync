@@ -1,6 +1,14 @@
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Image,
+} from "react-native";
 import { useState } from "react";
 import { LoginCredentials } from "../types";
+import SocialLoginButton from "../components/SocialLoginButton";
 
 export default function LoginScreen() {
   const [credentials, setCredentials] = useState<LoginCredentials>({
@@ -17,59 +25,24 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white px-6 justify-center">
-      <View className="mb-8">
-        <Text className="text-3xl font-bold text-gray-800 mb-2">
-          Welcome Back
+    <View className="flex-1 bg-[#fafaf7] px-5 justify-center">
+      <View>
+        <Text className="text-[12px] text-[#9C988E]">INNSYNC</Text>
+        <Text className="text-[40px] ">Welcome Back.</Text>
+        <Text className="text-[#9C988E] text-[14px]">
+          Sign in to access your reservation and digital key.
         </Text>
-        <Text className="text-gray-600">Sign in to continue to InnSync</Text>
       </View>
 
-      <View className="space-y-4">
-        <View>
-          <Text className="text-gray-700 mb-2 font-medium">Email</Text>
-          <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800"
-            placeholder="Enter your email"
-            value={credentials.email}
-            onChangeText={(text) =>
-              setCredentials({ ...credentials, email: text })
-            }
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View>
-          <Text className="text-gray-700 mb-2 font-medium">Password</Text>
-          <TextInput
-            className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800"
-            placeholder="Enter your password"
-            value={credentials.password}
-            onChangeText={(text) =>
-              setCredentials({ ...credentials, password: text })
-            }
-            secureTextEntry
-          />
-        </View>
-
-        <TouchableOpacity
-          className="bg-blue-600 rounded-lg py-3 items-center"
-          onPress={handleLogin}
-        >
-          <Text className="text-white font-semibold text-lg">Sign In</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity className="items-center mt-4">
-          <Text className="text-blue-600">Forgot Password?</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View className="flex-row justify-center mt-8">
-        <Text className="text-gray-600">Don't have an account? </Text>
-        <TouchableOpacity>
-          <Text className="text-blue-600 font-medium">Sign Up</Text>
-        </TouchableOpacity>
+      <View className="flex-row justify-between">
+        <SocialLoginButton
+          buttonLogo={require("../assets/google-logo.png")}
+          buttonText="Google"
+        />
+        <SocialLoginButton
+          buttonLogo={require("../assets/apple-logo.png")}
+          buttonText="Apple"
+        />
       </View>
     </View>
   );
