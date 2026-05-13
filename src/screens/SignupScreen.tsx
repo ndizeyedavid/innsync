@@ -22,39 +22,7 @@ import { useRouter } from "expo-router";
 
 export default function SignupScreen() {
   const router = useRouter();
-  const [selectedOption, setSelectedOption] = useState<"email" | "phone">(
-    "email",
-  );
-  const slideAnimation = useState(new Animated.Value(0))[0];
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [showOTP, setShowOTP] = useState(false);
-  const [credentials, setCredentials] = useState<LoginCredentials>({
-    email: "",
-    password: "",
-  });
-
-  const handleOptionPress = (option: "email" | "phone") => {
-    setSelectedOption(option);
-    setShowOTP(false);
-    Animated.timing(slideAnimation, {
-      toValue: option === "email" ? 0 : 1,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const handlePhoneSubmit = () => {
-    console.log(phoneNumber.length);
-    if (phoneNumber.length >= 9) {
-      // Simulate OTP sending
-      setShowOTP(true);
-    }
-  };
-
-  const handleOTPComplete = (otp: string) => {
-    Alert.alert("Success", "OTP verification successful!");
-    // Handle successful OTP verification
-  };
 
   return (
     <KeyboardAvoidingView
