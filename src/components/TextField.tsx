@@ -15,6 +15,7 @@ interface ITextField {
   keyboardType?: any;
   autoCapitalize?: any;
   secureTextEntry?: boolean;
+  width?: string;
 }
 
 export default function TextField({
@@ -24,6 +25,7 @@ export default function TextField({
   keyboardType = "text",
   autoCapitalize = "none",
   secureTextEntry = false,
+  width = "full",
 }: ITextField) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -36,7 +38,7 @@ export default function TextField({
             className="opacity-50 absolute z-10 left-[13px]"
           />
           <TextInput
-            className="rounded-[7px] border border-[#E8E5DD] bg-white py-[18px] px-[44px] w-full"
+            className={`rounded-[7px] border border-[#E8E5DD] bg-white py-[18px] px-[44px] w-${width}`}
             placeholder={placeholder}
             placeholderTextColor="#9C988E"
             keyboardType={keyboardType}

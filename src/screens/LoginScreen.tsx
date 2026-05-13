@@ -18,8 +18,10 @@ import TextField from "../components/TextField";
 import PhoneInput from "../components/PhoneInput";
 import OTPInput from "../components/OTPInput";
 import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
+  const router = useRouter();
   const [selectedOption, setSelectedOption] = useState<"email" | "phone">(
     "email",
   );
@@ -187,8 +189,8 @@ export default function LoginScreen() {
           <View className="items-center mt-[14px]">
             <Text className="items-center text-[#6E6B63] text-[15px]">
               Don't have an account?{" "}
-              <TouchableOpacity>
-                <Text className="relative top-1 text-[#11110f]">
+              <TouchableOpacity onPress={() => router.replace("/signup")}>
+                <Text className="relative top-1 text-[#11110f] underline">
                   Create one
                 </Text>
               </TouchableOpacity>
