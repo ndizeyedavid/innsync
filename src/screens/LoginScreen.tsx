@@ -175,6 +175,7 @@ export default function LoginScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
+            onPress={() => router.replace("/onboarding")}
           >
             <Text className="text-white text-[24px]">Sign in</Text>
             <Ionicons

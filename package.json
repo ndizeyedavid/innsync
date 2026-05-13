@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@react-native-community/datetimepicker": "8.4.4",
     "expo": "~54.0.22",
     "expo-router": "~6.0.14",
     "expo-status-bar": "~3.0.8",
