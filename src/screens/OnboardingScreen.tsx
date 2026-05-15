@@ -17,6 +17,7 @@ import OnboardingHeader from "../components/OnboardingHeader";
 import VibeDetails from "../components/onboarding/VibeDetails";
 import ReviewAndPay from "../components/onboarding/ReviewAndPay";
 import PaymentSummary from "../components/PaymentSummary";
+import { router } from "expo-router";
 
 export default function OnboardingScreen() {
   const [checkIn, setCheckIn] = useState<Date | null>(null);
@@ -78,7 +79,9 @@ export default function OnboardingScreen() {
         <TouchableOpacity
           activeOpacity={0.8}
           className="w-full h-[56px] bg-black rounded-2xl mt-2 flex-row justify-center items-center gap-2"
-          onPress={() => setStep((prev) => prev + 1)}
+          onPress={() =>
+            step != 4 ? setStep((prev) => prev + 1) : router.replace("/(tabs)")
+          }
         >
           <Text className="text-white text-base font-semibold">Continue</Text>
           <Ionicons name="arrow-forward" size={18} color="white" />

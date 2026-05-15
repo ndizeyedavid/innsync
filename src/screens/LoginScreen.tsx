@@ -189,7 +189,7 @@ export default function LoginScreen() {
           <View className="items-center mt-[14px]">
             <Text className="items-center text-[#6E6B63] text-[15px]">
               Don't have an account?{" "}
-              <TouchableOpacity onPress={() => router.replace("/signup")}>
+              <TouchableOpacity onPress={() => router.push("/signup")}>
                 <Text className="relative top-1 text-[#11110f] underline">
                   Create one
                 </Text>

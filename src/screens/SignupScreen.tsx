@@ -116,7 +116,7 @@ export default function SignupScreen() {
         <View className="items-center mt-[14px]">
           <Text className="items-center text-[#6E6B63] text-[15px]">
             Already have an account?{" "}
-            <TouchableOpacity onPress={() => router.replace("/login")}>
+            <TouchableOpacity onPress={() => router.push("/login")}>
               <Text className="relative top-1 text-[#11110f] underline">
                 Login
               </Text>
