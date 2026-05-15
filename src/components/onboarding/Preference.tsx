@@ -2,16 +2,32 @@ import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Picker } from "@react-native-picker/picker";
 import SelectField from "../SelectField";
 import { roomOptions } from "../../constants/roomOptions";
 import { bedTypes } from "../../constants/bedTypes";
 import { floorPreference } from "../../constants/floorPreference";
+import MealPlanButton from "../MealPlanButton";
 
 export default function Preference() {
   const [selectedRoom, setSelectedRoom] = useState<string>();
+  const [selectedMealPlan, setSelectedMealPlan] = useState<number>(0);
+  const mealPlans = [
+    {
+      id: 0,
+      title: "Room only",
+      description: "No meals included",
+      alt: "Included",
+    },
+    {
+      id: 1,
+      title: "Breakfast",
+      description: "Daily buffet breakfast",
+      alt: "+$28/night",
+    },
+  ];
+
   return (
-    <View>
+    <View className="mb-24">
       <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px]">
           {/* <Ionicons name="calendar-clear-outline" size={20} /> */}
@@ -57,44 +73,24 @@ export default function Preference() {
         </View>
       </View>
 
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6 mb-9">
+      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px] mb-[22px]">
           {/* <Ionicons name="calendar-clear-outline" size={20} /> */}
           <Text className="text-[16px] font-semibold ">Meal plan</Text>
         </View>
 
-        <View className="rounded-[8px] border border-[#E8E5DD] bg-white px-[22px] py-[18px] flex-row justify-between items-center">
-          <View>
-            <Text className="text-[15px] font-semibold">Room Only</Text>
-            <Text className="text-[13px] text-[#716E67]">
-              No meals included
-            </Text>
-          </View>
-
-          <View className="flex-row items-center gap-2">
-            <Text className="text-[13px] font-semibold text-[#716E67]">
-              Included
-            </Text>
-            <View className="size-[20px] border rounded-full bg-white border-[#E8E5DD]"></View>
-          </View>
-        </View>
-
-        <View className="rounded-[8px] mt-2 border border-[#E8E5DD] bg-white px-[22px] py-[18px] flex-row justify-between items-center">
-          <View>
-            <Text className="text-[15px] font-semibold">Breakfast</Text>
-            <Text className="text-[13px] text-[#716E67]">
-              Daily buffet breakfast
-            </Text>
-          </View>
-
-          <View className="flex-row items-center gap-2">
-            <Text className="text-[13px] font-semibold text-[#716E67]">
-              +$28/night
-            </Text>
-            <View className="size-[20px] border rounded-full bg-white border-[#E8E5DD]">
-              <Ionicons name="checkmark" size={20} color="white" />
-            </View>
-          </View>
+        <View className="gap-2">
+          {mealPlans.map((data, index) => (
+            <MealPlanButton
+              key={index}
+              id={data.id}
+              title={data.title}
+              description={data.description}
+              alt={data.alt}
+              checked={selectedMealPlan == index}
+              setSelectedMealPlan={setSelectedMealPlan}
+            />
+          ))}
         </View>
       </View>
     </View>
