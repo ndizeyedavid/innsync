@@ -15,6 +15,8 @@ import TravelDetails from "../components/onboarding/TravelDetails";
 import Preference from "../components/onboarding/Preference";
 import OnboardingHeader from "../components/OnboardingHeader";
 import VibeDetails from "../components/onboarding/VibeDetails";
+import ReviewAndPay from "../components/onboarding/ReviewAndPay";
+import PaymentSummary from "../components/PaymentSummary";
 
 export default function OnboardingScreen() {
   const [checkIn, setCheckIn] = useState<Date | null>(null);
@@ -66,12 +68,16 @@ export default function OnboardingScreen() {
         {step === 2 && <Preference />}
 
         {step === 3 && <VibeDetails />}
+
+        {step === 4 && <ReviewAndPay />}
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-4 bg-white/90 border-t border-gray-100">
+      <View className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-4 bg-white border-t border-gray-100">
+        {step === 4 && <PaymentSummary />}
+
         <TouchableOpacity
           activeOpacity={0.8}
-          className="w-full h-[56px] bg-black rounded-2xl flex-row justify-center items-center gap-2"
+          className="w-full h-[56px] bg-black rounded-2xl mt-2 flex-row justify-center items-center gap-2"
           onPress={() => setStep((prev) => prev + 1)}
         >
           <Text className="text-white text-base font-semibold">Continue</Text>

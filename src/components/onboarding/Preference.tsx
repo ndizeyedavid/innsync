@@ -1,30 +1,15 @@
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
-// @ts-ignore
-import Ionicons from "@expo/vector-icons/Ionicons";
 import SelectField from "../SelectField";
 import { roomOptions } from "../../constants/roomOptions";
 import { bedTypes } from "../../constants/bedTypes";
 import { floorPreference } from "../../constants/floorPreference";
 import MealPlanButton from "../MealPlanButton";
+import { mealPlans } from "../../constants/mealPlans";
 
 export default function Preference() {
   const [selectedRoom, setSelectedRoom] = useState<string>();
   const [selectedMealPlan, setSelectedMealPlan] = useState<number>(0);
-  const mealPlans = [
-    {
-      id: 0,
-      title: "Room only",
-      description: "No meals included",
-      alt: "Included",
-    },
-    {
-      id: 1,
-      title: "Breakfast",
-      description: "Daily buffet breakfast",
-      alt: "+$28/night",
-    },
-  ];
 
   return (
     <View className="mb-24">
