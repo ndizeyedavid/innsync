@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import TabHeader from "../components/TabHeader";
-// @ts-ignore
-import Ionicons from "@expo/vector-icons/Ionicons";
 import TimelineItem from "../components/ItineraryComponents/TimelineItem";
 import ItineraryCard from "../components/ItineraryComponents/ItineraryCard";
 
