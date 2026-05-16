@@ -31,7 +31,7 @@ export default function HomeScreen() {
     <ScreenLayout>
       <View className="flex-row justify-between">
         <TabHeader
-          alt="HIGH TIDE AT 4:42"
+          alt="HEAVY RAIN AT 20:42"
           title="Good Afternoon,"
           description="Mellow."
         />
