@@ -27,7 +27,7 @@ export default function ItineraryScreen() {
     { id: 5, day: "Tue" },
     { id: 6, day: "wed" },
     { id: 7, day: "Thur" },
-    { id: 8, day: "Fri" },
+    { id: 8, day: "Rent Due" },
   ];
 
   const itenraryItems = [

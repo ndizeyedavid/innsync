@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 interface ITabHeader {
   alt: string;
   title: string;
-  description: string;
+  description?: string;
   descriptionStyle?: string;
 }
 
