@@ -19,6 +19,8 @@ import OTPInput from "../components/OTPInput";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 
+import * as Haptics from "expo-haptics";
+
 export default function LoginScreen() {
   const router = useRouter();
   const [selectedOption, setSelectedOption] = useState<"email" | "phone">(
@@ -108,14 +110,20 @@ export default function LoginScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             className="flex-row items-center justify-center px-[43px] py-[13px] rounded-[7px] gap-2 z-10"
-            onPress={() => handleOptionPress("email")}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+              handleOptionPress("email");
+            }}
           >
             <Ionicons name="mail" size={20} />
             <Text className="text-[16px] text-[#0A0A08]">Email</Text>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center justify-center px-[43px] py-[13px] rounded-[7px] gap-2 z-10"
-            onPress={() => handleOptionPress("phone")}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+              handleOptionPress("phone");
+            }}
           >
             <Ionicons name="call" size={20} />
             <Text className="text-[16px] text-[#0A0A08]">Phone</Text>
@@ -174,7 +182,10 @@ export default function LoginScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
-            onPress={() => router.replace("/onboarding")}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+              router.replace("/onboarding");
+            }}
           >
             <Text className="text-white text-[24px]">Sign in</Text>
             <Ionicons

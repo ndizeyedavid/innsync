@@ -2,6 +2,7 @@ import { TouchableOpacity } from "react-native";
 import { Text, View } from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Haptics from "expo-haptics";
 
 export default function OnboardingProgress({
   step,
@@ -13,9 +14,10 @@ export default function OnboardingProgress({
   return (
     <View className="mb-[22px] mt-5 flex-row items-center justify-between px-2">
       <TouchableOpacity
-        onPress={() =>
-          step != 1 ? setProgress((prev: any) => prev - 1) : null
-        }
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          step != 1 ? setProgress((prev: any) => prev - 1) : null;
+        }}
         className="size-[45px] bg-[#F5F4EF] items-center justify-center rounded-full"
       >
         <Ionicons name="chevron-back" size={25} className={"text-[#E8E5DD]"} />

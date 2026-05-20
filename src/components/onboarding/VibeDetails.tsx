@@ -2,11 +2,13 @@ import { Text, View } from "react-native";
 import VibeButton from "../VibeButton";
 import { useState } from "react";
 import { vibeCards } from "../../constants/vibeCards";
+import * as Haptics from "expo-haptics";
 
 export default function VibeDetails() {
   const [selectedVibes, setSelectedVibes] = useState<number[]>([]);
 
   const handleVibeSelection = (id: any) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
     if (selectedVibes.includes(id)) {
       setSelectedVibes((prevSelectedVibes) =>
         prevSelectedVibes.filter((vibe) => vibe !== id),

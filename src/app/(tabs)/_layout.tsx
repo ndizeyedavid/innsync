@@ -5,6 +5,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
+import * as Haptic from "expo-haptics";
 
 export default function TabsLayout() {
   const tabOptions = [
@@ -54,6 +55,11 @@ export default function TabsLayout() {
               </View>
             ),
           }}
+          listeners={({ navigation, route }) => ({
+            tabPress: (e) => {
+              Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Light);
+            },
+          })}
         />
         {tabOptions.map((tab, index) => (
           <Tabs.Screen
@@ -76,6 +82,11 @@ export default function TabsLayout() {
                 </View>
               ),
             }}
+            listeners={({ navigation, route }) => ({
+              tabPress: (e) => {
+                Haptic.impactAsync(Haptic.ImpactFeedbackStyle.Heavy);
+              },
+            })}
           />
         ))}
       </Tabs>
