@@ -151,6 +151,35 @@ export default function HotelDetailsModal({
                 <Text style={styles.priceNote}>Plus taxes and fees</Text>
               </View>
             </View>
+
+            {/* Meals */}
+            {hotel.meals && hotel.meals.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Meals & Dining</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.mealsScrollContent}
+                >
+                  {hotel.meals.map((meal) => (
+                    <View key={meal.id} style={styles.mealCard}>
+                      <Image
+                        source={meal.image}
+                        style={styles.mealImage}
+                        resizeMode="cover"
+                      />
+                      <View style={styles.mealInfo}>
+                        <Text style={styles.mealName}>{meal.name}</Text>
+                        <Text style={styles.mealDescription}>
+                          {meal.description}
+                        </Text>
+                        <Text style={styles.mealPrice}>${meal.price}</Text>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
           </View>
 
           {/* Book Button */}
@@ -300,6 +329,41 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#9C988E",
     marginTop: 4,
+  },
+  mealsScrollContent: {
+    gap: 12,
+    paddingHorizontal: 2,
+  },
+  mealCard: {
+    width: 200,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginRight: 12,
+  },
+  mealImage: {
+    width: "100%",
+    height: 120,
+  },
+  mealInfo: {
+    padding: 12,
+  },
+  mealName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 4,
+  },
+  mealDescription: {
+    fontSize: 12,
+    color: "#6E6B63",
+    marginBottom: 8,
+    lineHeight: 16,
+  },
+  mealPrice: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#000",
   },
   footer: {
     paddingHorizontal: 20,

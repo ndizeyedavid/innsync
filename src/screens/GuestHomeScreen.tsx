@@ -19,6 +19,13 @@ interface Hotel {
   image: any;
   amenities: string[];
   description?: string;
+  meals?: {
+    id: string;
+    name: string;
+    description: string;
+    image: any;
+    price: number;
+  }[];
 }
 
 // Mock hotel data
@@ -33,6 +40,22 @@ const hotels: Hotel[] = [
     amenities: ["Pool", "Spa", "Restaurant", "Gym", "Beach Access", "WiFi"],
     description:
       "Nestled along the pristine shores of Malibu, Sereno Bay Resort offers breathtaking ocean views and world-class amenities. Our infinity pool seems to merge with the Pacific, while our award-winning spa provides ultimate relaxation.",
+    meals: [
+      {
+        id: "m1",
+        name: "Oceanview Breakfast",
+        description: "Fresh coastal cuisine with organic ingredients",
+        image: require("../assets/images/meal.png"),
+        price: 25,
+      },
+      {
+        id: "m2",
+        name: "Sunset Seafood Dinner",
+        description: "Premium seafood caught daily",
+        image: require("../assets/images/order-2.jpg"),
+        price: 45,
+      },
+    ],
   },
   {
     id: "2",
@@ -44,6 +67,22 @@ const hotels: Hotel[] = [
     amenities: ["Ski Access", "Spa", "Restaurant", "Fireplace", "WiFi"],
     description:
       "Experience the ultimate mountain getaway at Mountain View Lodge. With ski-in/ski-out access, cozy fireplaces in every room, and panoramic views of the Rockies, we're the perfect destination for winter adventures and summer escapes.",
+    meals: [
+      {
+        id: "m3",
+        name: "Alpine Breakfast",
+        description: "Hearty mountain breakfast to start your day",
+        image: require("../assets/images/meal.png"),
+        price: 20,
+      },
+      {
+        id: "m4",
+        name: "Cabin Comfort Dinner",
+        description: "Rustic comfort food with mountain views",
+        image: require("../assets/images/order-3.jpg"),
+        price: 38,
+      },
+    ],
   },
   {
     id: "3",
@@ -55,6 +94,22 @@ const hotels: Hotel[] = [
     amenities: ["Rooftop Bar", "Gym", "Restaurant", "WiFi", "Concierge"],
     description:
       "In the heart of Manhattan, Urban Oasis Hotel is your sanctuary in the city that never sleeps. Our rooftop bar offers stunning skyline views, while our concierge team ensures your NYC experience is unforgettable.",
+    meals: [
+      {
+        id: "m5",
+        name: "City Sunrise Breakfast",
+        description: "Energy-boosting breakfast for busy mornings",
+        image: require("../assets/images/meal.png"),
+        price: 22,
+      },
+      {
+        id: "m6",
+        name: "Manhattan Steak Dinner",
+        description: "Prime cuts with skyline views",
+        image: require("../assets/images/order-1.jpg"),
+        price: 55,
+      },
+    ],
   },
   {
     id: "4",
@@ -66,6 +121,22 @@ const hotels: Hotel[] = [
     amenities: ["Beach Access", "Pool", "Restaurant", "Spa", "WiFi"],
     description:
       "Step into paradise at Coastal Paradise Inn, where Miami's vibrant energy meets tropical tranquility. Our beachfront location, refreshing pool, and full-service spa create the perfect backdrop for your Florida vacation.",
+    meals: [
+      {
+        id: "m7",
+        name: "Tropical Breakfast",
+        description: "Fresh fruits and tropical specialties",
+        image: require("../assets/images/meal.png"),
+        price: 18,
+      },
+      {
+        id: "m8",
+        name: "Beachside Seafood",
+        description: "Fresh catch with ocean breeze",
+        image: require("../assets/images/yoga.jpg"),
+        price: 42,
+      },
+    ],
   },
 ];
 
