@@ -9,7 +9,7 @@ export default function App() {
 
   const handleLoadingComplete = () => {
     setIsLoading(false);
-    router.replace("/login");
+    router.replace("/guest");
   };
 
   if (isLoading) {
