@@ -6,15 +6,22 @@ interface ISettingItem {
   icon: string;
   title: string;
   description: string;
+  onPress?: () => void;
+  isLast?: boolean;
 }
 
 export default function SettingItem({
   icon,
   title,
   description,
+  onPress,
+  isLast = false,
 }: ISettingItem) {
   return (
-    <TouchableOpacity className="flex-row items-center justify-between px-[22px] py-[20px] border-b border-[#EFEDE7]">
+    <TouchableOpacity
+      className={`flex-row items-center justify-between px-[22px] py-[20px] ${isLast ? "" : "border-b border-[#EFEDE7]"}`}
+      onPress={onPress}
+    >
       <View className="flex-row items-center gap-2">
         <View className="size-[43px] rounded-lg bg-[#F5F4EF] items-center justify-center">
           <Ionicons name={icon} size={25} color="black" />

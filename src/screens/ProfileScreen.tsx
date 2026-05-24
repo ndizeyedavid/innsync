@@ -1,39 +1,49 @@
 import { Text, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
 import TabHeader from "../components/TabHeader";
 import ScreenLayout from "../layout/ScreenLayout";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ProfileCard from "../components/profileComponents/ProfileCard";
 import SettingItem from "../components/profileComponents/SettingItem";
+import * as Haptics from "expo-haptics";
 
 export default function ProfileScreen() {
+  const router = useRouter();
+
   const settingItems = [
     {
       icon: "card-outline",
       title: "Payment methods",
       description: "Visa, MTN MoMo",
+      route: "/payment-methods",
     },
     {
       icon: "bluetooth-outline",
       title: "Digital key",
-      description: "Bluetooh, backup PIN",
+      description: "Bluetooth, backup PIN",
+      route: "/digital-key",
     },
     {
       icon: "globe-outline",
       title: "Language & Currency",
       description: "English, USD",
+      route: "/language-currency",
     },
     {
       icon: "person-outline",
       title: "Account",
       description: "Manage name, email, phone,...",
+      route: "/account",
     },
     {
       icon: "help-circle-outline",
       title: "Help",
       description: "About this app",
+      route: "/help",
     },
   ];
+
   return (
     <ScreenLayout>
       <TabHeader alt="ACCOUNT" title="Profile" />
@@ -49,7 +59,13 @@ export default function ProfileScreen() {
           </Text>
         </View>
         <View className="flex-row justify-between">
-          <TouchableOpacity className="flex-row items-center justify-between border-r-2 border-[#EFEDE7] px-[15px] py-[22px]">
+          <TouchableOpacity
+            className="flex-row items-center justify-between border-r-2 border-[#EFEDE7] px-[15px] py-[22px] flex-1"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/view-folio");
+            }}
+          >
             <View className="flex-row items-center gap-1">
               <Ionicons name="receipt" size={18} color="black" />
               <Text className="text-[18px]">View folio</Text>
@@ -57,7 +73,13 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={18} color="#9C988E" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="flex-row items-center justify-between border-r-2 border-[#EFEDE7] px-[15px] py-[22px]">
+          <TouchableOpacity
+            className="flex-row items-center justify-between px-[15px] py-[22px] flex-1"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/restart-checkin");
+            }}
+          >
             <View className="flex-row items-center gap-1">
               <Ionicons name="refresh" size={20} color="black" />
               <Text className="text-[18px] w-[90px]">Restart check-in</Text>
@@ -76,6 +98,11 @@ export default function ProfileScreen() {
             icon={item.icon}
             title={item.title}
             description={item.description}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push(item.route);
+            }}
+            isLast={index === settingItems.length - 1}
           />
         ))}
       </View>
