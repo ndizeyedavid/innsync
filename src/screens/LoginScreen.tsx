@@ -6,10 +6,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useState } from "react";
 import { Animated } from "react-native";
-import { LoginCredentials } from "../types";
 import SocialLoginButton from "../components/SocialLoginButton";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -18,21 +18,22 @@ import PhoneInput from "../components/PhoneInput";
 import OTPInput from "../components/OTPInput";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
+import { useAuth } from "../hooks/useAuth";
 
 import * as Haptics from "expo-haptics";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signIn, isLoading } = useAuth();
+
   const [selectedOption, setSelectedOption] = useState<"email" | "phone">(
     "email",
   );
   const slideAnimation = useState(new Animated.Value(0))[0];
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showOTP, setShowOTP] = useState(false);
-  const [credentials, setCredentials] = useState<LoginCredentials>({
-    email: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleOptionPress = (option: "email" | "phone") => {
     setSelectedOption(option);
@@ -55,6 +56,27 @@ export default function LoginScreen() {
   const handleOTPComplete = (otp: string) => {
     Alert.alert("Success", "OTP verification successful!");
     // Handle successful OTP verification
+  };
+
+  const handleSignIn = async () => {
+    try {
+      if (selectedOption === "email") {
+        if (!email || !password) {
+          Alert.alert("Error", "Please fill in all fields");
+          return;
+        }
+
+        await signIn({
+          email,
+          password,
+        });
+
+        // Navigate to onboarding on success
+        router.replace("/onboarding");
+      }
+    } catch (error: any) {
+      Alert.alert("Sign In Failed", error.message || "An error occurred");
+    }
   };
 
   return (
@@ -99,7 +121,6 @@ export default function LoginScreen() {
                 {
                   translateX: slideAnimation.interpolate({
                     inputRange: [0, 1],
-                    // backup: outputRange: [-82, 82],
                     outputRange: [-82, 82],
                   }),
                 },
@@ -139,6 +160,8 @@ export default function LoginScreen() {
                 placeholder="e.g mellow@gmail.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
               />
               <TextField
                 text="PASSWORD"
@@ -147,6 +170,8 @@ export default function LoginScreen() {
                 keyboardType="text"
                 autoCapitalize="none"
                 secureTextEntry={true}
+                value={password}
+                onChangeText={setPassword}
               />
             </>
           ) : showOTP ? (
@@ -182,17 +207,21 @@ export default function LoginScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-              router.replace("/onboarding");
-            }}
+            onPress={handleSignIn}
+            disabled={isLoading}
           >
-            <Text className="text-white text-[24px]">Sign in</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={23}
-              style={{ color: "white" }}
-            />
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Text className="text-white text-[24px]">Sign in</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={23}
+                  style={{ color: "white" }}
+                />
+              </>
+            )}
           </TouchableOpacity>
         )}
 

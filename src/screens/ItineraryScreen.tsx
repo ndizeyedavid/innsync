@@ -1,12 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import TabHeader from "../components/TabHeader";
 import TimelineItem from "../components/ItineraryComponents/TimelineItem";
 import ItineraryCard from "../components/ItineraryComponents/ItineraryCard";
+import itineraryService from "../services/itinerary.service";
+import reservationsService from "../services/reservations.service";
+import { ItineraryItem, Reservation } from "../api/types";
 
 export default function ItineraryScreen() {
   const [selectedDays, setSelectedDays] = useState<number[]>([0, 1, 2]);
+  const [itineraryItems, setItineraryItems] = useState<ItineraryItem[]>([]);
+  const [currentReservation, setCurrentReservation] =
+    useState<Reservation | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const handleDaySelection = (id: any) => {
     if (selectedDays.includes(id)) {
@@ -30,36 +37,57 @@ export default function ItineraryScreen() {
     { id: 8, day: "Rent Due" },
   ];
 
-  const itenraryItems = [
-    {
-      image: require("../assets/images/yoga.jpg"),
-      time: "8:00 - 9:00",
-      isBooked: true,
-      title: "Sunrise yoga on the deck",
-      location: "Cercle Sportif de Kigali",
-      description: "Slow flow and breathwork as the sun rises over the bay.",
-      isIncluded: true,
-      isConfirmed: true,
-    },
-    {
-      image: require("../assets/images/meal.png"),
-      time: "11:30 - 13:00",
-      isBooked: false,
-      title: "Chef's table dinner",
-      location: "The Freman House",
-      description: "Yummy food and drinks prepared by the best chef in town.",
-      isIncluded: true,
-      isConfirmed: false,
-    },
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+
+      // Get current reservation to get stayId
+      const reservations = await reservationsService.listMine();
+      const activeReservation =
+        reservations.find((r) => r.status === "CHECKED_IN") || reservations[0];
+      setCurrentReservation(activeReservation);
+
+      if (activeReservation) {
+        // Load itinerary items for this stay
+        const items = await itineraryService.getForStay(activeReservation.id);
+        setItineraryItems(items);
+      }
+    } catch (error) {
+      console.error("Error loading itinerary:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Convert API itinerary items to component format
+  const formattedItems = itineraryItems.map((item) => ({
+    image: item.title.includes("yoga")
+      ? require("../assets/images/yoga.jpg")
+      : require("../assets/images/meal.png"),
+    time: `${item.startTime.split("T")[1].substring(0, 5)} - ${item.endTime ? item.endTime.split("T")[1].substring(0, 5) : ""}`,
+    isBooked: item.status === "CONFIRMED" || item.status === "COMPLETED",
+    title: item.title,
+    location: item.location || "Hotel",
+    description: item.description || "",
+    isIncluded: true,
+    isConfirmed: item.status === "CONFIRMED",
+  }));
 
   return (
     <ScreenLayout>
       <View className="flex-row justify-between items-center">
         <TabHeader
-          alt="RWANDA"
-          title="Your itenerary,"
-          description="April 26 - April 30 · 2 adults"
+          alt={currentReservation?.hotelName || "RWANDA"}
+          title="Your itinerary,"
+          description={
+            currentReservation
+              ? `${new Date(currentReservation.checkInDate).toLocaleDateString()} - ${new Date(currentReservation.checkOutDate).toLocaleDateString()} · 2 adults`
+              : "April 26 - April 30 · 2 adults"
+          }
           descriptionStyle="text-[12px] text-[#9C988E]"
         />
         <View className="px-[11px] py-[5px] bg-[#D9D9D9] flex-row gap-1 items-center rounded-2xl">
@@ -88,20 +116,30 @@ export default function ItineraryScreen() {
       </View>
 
       <View>
-        {itenraryItems.map((item, index) => (
-          <TimelineItem key={index} startTime={item.time.split("-")[0]}>
-            <ItineraryCard
-              image={item.image}
-              time={item.time}
-              title={item.title}
-              location={item.location}
-              description={item.description}
-              isIncluded={item.isIncluded}
-              isBooked={item.isBooked}
-              isConfirmed={item.isConfirmed}
-            />
-          </TimelineItem>
-        ))}
+        {loading ? (
+          <Text className="text-center text-[#9C988E] mt-10">
+            Loading itinerary...
+          </Text>
+        ) : formattedItems.length > 0 ? (
+          formattedItems.map((item, index) => (
+            <TimelineItem key={index} startTime={item.time.split("-")[0]}>
+              <ItineraryCard
+                image={item.image}
+                time={item.time}
+                title={item.title}
+                location={item.location}
+                description={item.description}
+                isIncluded={item.isIncluded}
+                isBooked={item.isBooked}
+                isConfirmed={item.isConfirmed}
+              />
+            </TimelineItem>
+          ))
+        ) : (
+          <Text className="text-center text-[#9C988E] mt-10">
+            No itinerary items for this stay
+          </Text>
+        )}
       </View>
     </ScreenLayout>
   );

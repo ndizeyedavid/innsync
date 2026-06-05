@@ -1,13 +1,76 @@
-import { Text, TouchableOpacity, View, ScrollView } from "react-native";
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  useState,
+  useEffect,
+} from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import TabHeader from "../components/TabHeader";
 import ScreenLayout from "../layout/ScreenLayout";
 import * as Haptics from "expo-haptics";
+import digitalKeyService from "../services/digital-key.service";
+import reservationsService from "../services/reservations.service";
+import { Reservation, DigitalKey } from "../api/types";
+import { useDigitalKeyEvents } from "../hooks/useWebSocket";
 
 export default function DigitalKeyScreen() {
   const router = useRouter();
+  const [currentReservation, setCurrentReservation] =
+    useState<Reservation | null>(null);
+  const [digitalKeyStatus, setDigitalKeyStatus] = useState<
+    "ACTIVE" | "REVOKED" | "EXPIRED"
+  >("ACTIVE");
+  const [bluetoothEnabled, setBluetoothEnabled] = useState(true);
+  const [autoConnect, setAutoConnect] = useState(true);
+  const [lastUnlockTime, setLastUnlockTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadCurrentReservation();
+  }, []);
+
+  // Listen to real-time digital key events
+  useDigitalKeyEvents((data) => {
+    console.log("Digital key event:", data);
+    if (data.event === "KEY_REVOKED") {
+      setDigitalKeyStatus("REVOKED");
+    }
+  });
+
+  const loadCurrentReservation = async () => {
+    try {
+      const reservations = await reservationsService.listMine();
+      const active =
+        reservations.find((r) => r.status === "CHECKED_IN") || reservations[0];
+      setCurrentReservation(active);
+    } catch (error) {
+      console.error("Error loading current reservation:", error);
+    }
+  };
+
+  const handleUnlock = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
+      if (!currentReservation) {
+        return;
+      }
+
+      // Record unlock attempt
+      await digitalKeyService.recordTapUnlock(currentReservation.id);
+
+      // Update last unlock time
+      setLastUnlockTime(new Date().toLocaleTimeString());
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      console.error("Unlock error:", error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
 
   return (
     <ScreenLayout>
@@ -24,23 +87,53 @@ export default function DigitalKeyScreen() {
       <TabHeader alt="SETTINGS" title="Digital Key" />
 
       {/* Key Status */}
-      <View className="bg-black rounded-2xl p-5 mt-4">
+      <View
+        className={`rounded-2xl p-5 mt-4 ${digitalKeyStatus === "ACTIVE" ? "bg-black" : "bg-red-600"}`}
+      >
         <View className="flex-row items-center justify-between mb-3">
           <View>
             <Text className="text-[#989896] text-sm">KEY STATUS</Text>
-            <Text className="text-white text-2xl font-bold">Active</Text>
+            <Text className="text-white text-2xl font-bold capitalize">
+              {digitalKeyStatus.toLowerCase()}
+            </Text>
           </View>
-          <View className="size-12 bg-green-500 rounded-full items-center justify-center">
+          <View
+            className={`size-12 ${digitalKeyStatus === "ACTIVE" ? "bg-green-500" : "bg-red-400"} rounded-full items-center justify-center`}
+          >
             <Ionicons name="bluetooth" size={24} color="white" />
           </View>
         </View>
-        <Text className="text-[#959592] text-xs">Connected to Suite 1207</Text>
+        <Text className="text-[#959592] text-xs">
+          Connected to {currentReservation?.roomNumber || "Suite 1207"}
+        </Text>
+        {lastUnlockTime && (
+          <Text className="text-[#959592] text-xs mt-1">
+            Last unlock: {lastUnlockTime}
+          </Text>
+        )}
       </View>
 
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
+      {/* Quick Unlock Button */}
+      <TouchableOpacity
+        onPress={handleUnlock}
+        disabled={digitalKeyStatus !== "ACTIVE" || !bluetoothEnabled}
+        className={`bg-black rounded-2xl p-6 mt-4 flex-row items-center justify-between ${digitalKeyStatus !== "ACTIVE" || !bluetoothEnabled ? "opacity-50" : ""}`}
       >
+        <View className="flex-row items-center gap-4">
+          <View className="size-14 bg-white rounded-full items-center justify-center">
+            <Ionicons name="lock-open" size={28} color="black" />
+          </View>
+          <View>
+            <Text className="text-white text-xl font-semibold">
+              Tap to Unlock
+            </Text>
+            <Text className="text-[#959592] text-sm">Hold phone near door</Text>
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={24} color="white" />
+      </TouchableOpacity>
+
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Bluetooth Settings */}
         <Text className="text-[18px] text-[#ACA9A0] mt-6 mb-3">BLUETOOTH</Text>
 
@@ -49,14 +142,21 @@ export default function DigitalKeyScreen() {
             className="p-4 border-b border-[#EFEDE7] flex-row items-center justify-between"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setBluetoothEnabled(!bluetoothEnabled);
             }}
           >
             <View>
               <Text className="text-base font-semibold">Bluetooth</Text>
-              <Text className="text-sm text-[#6E6B63]">Enable digital key access</Text>
+              <Text className="text-sm text-[#6E6B63]">
+                Enable digital key access
+              </Text>
             </View>
-            <View className="w-12 h-7 bg-black rounded-full items-center justify-end px-1">
-              <View className="w-5 h-5 bg-white rounded-full" />
+            <View
+              className={`w-12 h-7 ${bluetoothEnabled ? "bg-black" : "bg-gray-300"} rounded-full items-center justify-end px-1`}
+            >
+              <View
+                className={`w-5 h-5 bg-white rounded-full ${bluetoothEnabled ? "" : "ml-auto"}`}
+              />
             </View>
           </TouchableOpacity>
 
@@ -64,20 +164,29 @@ export default function DigitalKeyScreen() {
             className="p-4 flex-row items-center justify-between"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setAutoConnect(!autoConnect);
             }}
           >
             <View>
               <Text className="text-base font-semibold">Auto-connect</Text>
-              <Text className="text-sm text-[#6E6B63]">Connect when near door</Text>
+              <Text className="text-sm text-[#6E6B63]">
+                Connect when near door
+              </Text>
             </View>
-            <View className="w-12 h-7 bg-black rounded-full items-center justify-end px-1">
-              <View className="w-5 h-5 bg-white rounded-full" />
+            <View
+              className={`w-12 h-7 ${autoConnect ? "bg-black" : "bg-gray-300"} rounded-full items-center justify-end px-1`}
+            >
+              <View
+                className={`w-5 h-5 bg-white rounded-full ${autoConnect ? "" : "ml-auto"}`}
+              />
             </View>
           </TouchableOpacity>
         </View>
 
         {/* Backup PIN */}
-        <Text className="text-[18px] text-[#ACA9A0] mt-6 mb-3">BACKUP ACCESS</Text>
+        <Text className="text-[18px] text-[#ACA9A0] mt-6 mb-3">
+          BACKUP ACCESS
+        </Text>
 
         <View className="bg-white border border-[#EFEDE7] rounded-2xl overflow-hidden">
           <TouchableOpacity
@@ -93,7 +202,9 @@ export default function DigitalKeyScreen() {
                 </View>
                 <View>
                   <Text className="text-base font-semibold">Backup PIN</Text>
-                  <Text className="text-sm text-[#6E6B63]">Use when Bluetooth unavailable</Text>
+                  <Text className="text-sm text-[#6E6B63]">
+                    Use when Bluetooth unavailable
+                  </Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9C988E" />
@@ -112,8 +223,12 @@ export default function DigitalKeyScreen() {
                   <Ionicons name="qr-code-outline" size={20} color="black" />
                 </View>
                 <View>
-                  <Text className="text-base font-semibold">QR Code Access</Text>
-                  <Text className="text-sm text-[#6E6B63]">Alternative entry method</Text>
+                  <Text className="text-base font-semibold">
+                    QR Code Access
+                  </Text>
+                  <Text className="text-sm text-[#6E6B63]">
+                    Alternative entry method
+                  </Text>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#9C988E" />
@@ -123,12 +238,16 @@ export default function DigitalKeyScreen() {
 
         {/* Key Info */}
         <View className="bg-[#F5F4EF] rounded-2xl p-4 mt-4">
-          <Text className="text-sm font-semibold mb-2">How Digital Key Works</Text>
+          <Text className="text-sm font-semibold mb-2">
+            How Digital Key Works
+          </Text>
           <Text className="text-xs text-[#6E6B63] leading-relaxed mb-2">
-            Your digital key uses Bluetooth Low Energy to communicate with the door lock. Hold your phone near the door for 1 second to unlock.
+            Your digital key uses Bluetooth Low Energy to communicate with the
+            door lock. Hold your phone near the door for 1 second to unlock.
           </Text>
           <Text className="text-xs text-[#6E6B63] leading-relaxed">
-            Ensure Bluetooth is enabled and your phone has sufficient battery for optimal performance.
+            Ensure Bluetooth is enabled and your phone has sufficient battery
+            for optimal performance.
           </Text>
         </View>
 
