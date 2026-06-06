@@ -9,6 +9,9 @@ import AmenitiesSection from "../components/GuestComponents/AmenitiesSection";
 import HotelDetailsModal from "../components/GuestComponents/HotelDetailsModal";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
+import { useAuth } from "../hooks/useAuth";
+import authService from "../services/auth.service";
+import { User } from "../api/types";
 
 interface Hotel {
   id: string;
@@ -152,10 +155,26 @@ const amenityOptions = [
 
 export default function GuestHomeScreen() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [filteredHotels, setFilteredHotels] = useState<Hotel[]>(hotels);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        if (isAuthenticated) {
+          const userData = await authService.getCurrentUser();
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error("Error loading user:", error);
+      }
+    };
+    loadUser();
+  }, [isAuthenticated]);
 
   const handleToggleAmenity = (amenityId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -218,37 +237,74 @@ export default function GuestHomeScreen() {
       {/* Header */}
       <View>
         <View className="flex-row justify-between items-center">
-          <View>
-            <Text className="text-[12px] text-[#9C988E] uppercase">
-              Discover
-            </Text>
-            <Text className="text-[24px] font-semibold">Find Your Stay</Text>
-          </View>
-
-          <View className="flex-row gap-2">
-            <TouchableOpacity
-              onPress={() => router.push("/login")}
-              className="bg-black px-3 py-1 rounded-full"
-            >
-              <Text className="text-white font-semibold relative top-px">
-                Sign In
+          {/* Show Discover/Find Your Stay only if not authenticated */}
+          {!isAuthenticated && (
+            <View>
+              <Text className="text-[12px] text-[#9C988E] uppercase">
+                Discover
               </Text>
-            </TouchableOpacity>
+              <Text className="text-[24px] font-semibold">Find Your Stay</Text>
+            </View>
+          )}
 
-            <TouchableOpacity
-              onPress={() => router.push("/signup")}
-              className="bg-white px-3 py-1 rounded-full border-2 border-black"
-            >
-              <Text className="text-black font-semibold">Sign Up</Text>
-            </TouchableOpacity>
+          {/* Search Bar (only if authenticated) */}
+          {isAuthenticated && (
+            <View className="flex-1 flex-row items-center bg-white rounded-2xl px-4 py-3 mr-4">
+              <Ionicons name="search" size={20} color="#6E6B63" />
+              <Text className="ml-3 text-[#6E6B63]">
+                Search destinations...
+              </Text>
+            </View>
+          )}
+
+          {/* Right side buttons */}
+          <View className="flex-row gap-3 items-center">
+            {!isAuthenticated ? (
+              <>
+                <TouchableOpacity
+                  onPress={() => router.push("/login")}
+                  className="bg-black px-3 py-1 rounded-full"
+                >
+                  <Text className="text-white font-semibold relative top-px">
+                    Sign In
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => router.push("/signup")}
+                  className="bg-white px-3 py-1 rounded-full border-2 border-black"
+                >
+                  <Text className="text-black font-semibold">Sign Up</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                {/* Notification Bell */}
+                <TouchableOpacity className="size-[47px] bg-[#E9E6DE] rounded-full items-center justify-center relative">
+                  <Ionicons
+                    name="notifications-outline"
+                    color="black"
+                    size={24}
+                  />
+                  <View className="size-[8px] bg-[#A8453E] rounded-full absolute top-2 right-3" />
+                </TouchableOpacity>
+
+                {/* Profile Avatar */}
+                <TouchableOpacity className="size-[47px] bg-[#000] rounded-full items-center justify-center">
+                  <Ionicons name="person-circle" color="white" size={40} />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
 
-        {/* Search Bar */}
-        <View className="mt-4 flex-row items-center bg-white rounded-2xl px-4 py-3">
-          <Ionicons name="search" size={20} color="#6E6B63" />
-          <Text className="ml-3 text-[#6E6B63]">Search destinations...</Text>
-        </View>
+        {/* Search Bar (only if not authenticated) */}
+        {!isAuthenticated && (
+          <View className="mt-4 flex-row items-center bg-white rounded-2xl px-4 py-3">
+            <Ionicons name="search" size={20} color="#6E6B63" />
+            <Text className="ml-3 text-[#6E6B63]">Search destinations...</Text>
+          </View>
+        )}
       </View>
 
       {/* Amenities Filter */}

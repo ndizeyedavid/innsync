@@ -4,9 +4,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useState,
-  useEffect,
 } from "react-native";
+import { useState, useEffect } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
 import TabHeader from "../components/TabHeader";
 // @ts-ignore

@@ -10,6 +10,11 @@ import * as Haptic from "expo-haptics";
 export default function TabsLayout() {
   const tabOptions = [
     {
+      name: "amenities",
+      title: "Amenities",
+      icon: "bed",
+    },
+    {
       name: "itinerary",
       title: "Itinerary",
       icon: "calendar-clear",

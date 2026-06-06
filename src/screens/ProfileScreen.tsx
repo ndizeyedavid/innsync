@@ -1,10 +1,5 @@
-import {
-  Text,
-  TouchableOpacity,
-  View,
-  useEffect,
-  useState,
-} from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import TabHeader from "../components/TabHeader";
 import ScreenLayout from "../layout/ScreenLayout";

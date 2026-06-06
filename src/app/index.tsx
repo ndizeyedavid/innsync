@@ -1,24 +1,26 @@
-import { useState } from "react";
-import { View, Text } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import LoadingScreen from "../components/LoadingScreen";
+import { useAuth } from "../hooks/useAuth";
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  const handleLoadingComplete = () => {
-    setIsLoading(false);
-    router.replace("/guest");
-  };
-
-  if (isLoading) {
-    return <LoadingScreen onLoadingComplete={handleLoadingComplete} />;
-  }
+  useEffect(() => {
+    if (!authLoading) {
+      if (isAuthenticated) {
+        router.replace("/(tabs)");
+      } else {
+        router.replace("/guest");
+      }
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   return (
     <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-xl font-bold text-gray-800">Loading complete!</Text>
+      <ActivityIndicator size="large" color="#000" />
     </View>
   );
 }
