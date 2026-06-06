@@ -31,6 +31,7 @@ export default function ReviewAndPay({
   selectedVibeIndices,
   dietaryRestrictions,
 }: ReviewAndPayProps) {
+  // const selectedMealPlan = mealPlans.find((plan) => plan.id === selectedMealPlanId);
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<number>(0);
 
   const formatDate = (date: Date) => {

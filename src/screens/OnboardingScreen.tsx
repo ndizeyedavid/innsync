@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
+import ScreenLayout from "../layout/ScreenLayout";
 import OnboardingProgress from "../components/OnboardingProgress";
 import TravelDetails from "../components/onboarding/TravelDetails";
 import Preference from "../components/onboarding/Preference";
@@ -31,6 +32,7 @@ import {
 } from "../api/types";
 import { mealPlans } from "../constants/mealPlans";
 import { vibeCards } from "../constants/vibeCards";
+import reservationsService from "../services/reservations.service";
 
 export default function OnboardingScreen() {
   const { showToast } = useToast();
@@ -48,6 +50,26 @@ export default function OnboardingScreen() {
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [checkingStays, setCheckingStays] = useState(true);
+
+  // Check if user already has stays on load
+  useEffect(() => {
+    const checkExistingStays = async () => {
+      try {
+        const stays = await reservationsService.listMine();
+        if (stays.length > 0) {
+          // If user already has stays, skip onboarding
+          router.replace("/(tabs)");
+        }
+      } catch (error) {
+        console.error("Error checking stays:", error);
+      } finally {
+        setCheckingStays(false);
+      }
+    };
+
+    checkExistingStays();
+  }, []);
 
   const onBoardingHeaders = [
     {
@@ -162,6 +184,16 @@ export default function OnboardingScreen() {
       setIsLoading(false);
     }
   };
+
+  if (checkingStays) {
+    return (
+      <ScreenLayout>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      </ScreenLayout>
+    );
+  }
 
   return (
     <KeyboardAvoidingView

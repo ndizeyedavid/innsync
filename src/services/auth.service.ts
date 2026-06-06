@@ -1,4 +1,4 @@
-import apiClient from "../api/client";
+import { authEndpoints } from "../api/endpoints";
 import {
   SignInDto,
   SignUpDto,
@@ -23,15 +23,12 @@ class AuthService {
   async signIn(credentials: SignInDto): Promise<AuthResponse> {
     try {
       const deviceInfo = await getDeviceInfo();
-      const response = await apiClient.post<{ data: AuthResponse }>(
-        "/auth/sign-in",
-        {
-          ...credentials,
-          deviceLabel: deviceInfo.deviceId,
-        },
-      );
+      const result = await authEndpoints.signIn({
+        ...credentials,
+        deviceLabel: deviceInfo.deviceId,
+      });
 
-      const { tokens, user } = response.data.data;
+      const { tokens, user } = result;
 
       // Store tokens and user data
       await setTokens(tokens.accessToken, tokens.refreshToken);
@@ -40,7 +37,7 @@ class AuthService {
       // Update auth store
       useAuthStore.getState().setAuth(user, tokens);
 
-      return response.data;
+      return result;
     } catch (error) {
       console.error("Sign in error:", error);
       throw error;
@@ -57,17 +54,13 @@ class AuthService {
         ...credentials,
         deviceLabel: deviceInfo.deviceId,
       });
-      const response = await apiClient.post<{ data: AuthResponse }>(
-        "/auth/sign-up",
-        {
-          ...credentials,
-          deviceLabel: deviceInfo.deviceId,
-        },
-      );
-      console.log("Full sign up response:", response);
-      console.log("Response data:", response.data);
+      const result = await authEndpoints.signUp({
+        ...credentials,
+        deviceLabel: deviceInfo.deviceId,
+      });
+      console.log("Full sign up result:", result);
 
-      const { tokens, user } = response.data.data;
+      const { tokens, user } = result;
 
       // Store tokens and user data
       await setTokens(tokens.accessToken, tokens.refreshToken);
@@ -76,7 +69,7 @@ class AuthService {
       // Update auth store
       useAuthStore.getState().setAuth(user, tokens);
 
-      return response.data;
+      return result;
     } catch (error) {
       console.error("Sign up error:", error);
       throw error;
@@ -90,11 +83,9 @@ class AuthService {
     refreshToken: string,
   ): Promise<{ tokens: { accessToken: string; refreshToken: string } }> {
     try {
-      const response = await apiClient.post<{
-        data: { tokens: { accessToken: string; refreshToken: string } };
-      }>("/auth/refresh", { refreshToken });
+      const result = await authEndpoints.refresh({ refreshToken });
 
-      const { tokens } = response.data.data;
+      const { tokens } = result;
 
       // Update stored tokens
       await setTokens(tokens.accessToken, tokens.refreshToken);
@@ -105,7 +96,7 @@ class AuthService {
         useAuthStore.getState().setAuth(currentState.user, tokens);
       }
 
-      return response.data;
+      return result;
     } catch (error) {
       console.error("Token refresh error:", error);
       throw error;
@@ -118,7 +109,7 @@ class AuthService {
   async signOut(): Promise<void> {
     try {
       // Call backend sign-out endpoint
-      await apiClient.post("/auth/sign-out");
+      await authEndpoints.signOut();
     } catch (error) {
       console.error("Sign out error:", error);
       // Continue with local cleanup even if backend call fails
@@ -137,12 +128,12 @@ class AuthService {
    */
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await apiClient.get<{ data: User }>("/auth/me");
+      const result = await authEndpoints.getMe();
 
       // Update auth store with latest user data
-      useAuthStore.getState().updateUser(response.data.data);
+      useAuthStore.getState().updateUser(result);
 
-      return response.data.data;
+      return result;
     } catch (error) {
       console.error("Get current user error:", error);
       throw error;

@@ -1,6 +1,5 @@
 import { orderEndpoints } from "../api/endpoints";
-import { PlaceOrderDto, Order, OrderResponseDto } from "../api/types";
-// import { createId } from '@paralleldrive/cuid2';
+import { PlaceOrderDto, OrderResponseDto } from "../api/types";
 
 class OrdersService {
   /**
@@ -9,11 +8,8 @@ class OrdersService {
   async placeOrder(dto: PlaceOrderDto): Promise<OrderResponseDto> {
     try {
       // Generate idempotency key for this order
-      const idempotencyKey = Number(
-        Math.floor(Math.random()) * 1000000,
-      ).toString();
-      const response = await orderEndpoints.place(dto, idempotencyKey);
-      return response.data;
+      const idempotencyKey = `${Date.now()}-${Math.floor(Math.random() * 1e12)}`;
+      return await orderEndpoints.place(dto, idempotencyKey);
     } catch (error) {
       console.error("Error placing order:", error);
       throw error;
@@ -28,8 +24,7 @@ class OrdersService {
     limit?: number;
   }): Promise<OrderResponseDto[]> {
     try {
-      const response = await orderEndpoints.list(params);
-      return response.data;
+      return await orderEndpoints.list(params);
     } catch (error) {
       console.error("Error fetching orders:", error);
       throw error;
@@ -41,8 +36,7 @@ class OrdersService {
    */
   async getOrder(orderId: string): Promise<OrderResponseDto> {
     try {
-      const response = await orderEndpoints.getOne(orderId);
-      return response.data;
+      return await orderEndpoints.getOne(orderId);
     } catch (error) {
       console.error("Error fetching order:", error);
       throw error;

@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { useEffect, useState } from "react";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -8,21 +8,21 @@ import Notification from "../components/Notification";
 import DigitalKey from "../components/HomeComponents/DigitalKey";
 import QuickActionButton from "../components/HomeComponents/QuickActionButton";
 import reservationsService from "../services/reservations.service";
-import { Reservation } from "../api/types";
+import authService from "../services/auth.service";
+import { GuestStay, User } from "../api/types";
 
 export default function HomeScreen() {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [currentReservation, setCurrentReservation] =
-    useState<Reservation | null>(null);
+  const [stays, setStays] = useState<GuestStay[]>([]);
+  const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("Guest");
+  const [user, setUser] = useState<User | null>(null);
 
   const quickActions = [
     { icon: "restaurant", title: "Order food", description: "12 min Avg" },
     {
       icon: "calendar-clear",
       title: "Itinerary",
-      description: currentReservation ? "Day 2 of 4" : "View itinerary",
+      description: currentStay ? "View your itinerary" : "View itinerary",
     },
     {
       icon: "bonfire",
@@ -37,41 +37,56 @@ export default function HomeScreen() {
   ];
 
   useEffect(() => {
-    loadReservations();
+    loadData();
   }, []);
 
-  const loadReservations = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await reservationsService.listMine();
-      setReservations(data);
+      const [userData, staysData] = await Promise.all([
+        authService.getCurrentUser(),
+        reservationsService.listMine(),
+      ]);
+      setUser(userData);
+      setStays(staysData);
 
-      // Find current active reservation (checked in)
-      const active = data.find((r) => r.status === "CHECKED_IN") || data[0];
-      setCurrentReservation(active);
-
-      // Set user name from reservation
-      if (active?.guestInfo) {
-        setUserName(active.guestInfo.firstName);
-      }
+      // Find current active stay (checked in)
+      const active =
+        staysData.find((s) => s.status === "CHECKED_IN") || staysData[0];
+      setCurrentStay(active);
     } catch (error) {
-      console.error("Error loading reservations:", error);
+      console.error("Error loading data:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <ScreenLayout>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      </ScreenLayout>
+    );
+  }
 
   return (
     <ScreenLayout>
       <View className="flex-row justify-between">
         <TabHeader
           alt={
-            currentReservation
-              ? `Room ${currentReservation.roomNumber}`
-              : "HEAVY RAIN AT 20:42"
+            currentStay
+              ? `${currentStay.roomPreference || "No room preference"}`
+              : "Welcome back"
           }
           title="Good Afternoon,"
-          description={userName}
+          description={user?.name || "Guest"}
         />
         <TouchableOpacity className="size-[47px] bg-[#E9E6DE] rounded-full items-center justify-center relative">
           <Ionicons name="notifications-outline" color="black" size={24} />

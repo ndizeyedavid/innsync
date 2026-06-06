@@ -4,50 +4,48 @@ import {
   SignInDto,
   SignUpDto,
   RefreshTokenDto,
-  Reservation,
+  GuestStay,
   CreateStayDto,
-  Order,
   PlaceOrderDto,
   MenuItem,
   OrderResponseDto,
-  DigitalKey,
   UnlockDto,
   VerifyPinDto,
   ItineraryItem,
-  Activity,
   Folio,
-  GuestInfo,
+  GuestInfoDto,
   User,
+  ApiResponse,
 } from './types';
 
 // Auth Endpoints
 export const authEndpoints = {
   signIn: (credentials: SignInDto) => 
-    apiClient.post<AuthResponse>('/auth/sign-in', credentials),
+    apiClient.post<ApiResponse<AuthResponse>>('/auth/sign-in', credentials).then(r => r.data.data),
   
   signUp: (credentials: SignUpDto) => 
-    apiClient.post<AuthResponse>('/auth/sign-up', credentials),
+    apiClient.post<ApiResponse<AuthResponse>>('/auth/sign-up', credentials).then(r => r.data.data),
   
   refresh: (dto: RefreshTokenDto) => 
-    apiClient.post<{ tokens: { accessToken: string; refreshToken: string } }>('/auth/refresh', dto),
+    apiClient.post<ApiResponse<{ tokens: { accessToken: string; refreshToken: string } }>>('/auth/refresh', dto).then(r => r.data.data),
   
   signOut: () => 
     apiClient.post('/auth/sign-out'),
   
   getMe: () => 
-    apiClient.get<User>('/auth/me'),
+    apiClient.get<ApiResponse<User>>('/auth/me').then(r => r.data.data),
 };
 
 // Reservations Endpoints
 export const reservationEndpoints = {
   list: () => 
-    apiClient.get<Reservation[]>('/reservations'),
+    apiClient.get<ApiResponse<GuestStay[]>>('/reservations').then(r => r.data.data),
   
   create: (dto: CreateStayDto) => 
-    apiClient.post<Reservation>('/reservations', dto),
+    apiClient.post<ApiResponse<GuestStay>>('/reservations', dto).then(r => r.data.data),
   
   getOne: (id: string) => 
-    apiClient.get<Reservation>(`/reservations/${id}`),
+    apiClient.get<ApiResponse<GuestStay>>(`/reservations/${id}`).then(r => r.data.data),
   
   checkIn: (id: string) => 
     apiClient.post(`/reservations/${id}/check-in`),
@@ -56,21 +54,21 @@ export const reservationEndpoints = {
 // Orders Endpoints
 export const orderEndpoints = {
   place: (dto: PlaceOrderDto, idempotencyKey: string) => 
-    apiClient.post<OrderResponseDto>('/orders', dto, {
+    apiClient.post<ApiResponse<OrderResponseDto>>('/orders', dto, {
       headers: { 'Idempotency-Key': idempotencyKey },
-    }),
+    }).then(r => r.data.data),
   
   list: (params?: { status?: 'active' | 'all'; limit?: number }) => 
-    apiClient.get<OrderResponseDto[]>('/orders', { params }),
+    apiClient.get<ApiResponse<OrderResponseDto[]>>('/orders', { params }).then(r => r.data.data),
   
   getOne: (id: string) => 
-    apiClient.get<OrderResponseDto>(`/orders/${id}`),
+    apiClient.get<ApiResponse<OrderResponseDto>>(`/orders/${id}`).then(r => r.data.data),
 };
 
 // Menu Endpoints
 export const menuEndpoints = {
   list: (category?: MenuItem['category']) => 
-    apiClient.get<MenuItem[]>('/menu', { params: { category } }),
+    apiClient.get<ApiResponse<MenuItem[]>>('/menu', { params: { category } }).then(r => r.data.data),
 };
 
 // Digital Key Endpoints
@@ -84,14 +82,14 @@ export const digitalKeyEndpoints = {
 
 // Guests Endpoints
 export const guestEndpoints = {
-  submitGuestInfo: (stayId: string, dto: GuestInfo) => 
-    apiClient.post(`/reservations/${stayId}/guest-info`, dto),
+  submitGuestInfo: (stayId: string, dto: GuestInfoDto) => 
+    apiClient.post<ApiResponse<GuestStay>>(`/reservations/${stayId}/guest-info`, dto).then(r => r.data.data),
 };
 
 // Itinerary Endpoints
 export const itineraryEndpoints = {
   list: (stayId: string) => 
-    apiClient.get<ItineraryItem[]>('/itinerary', { params: { stayId } }),
+    apiClient.get<ApiResponse<ItineraryItem[]>>('/itinerary', { params: { stayId } }).then(r => r.data.data),
   
   bookActivity: (activityId: string, stayId: string) => 
     apiClient.post(`/itinerary/activities/${activityId}/book`, null, { 
@@ -102,7 +100,7 @@ export const itineraryEndpoints = {
 // Billing Endpoints
 export const billingEndpoints = {
   getFolio: (stayId: string) => 
-    apiClient.get<Folio>(`/billing/folio/${stayId}`),
+    apiClient.get<ApiResponse<Folio>>(`/billing/folio/${stayId}`).then(r => r.data.data),
 };
 
 // Rooms Endpoints

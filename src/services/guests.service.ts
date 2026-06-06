@@ -1,14 +1,13 @@
 import { guestEndpoints } from '../api/endpoints';
-import { GuestInfo } from '../api/types';
+import { GuestInfoDto, GuestStay } from '../api/types';
 
 class GuestsService {
   /**
    * Submit guest information for a stay
    */
-  async updateGuestInfo(stayId: string, dto: GuestInfo): Promise<GuestInfo> {
+  async updateGuestInfo(stayId: string, dto: GuestInfoDto): Promise<GuestStay> {
     try {
-      const response = await guestEndpoints.submitGuestInfo(stayId, dto);
-      return response.data;
+      return await guestEndpoints.submitGuestInfo(stayId, dto);
     } catch (error) {
       console.error('Error updating guest info:', error);
       throw error;

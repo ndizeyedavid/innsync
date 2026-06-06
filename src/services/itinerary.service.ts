@@ -1,5 +1,5 @@
 import { itineraryEndpoints } from '../api/endpoints';
-import { ItineraryItem, Activity } from '../api/types';
+import { ItineraryItem } from '../api/types';
 
 class ItineraryService {
   /**
@@ -7,8 +7,7 @@ class ItineraryService {
    */
   async getForStay(stayId: string): Promise<ItineraryItem[]> {
     try {
-      const response = await itineraryEndpoints.list(stayId);
-      return response.data;
+      return await itineraryEndpoints.list(stayId);
     } catch (error) {
       console.error('Error fetching itinerary:', error);
       throw error;
@@ -18,10 +17,9 @@ class ItineraryService {
   /**
    * Book an activity
    */
-  async bookActivity(stayId: string, activityId: string): Promise<ItineraryItem> {
+  async bookActivity(stayId: string, activityId: string): Promise<void> {
     try {
-      const response = await itineraryEndpoints.bookActivity(activityId, stayId);
-      return response.data;
+      await itineraryEndpoints.bookActivity(activityId, stayId);
     } catch (error) {
       console.error('Error booking activity:', error);
       throw error;

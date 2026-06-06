@@ -7,8 +7,7 @@ class MenuService {
    */
   async list(category?: MenuItem['category']): Promise<MenuItem[]> {
     try {
-      const response = await menuEndpoints.list(category);
-      return response.data;
+      return await menuEndpoints.list(category);
     } catch (error) {
       console.error('Error fetching menu:', error);
       throw error;

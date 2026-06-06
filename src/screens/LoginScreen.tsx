@@ -19,6 +19,7 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../contexts/ToastContext";
+import reservationsService from "../services/reservations.service";
 
 import * as Haptics from "expo-haptics";
 
@@ -75,8 +76,13 @@ export default function LoginScreen() {
 
         showToast("success", "Successfully signed in!", "top");
 
-        // Navigate to onboarding on success
-        router.replace("/onboarding");
+        // Check if user already has stays
+        const stays = await reservationsService.listMine();
+        if (stays.length > 0) {
+          router.replace("/(tabs)");
+        } else {
+          router.replace("/onboarding");
+        }
       }
     } catch (error: any) {
       showToast(

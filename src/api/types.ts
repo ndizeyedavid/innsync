@@ -206,16 +206,12 @@ export interface Order {
 
 export interface OrderResponseDto {
   id: string;
-  stayId: string;
-  items: OrderItem[];
-  totalAmount: number;
+  placedAt: string;
+  etaMinutes?: number;
+  status: 'preparing' | 'on-the-way' | 'delivered' | 'cancelled' | 'failed' | 'pending';
+  total: number; // cents
   currency: string;
-  status: string;
-  specialInstructions?: string;
-  deliveryRoom?: string;
-  estimatedDeliveryTime?: string;
-  createdAt: string;
-  updatedAt: string;
+  items: { name: string; quantity: number }[];
 }
 
 // Menu Types
