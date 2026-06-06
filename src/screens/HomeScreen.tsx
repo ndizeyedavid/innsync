@@ -1,10 +1,5 @@
-import {
-  Text,
-  TouchableOpacity,
-  View,
-  useEffect,
-  useState,
-} from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ScreenLayout from "../layout/ScreenLayout";

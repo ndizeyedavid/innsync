@@ -36,7 +36,7 @@ export default function SelectField({
   const [modalVisible, setModalVisible] = useState(false);
 
   // Find corresponding label text to display inside the mock input box
-  const selectedItem = items.find((item) => item.value === selectedValue);
+  const selectedItem = items?.find((item) => item.value === selectedValue);
 
   const handleSelect = (value: string) => {
     onValueChange(value);
@@ -97,7 +97,7 @@ export default function SelectField({
 
             {/* List options wrapper */}
             <FlatList
-              data={items}
+              data={items || []}
               keyExtractor={(item) => item.value}
               contentContainerStyle={styles.listContent}
               renderItem={({ item }) => {

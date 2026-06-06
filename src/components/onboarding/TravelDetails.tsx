@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Text, View } from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -8,9 +8,12 @@ import NumberStepper from "../NumberStepper";
 interface ITravelDetails {
   checkIn: Date | null;
   checkOut: Date | null;
-
   setCheckIn: any;
   setCheckOut: any;
+  adults: number;
+  setAdults: (count: number) => void;
+  children: number;
+  setChildren: (count: number) => void;
 }
 
 export default function TravelDetails({
@@ -18,6 +21,10 @@ export default function TravelDetails({
   checkOut,
   setCheckIn,
   setCheckOut,
+  adults,
+  setAdults,
+  children,
+  setChildren,
 }: ITravelDetails) {
   return (
     <View>
@@ -61,7 +68,7 @@ export default function TravelDetails({
 
         <View className="flex-row items-center justify-between mt-[22px]">
           <Text className="text-[15px] font-semibold">Adults</Text>
-          <NumberStepper />
+          <NumberStepper value={adults} onChange={setAdults} min={1} />
         </View>
 
         <View className="flex-row items-center justify-between mt-[22px]">
@@ -72,7 +79,7 @@ export default function TravelDetails({
             </Text>
           </View>
 
-          <NumberStepper />
+          <NumberStepper value={children} onChange={setChildren} min={0} />
         </View>
       </View>
     </View>

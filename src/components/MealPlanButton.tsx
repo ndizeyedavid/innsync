@@ -3,12 +3,12 @@ import { Text, TouchableOpacity, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface IMealPlanButton {
-  id: number;
+  id: "room-only" | "breakfast" | "half-board" | "full-board";
   title: string;
   description: string;
   alt: string;
   checked: boolean;
-  setSelectedMealPlan: any;
+  setSelectedMealPlan: (id: string) => void;
 }
 
 export default function MealPlanButton({

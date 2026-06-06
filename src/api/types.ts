@@ -48,7 +48,7 @@ export interface User {
   email: string;
   phone?: string;
   name: string;
-  role: 'GUEST' | 'ADMIN' | 'STAFF';
+  role: "GUEST" | "ADMIN" | "STAFF";
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;
@@ -74,7 +74,72 @@ export interface AuthSession {
   createdAt: string;
 }
 
+// Onboarding Types
+export type MealPlanDto =
+  | "room-only"
+  | "breakfast"
+  | "half-board"
+  | "full-board";
+
+export interface CreateStayDto {
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  adults: number;
+  children: number;
+  hotelId?: string;
+  roomPreference?: string;
+  bedPreference?: string;
+  floorPreference?: string;
+  mealPlan?: MealPlanDto;
+  specialRequests?: string;
+  itineraryVibes?: string[];
+  dietaryRestrictions?: string[];
+}
+
+export interface GuestInfoDto {
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  adults: number;
+  children: number;
+  roomPreference?: string;
+  bedPreference?: string;
+  floorPreference?: string;
+  mealPlan: MealPlanDto;
+  specialRequests?: string;
+  itineraryVibes: string[];
+  dietaryRestrictions: string[];
+}
+
 // Reservation Types
+export interface GuestStay {
+  id: string;
+  userId: string;
+  hotelId?: string;
+  externalReservationId?: string;
+  status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  adults: number;
+  children: number;
+  roomPreference?: string;
+  bedPreference?: string;
+  floorPreference?: string;
+  mealPlan?: MealPlanDto;
+  specialRequests?: string;
+  itineraryVibes: string[];
+  dietaryRestrictions: string[];
+  onboardingCompleted: boolean;
+  paymentAuthorized: boolean;
+  idUploaded: boolean;
+  carbonOffset: boolean;
+  selectedRoomId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Reservation {
   id: string;
   userId: string;
@@ -83,19 +148,12 @@ export interface Reservation {
   checkOutDate: string;
   roomNumber?: string;
   roomType?: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED';
+  status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   hotelName?: string;
   hotelAddress?: string;
   guestInfo?: GuestInfo;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface CreateStayDto {
-  confirmationNumber: string;
-  checkInDate: string;
-  checkOutDate: string;
-  hotelName?: string;
 }
 
 export interface GuestInfo {
@@ -131,7 +189,13 @@ export interface Order {
   items: OrderItem[];
   totalAmount: number;
   currency: string;
-  status: 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'DELIVERING' | 'DELIVERED' | 'CANCELLED';
+  status:
+    | "PENDING"
+    | "CONFIRMED"
+    | "PREPARING"
+    | "DELIVERING"
+    | "DELIVERED"
+    | "CANCELLED";
   specialInstructions?: string;
   deliveryRoom?: string;
   estimatedDeliveryTime?: string;
@@ -161,7 +225,13 @@ export interface MenuItem {
   description?: string;
   price: number;
   currency: string;
-  category: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACKS' | 'BEVERAGES' | 'DESSERT';
+  category:
+    | "BREAKFAST"
+    | "LUNCH"
+    | "DINNER"
+    | "SNACKS"
+    | "BEVERAGES"
+    | "DESSERT";
   available: boolean;
   imageUrl?: string;
   preparationTime?: number;
@@ -175,7 +245,7 @@ export interface DigitalKey {
   stayId: string;
   roomNumber: string;
   pin: string;
-  status: 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+  status: "ACTIVE" | "REVOKED" | "EXPIRED";
   validFrom: string;
   validUntil: string;
   createdAt: string;
@@ -184,8 +254,8 @@ export interface DigitalKey {
 
 export interface UnlockDto {
   digitalKeyId: string;
-  method: 'TAP' | 'PIN' | 'BIOMETRIC';
-  result: 'SUCCESS' | 'FAILED' | 'CANCELLED';
+  method: "TAP" | "PIN" | "BIOMETRIC";
+  result: "SUCCESS" | "FAILED" | "CANCELLED";
 }
 
 export interface VerifyPinDto {
@@ -197,13 +267,13 @@ export interface VerifyPinDto {
 export interface ItineraryItem {
   id: string;
   stayId: string;
-  type: 'DINING' | 'ACTIVITY' | 'SPA' | 'EXCURSION' | 'SERVICE';
+  type: "DINING" | "ACTIVITY" | "SPA" | "EXCURSION" | "SERVICE";
   title: string;
   description?: string;
   startTime: string;
   endTime?: string;
   location?: string;
-  status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status: "SCHEDULED" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
   bookingId?: string;
   createdAt: string;
   updatedAt: string;
@@ -248,7 +318,12 @@ export interface Folio {
 export interface Notification {
   id: string;
   userId: string;
-  type: 'ORDER_UPDATE' | 'DIGITAL_KEY' | 'HOUSEKEEPING' | 'GENERAL' | 'PROMOTION';
+  type:
+    | "ORDER_UPDATE"
+    | "DIGITAL_KEY"
+    | "HOUSEKEEPING"
+    | "GENERAL"
+    | "PROMOTION";
   title: string;
   message: string;
   data?: Record<string, any>;
@@ -265,7 +340,7 @@ export interface OrderUpdateEvent {
 
 export interface DigitalKeyEvent {
   digitalKeyId: string;
-  event: 'UNLOCK_ATTEMPT' | 'PIN_USED' | 'KEY_REVOKED';
+  event: "UNLOCK_ATTEMPT" | "PIN_USED" | "KEY_REVOKED";
   timestamp: string;
 }
 
