@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -21,12 +21,41 @@ export default function PhoneInput({ value, onChangeText }: IPhoneInput) {
   const [selectedCountry, setSelectedCountry] = useState<Country>(
     COUNTRIES[142],
   );
+  const [localNumber, setLocalNumber] = useState("");
   const [showCountryModal, setShowCountryModal] = useState(false);
+
+  // Parse incoming value to get country and local number
+  useEffect(() => {
+    if (value) {
+      // Try to find country from value
+      const foundCountry = COUNTRIES.find((c) => value.startsWith(c.dialCode));
+      if (foundCountry) {
+        setSelectedCountry(foundCountry);
+        setLocalNumber(value.replace(foundCountry.dialCode, ""));
+      }
+    } else {
+      setLocalNumber("");
+    }
+  }, [value]);
+
+  const handleLocalNumberChange = (text: string) => {
+    // Remove any non-digit characters
+    const cleanedText = text.replace(/\D/g, "");
+    setLocalNumber(cleanedText);
+    if (cleanedText) {
+      onChangeText(`${selectedCountry.dialCode}${cleanedText}`);
+    } else {
+      onChangeText("");
+    }
+  };
 
   const handleCountrySelect = (country: Country) => {
     setSelectedCountry(country);
     setShowCountryModal(false);
     Keyboard.dismiss();
+    if (localNumber) {
+      onChangeText(`${country.dialCode}${localNumber}`);
+    }
   };
 
   const renderCountryItem = ({ item }: { item: Country }) => (
@@ -40,12 +69,7 @@ export default function PhoneInput({ value, onChangeText }: IPhoneInput) {
         <Text className="text-sm text-gray-500">{item.dialCode}</Text>
       </View>
       {selectedCountry.code === item.code && (
-        <Ionicons
-          name="checkmark"
-          size={20}
-          color="#0a0a08"
-          // className="relative left-96"
-        />
+        <Ionicons name="checkmark" size={20} color="#0a0a08" />
       )}
     </TouchableOpacity>
   );
@@ -59,12 +83,7 @@ export default function PhoneInput({ value, onChangeText }: IPhoneInput) {
           onPress={() => setShowCountryModal(true)}
         >
           <Text className="text-lg mr-1">{selectedCountry.flag}</Text>
-          <Ionicons
-            name="chevron-down"
-            size={16}
-            color="#9C988E"
-            // className="relative left-6"
-          />
+          <Ionicons name="chevron-down" size={16} color="#9C988E" />
           <Text
             className="absolute left-[45px] z-10 text-gray-600 text-base"
             onPress={() => setShowCountryModal(true)}
@@ -77,8 +96,8 @@ export default function PhoneInput({ value, onChangeText }: IPhoneInput) {
           className="rounded-[7px] border border-[#E8E5DD] bg-white py-[18px] px-[100px] w-full"
           placeholder="Enter phone number"
           placeholderTextColor="#9C988E"
-          value={value}
-          onChangeText={onChangeText}
+          value={localNumber}
+          onChangeText={handleLocalNumberChange}
           keyboardType="phone-pad"
           maxLength={15}
         />

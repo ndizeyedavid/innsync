@@ -2,7 +2,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,12 +18,14 @@ import OTPInput from "../components/OTPInput";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../contexts/ToastContext";
 
 import * as Haptics from "expo-haptics";
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn, isLoading } = useAuth();
+  const { showToast } = useToast();
 
   const [selectedOption, setSelectedOption] = useState<"email" | "phone">(
     "email",
@@ -50,11 +51,12 @@ export default function LoginScreen() {
     if (phoneNumber.length >= 9) {
       // Simulate OTP sending
       setShowOTP(true);
+      showToast("info", "OTP sent successfully!", "top");
     }
   };
 
   const handleOTPComplete = (otp: string) => {
-    Alert.alert("Success", "OTP verification successful!");
+    showToast("success", "OTP verification successful!", "top");
     // Handle successful OTP verification
   };
 
@@ -62,7 +64,7 @@ export default function LoginScreen() {
     try {
       if (selectedOption === "email") {
         if (!email || !password) {
-          Alert.alert("Error", "Please fill in all fields");
+          showToast("error", "Please fill in all fields", "top");
           return;
         }
 
@@ -71,11 +73,17 @@ export default function LoginScreen() {
           password,
         });
 
+        showToast("success", "Successfully signed in!", "top");
+
         // Navigate to onboarding on success
         router.replace("/onboarding");
       }
     } catch (error: any) {
-      Alert.alert("Sign In Failed", error.message || "An error occurred");
+      showToast(
+        "error",
+        error.message || "An error occurred during sign in",
+        "top",
+      );
     }
   };
 

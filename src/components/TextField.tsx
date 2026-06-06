@@ -16,6 +16,8 @@ interface ITextField {
   autoCapitalize?: any;
   secureTextEntry?: boolean;
   width?: string;
+  value?: any;
+  onChangeText?: any;
 }
 
 export default function TextField({
@@ -26,10 +28,12 @@ export default function TextField({
   autoCapitalize = "none",
   secureTextEntry = false,
   width = "full",
+  value,
+  onChangeText,
 }: ITextField) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View className="gap-2">
+      <View className="gap-2 flex-1">
         <Text className="text-[15px] text-[#9C988E]">{text}</Text>
         <View className="relative flex-row items-center w-full">
           <Ionicons
@@ -38,12 +42,14 @@ export default function TextField({
             className="opacity-50 absolute z-10 left-[13px]"
           />
           <TextInput
-            className={`rounded-[7px] border border-[#E8E5DD] bg-white py-[18px] px-[44px] w-${width}`}
+            className={`rounded-[7px] flex-1 border border-[#E8E5DD] bg-white py-[18px] px-[44px]`}
             placeholder={placeholder}
             placeholderTextColor="#9C988E"
             keyboardType={keyboardType}
             autoCapitalize={autoCapitalize}
             secureTextEntry={secureTextEntry}
+            value={value}
+            onChangeText={onChangeText}
           />
         </View>
       </View>

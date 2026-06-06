@@ -3,7 +3,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -18,10 +17,12 @@ import PhoneInput from "../components/PhoneInput";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../contexts/ToastContext";
 
 export default function SignupScreen() {
   const router = useRouter();
   const { signUp, isLoading } = useAuth();
+  const { showToast } = useToast();
 
   const [phoneNumber, setPhoneNumber] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -34,33 +35,46 @@ export default function SignupScreen() {
     try {
       // Validation
       if (!firstName || !lastName || !email || !password) {
-        Alert.alert("Error", "Please fill in all required fields");
+        showToast("error", "Please fill in all required fields", "top");
         return;
       }
 
       if (password !== confirmPassword) {
-        Alert.alert("Error", "Passwords do not match");
+        showToast("error", "Passwords do not match", "top");
         return;
       }
 
       if (password.length < 8) {
-        Alert.alert("Error", "Password must be at least 8 characters");
+        showToast("error", "Password must be at least 8 characters", "top");
         return;
       }
 
       const name = `${firstName} ${lastName}`;
 
-      await signUp({
+      const signUpData: any = {
         email,
         name,
         password,
-        phone: phoneNumber || undefined,
-      });
+      };
+
+      if (phoneNumber && phoneNumber.trim() !== "") {
+        signUpData.phone = phoneNumber;
+      }
+
+      console.log("Sign up data:", signUpData);
+
+      await signUp(signUpData);
+
+      showToast("success", "Account created successfully!", "top");
 
       // Navigate to onboarding on success
       router.replace("/onboarding");
     } catch (error: any) {
-      Alert.alert("Sign Up Failed", error.message || "An error occurred");
+      showToast(
+        "error",
+        error.message || "An error occurred during sign up",
+        "top",
+      );
     }
   };
 
@@ -107,7 +121,7 @@ export default function SignupScreen() {
               placeholder="e.g Mellow"
               keyboardType="text"
               autoCapitalize="words"
-              width="fit"
+              // width="fit"
               value={firstName}
               onChangeText={setFirstName}
             />
@@ -117,7 +131,7 @@ export default function SignupScreen() {
               placeholder="e.g Junior"
               keyboardType="text"
               autoCapitalize="words"
-              width="fit"
+              // width="fit"
               value={lastName}
               onChangeText={setLastName}
             />

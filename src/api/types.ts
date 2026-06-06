@@ -26,6 +26,7 @@ export interface SignUpDto {
   phone?: string;
   name: string;
   password: string;
+  deviceLabel?: string;
 }
 
 export interface RefreshTokenDto {
