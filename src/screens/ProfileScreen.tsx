@@ -10,13 +10,12 @@ import SettingItem from "../components/profileComponents/SettingItem";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "../hooks/useAuth";
 import reservationsService from "../services/reservations.service";
-import { Reservation } from "../api/types";
+import { GuestStay } from "../api/types";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
-  const [currentReservation, setCurrentReservation] =
-    useState<Reservation | null>(null);
+  const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
 
   useEffect(() => {
     loadCurrentStay();
@@ -24,10 +23,9 @@ export default function ProfileScreen() {
 
   const loadCurrentStay = async () => {
     try {
-      const reservations = await reservationsService.listMine();
-      const active =
-        reservations.find((r) => r.status === "CHECKED_IN") || reservations[0];
-      setCurrentReservation(active);
+      const stays = await reservationsService.listMine();
+      const active = stays.find((s) => s.status === "CHECKED_IN") || stays[0];
+      setCurrentStay(active || null);
     } catch (error) {
       console.error("Error loading current stay:", error);
     }
@@ -84,18 +82,18 @@ export default function ProfileScreen() {
   return (
     <ScreenLayout>
       <TabHeader alt="ACCOUNT" title="Profile" />
-      <ProfileCard />
+      <ProfileCard user={user} />
 
       {/* Stay details */}
       <View className="bg-white border border-[#EFEDE7] rounded-3xl overflow-hidden mt-5">
         <View className="gap-2 py-[20px] px-[27px] border-b-2 border-[#EFEDE7]">
           <Text className="text-[12px] text-[#A4A097]">CURRENT STAY</Text>
           <Text className="text-[24px]">
-            {currentReservation?.hotelName || "The Fremen House"}
+            {currentStay?.hotelName || "The Fremen House"}
           </Text>
           <Text className="text-[12px] text-[#A4A097]">
-            {currentReservation
-              ? `${new Date(currentReservation.checkInDate).toLocaleDateString()} - ${new Date(currentReservation.checkOutDate).toLocaleDateString()} · ${currentReservation.roomNumber || "Suite 1207"}`
+            {currentStay
+              ? `${new Date(currentStay.checkIn).toLocaleDateString()} - ${new Date(currentStay.checkOut).toLocaleDateString()} · ${currentStay.roomPreference || "Suite 1207"}`
               : "April 26 - April 30 · Suite 1207"}
           </Text>
         </View>

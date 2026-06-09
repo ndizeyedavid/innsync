@@ -1,21 +1,35 @@
 import { Text, View } from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { User } from "../../api/types";
 
-export default function ProfileCard() {
+interface ProfileCardProps {
+  user: User | null;
+}
+
+export default function ProfileCard({ user }: ProfileCardProps) {
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <View className="bg-black py-[30px] px-[22px] rounded-3xl ">
       <View className="flex-row items-center gap-2">
         <View className=" size-[60px] bg-[#B8956A] rounded-full items-center justify-center">
           <Text className="text-[20px] text-white uppercase font-semibold">
-            TK
+            {user ? getInitials(user.name) : "G"}
           </Text>
         </View>
         <View className="gap-1">
           <Text className="text-[12px] text-[#959492]">PLATIMUM MEMBER</Text>
 
           <Text className="text-[24px] font-semibold text-white">
-            Mellow Junior
+            {user?.name || "Guest User"}
           </Text>
 
           <View className="flex-row items-center gap-[5px]">
