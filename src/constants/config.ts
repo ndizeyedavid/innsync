@@ -2,9 +2,7 @@
 export const CONFIG = {
   // API Configuration
   API: {
-    BASE_URL: __DEV__ 
-      ? 'http://192.168.0.225:3000' 
-      : 'https://api.innsync.com',
+    BASE_URL: __DEV__ ? "http://192.168.0.225:3000" : "https://api.innsync.com",
     TIMEOUT: 10000,
     RETRY_ATTEMPTS: 3,
     RETRY_DELAY: 1000,
@@ -12,17 +10,15 @@ export const CONFIG = {
 
   // WebSocket Configuration
   WEBSOCKET: {
-    URL: __DEV__ 
-      ? 'http://localhost:3000' 
-      : 'https://api.innsync.com',
+    URL: __DEV__ ? "http://localhost:3000" : "https://api.innsync.com",
     RECONNECT_ATTEMPTS: 5,
     RECONNECT_DELAY: 3000,
   },
 
   // App Configuration
   APP: {
-    NAME: 'InnSync',
-    VERSION: '1.0.0',
+    NAME: "InnSync",
+    VERSION: "1.0.0",
     DEBUG: __DEV__,
   },
 
@@ -37,10 +33,10 @@ export const CONFIG = {
 
   // Storage Keys (synced with utils/storage.ts)
   STORAGE_KEYS: {
-    ACCESS_TOKEN: 'access_token',
-    REFRESH_TOKEN: 'refresh_token',
-    USER_DATA: 'user_data',
-    DEVICE_ID: 'device_id',
+    ACCESS_TOKEN: "access_token",
+    REFRESH_TOKEN: "refresh_token",
+    USER_DATA: "user_data",
+    DEVICE_ID: "device_id",
   } as const,
 };
 

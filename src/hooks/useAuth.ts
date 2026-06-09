@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useAuthStore } from '../store/auth.store';
-import authService from '../services/auth.service';
-import { SignInDto, SignUpDto } from '../api/types';
+import { useEffect } from "react";
+import { useAuthStore } from "../store/auth.store";
+import authService from "../services/auth.service";
+import { SignInDto, SignUpDto } from "../api/types";
 
 /**
  * Custom hook for authentication management
@@ -20,12 +20,15 @@ export function useAuth() {
     setLoading,
     setError,
     initializeAuth,
+    hasInitialized,
   } = useAuthStore();
 
-  // Initialize auth on mount
+  // Initialize auth once on mount
   useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+    if (!hasInitialized) {
+      initializeAuth();
+    }
+  }, [hasInitialized, initializeAuth]);
 
   /**
    * Sign in with credentials
@@ -34,13 +37,13 @@ export function useAuth() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authService.signIn(credentials);
-      
+
       // Auth store is updated inside the service
       return response;
     } catch (error: any) {
-      setError(error.message || 'Sign in failed');
+      setError(error.message || "Sign in failed");
       throw error;
     } finally {
       setLoading(false);
@@ -54,13 +57,13 @@ export function useAuth() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await authService.signUp(credentials);
-      
+
       // Auth store is updated inside the service
       return response;
     } catch (error: any) {
-      setError(error.message || 'Sign up failed');
+      setError(error.message || "Sign up failed");
       throw error;
     } finally {
       setLoading(false);
@@ -76,7 +79,7 @@ export function useAuth() {
       await authService.signOut();
       // Auth store is cleared inside the service
     } catch (error: any) {
-      setError(error.message || 'Sign out failed');
+      setError(error.message || "Sign out failed");
       throw error;
     } finally {
       setLoading(false);
@@ -92,7 +95,7 @@ export function useAuth() {
       const user = await authService.getCurrentUser();
       return user;
     } catch (error: any) {
-      setError(error.message || 'Failed to refresh user data');
+      setError(error.message || "Failed to refresh user data");
       throw error;
     } finally {
       setLoading(false);
@@ -106,13 +109,14 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     error,
-    
+    hasInitialized,
+
     // Actions
     signIn,
     signUp,
     signOut,
     refreshUser,
-    
+
     // Direct store access
     setAuth,
     clearAuth,
@@ -126,7 +130,7 @@ export function useAuth() {
  */
 export function useRequireAuth() {
   const { isAuthenticated, isLoading } = useAuth();
-  
+
   return {
     isAuthenticated,
     isLoading,

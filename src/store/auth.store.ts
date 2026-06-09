@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  hasInitialized: boolean;
   
   // Actions
   setAuth: (user: User, tokens: Tokens) => void;
@@ -24,6 +25,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   isLoading: true,
   error: null,
+  hasInitialized: false,
 
   setAuth: (user: User, tokens: Tokens) => {
     set({
@@ -56,8 +58,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   initializeAuth: async () => {
+    if (get().hasInitialized) {
+      return;
+    }
+    
     try {
-      set({ isLoading: true });
+      set({ isLoading: true, hasInitialized: true });
       
       const isAuth = await isAuthenticated();
       

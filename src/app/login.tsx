@@ -1,8 +1,8 @@
-import LoginScreen from '../screens/LoginScreen';
-import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { View, ActivityIndicator } from 'react-native';
+import LoginScreen from "../screens/LoginScreen";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { View, ActivityIndicator } from "react-native";
 
 export default function Login() {
   const router = useRouter();
@@ -10,7 +10,7 @@ export default function Login() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace('/(tabs)');
+      router.replace("/(tabs)");
     }
   }, [isAuthenticated, isLoading, router]);
 
