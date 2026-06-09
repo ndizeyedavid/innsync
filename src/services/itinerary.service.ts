@@ -7,10 +7,11 @@ class ItineraryService {
    */
   async getForStay(stayId: string): Promise<ItineraryItem[]> {
     try {
-      return await itineraryEndpoints.list(stayId);
+      const result = await itineraryEndpoints.list(stayId);
+      return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error('Error fetching itinerary:', error);
-      throw error;
+      return [];
     }
   }
 

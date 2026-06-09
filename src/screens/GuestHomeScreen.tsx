@@ -280,18 +280,23 @@ export default function GuestHomeScreen() {
             ) : (
               <>
                 {/* Notification Bell */}
-                <TouchableOpacity className="size-[47px] bg-[#E9E6DE] rounded-full items-center justify-center relative">
+                {/* <TouchableOpacity className="size-[47px] bg-[#E9E6DE] rounded-full items-center justify-center relative">
                   <Ionicons
                     name="notifications-outline"
                     color="black"
                     size={24}
                   />
                   <View className="size-[8px] bg-[#A8453E] rounded-full absolute top-2 right-3" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 {/* Profile Avatar */}
-                <TouchableOpacity className="size-[47px] bg-[#000] rounded-full items-center justify-center">
-                  <Ionicons name="person-circle" color="white" size={40} />
+                <TouchableOpacity className=" items-center justify-center">
+                  <Ionicons
+                    name="person-circle"
+                    className=" bg-black  rounded-full"
+                    color="white"
+                    size={40}
+                  />
                 </TouchableOpacity>
               </>
             )}

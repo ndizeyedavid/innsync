@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import TabHeader from "../components/TabHeader";
@@ -6,36 +6,96 @@ import TimelineItem from "../components/ItineraryComponents/TimelineItem";
 import ItineraryCard from "../components/ItineraryComponents/ItineraryCard";
 import itineraryService from "../services/itinerary.service";
 import reservationsService from "../services/reservations.service";
-import { ItineraryItem, Reservation } from "../api/types";
+import { ItineraryItem, GuestStay } from "../api/types";
+import { useToast } from "../contexts/ToastContext";
+
+// Helper to generate days between checkIn and checkOut
+const generateStayDays = (checkIn: string, checkOut: string) => {
+  const days = [];
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let current = new Date(start);
+  let dayNumber = 1;
+
+  while (current <= end) {
+    const dateStr = current.toISOString().split("T")[0];
+    const dateCopy = new Date(current);
+    dateCopy.setHours(0, 0, 0, 0);
+
+    // Determine day status
+    let status: "past" | "today" | "future" = "future";
+    if (dateCopy < today) {
+      status = "past";
+    } else if (dateCopy.getTime() === today.getTime()) {
+      status = "today";
+    }
+
+    // Format day label
+    const dayLabel =
+      status === "today"
+        ? "Today"
+        : current.toLocaleDateString("en-US", { weekday: "short" });
+
+    days.push({
+      id: dayNumber - 1,
+      dayNumber,
+      date: dateStr,
+      dayLabel,
+      status,
+    });
+
+    current.setDate(current.getDate() + 1);
+    dayNumber++;
+  }
+
+  return days;
+};
+
+// Helper to check if itinerary item is on a specific day
+const isItemOnDay = (item: ItineraryItem, dayDate: string) => {
+  const itemDate = item.startTime.split("T")[0];
+  return itemDate === dayDate;
+};
 
 export default function ItineraryScreen() {
-  const [selectedDays, setSelectedDays] = useState<number[]>([0, 1, 2]);
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(0);
   const [itineraryItems, setItineraryItems] = useState<ItineraryItem[]>([]);
-  const [currentReservation, setCurrentReservation] =
-    useState<Reservation | null>(null);
+  const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
-  const handleDaySelection = (id: any) => {
-    if (selectedDays.includes(id)) {
-      setSelectedDays((prevSelectedDay) =>
-        prevSelectedDay.filter((day) => day !== id),
-      );
-    } else {
-      setSelectedDays((prevSelectedDay) => [...prevSelectedDay, id]);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const dayCardWidth = 100; // Approximate width of each day card + gap
+
+  // Generate stay days when currentStay changes
+  const stayDays = useMemo(() => {
+    if (!currentStay) return [];
+    return generateStayDays(currentStay.checkIn, currentStay.checkOut);
+  }, [currentStay]);
+
+  // Set default selected day to today when stayDays loads and auto-scroll
+  useEffect(() => {
+    if (stayDays.length > 0) {
+      const todayIndex = stayDays.findIndex((d) => d.status === "today");
+      const targetIndex = todayIndex !== -1 ? todayIndex : 0;
+      setSelectedDayIndex(targetIndex);
+
+      // Auto-scroll to today after a short delay
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          x: targetIndex * dayCardWidth - 20, // -20 for left padding
+          animated: true,
+        });
+      }, 200);
     }
-  };
+  }, [stayDays, dayCardWidth]);
 
-  const availableDays = [
-    // { id: 0, day: "Thur" },
-    { id: 1, day: "Yesterday" },
-    { id: 2, day: "Today" },
-    { id: 3, day: "Tomorrow" },
-    { id: 4, day: "Mon" },
-    { id: 5, day: "Tue" },
-    { id: 6, day: "wed" },
-    { id: 7, day: "Thur" },
-    { id: 8, day: "Rent Due" },
-  ];
+  const handleDaySelection = (index: number) => {
+    setSelectedDayIndex(index);
+  };
 
   useEffect(() => {
     loadData();
@@ -45,27 +105,38 @@ export default function ItineraryScreen() {
     try {
       setLoading(true);
 
-      // Get current reservation to get stayId
-      const reservations = await reservationsService.listMine();
-      const activeReservation =
-        reservations.find((r) => r.status === "CHECKED_IN") || reservations[0];
-      setCurrentReservation(activeReservation);
+      // Get current stay to get stayId
+      const stays = await reservationsService.listMine();
+      const activeStay =
+        stays.find((s) => s.status === "CHECKED_IN") || stays[0];
+      setCurrentStay(activeStay);
 
-      if (activeReservation) {
+      if (activeStay) {
         // Load itinerary items for this stay
-        const items = await itineraryService.getForStay(activeReservation.id);
-        setItineraryItems(items);
+        const items = await itineraryService.getForStay(activeStay.id);
+        setItineraryItems(Array.isArray(items) ? items : []);
+      } else {
+        setItineraryItems([]);
       }
     } catch (error) {
       console.error("Error loading itinerary:", error);
+      setItineraryItems([]);
+      showToast("error", "Failed to load itinerary");
     } finally {
       setLoading(false);
     }
   };
 
+  // Filter itinerary items for selected day
+  const selectedDay = stayDays[selectedDayIndex];
+  const filteredItems = useMemo(() => {
+    if (!selectedDay || !Array.isArray(itineraryItems)) return [];
+    return itineraryItems.filter((item) => isItemOnDay(item, selectedDay.date));
+  }, [itineraryItems, selectedDay]);
+
   // Convert API itinerary items to component format
-  const formattedItems = itineraryItems.map((item) => ({
-    image: item.title.includes("yoga")
+  const formattedItems = filteredItems.map((item) => ({
+    image: item.title.toLowerCase().includes("yoga")
       ? require("../assets/images/yoga.jpg")
       : require("../assets/images/meal.png"),
     time: `${item.startTime.split("T")[1].substring(0, 5)} - ${item.endTime ? item.endTime.split("T")[1].substring(0, 5) : ""}`,
@@ -77,15 +148,23 @@ export default function ItineraryScreen() {
     isConfirmed: item.status === "CONFIRMED",
   }));
 
+  // Map stay properties to what screen expects
+  const stayDisplay = {
+    hotelName: "Hotel", // TODO: Get from hotel data when available
+    checkInDate: currentStay?.checkIn,
+    checkOutDate: currentStay?.checkOut,
+    adults: currentStay?.adults || 2,
+  };
+
   return (
     <ScreenLayout>
       <View className="flex-row justify-between items-center">
         <TabHeader
-          alt={currentReservation?.hotelName || "RWANDA"}
+          alt={stayDisplay.hotelName}
           title="Your itinerary,"
           description={
-            currentReservation
-              ? `${new Date(currentReservation.checkInDate).toLocaleDateString()} - ${new Date(currentReservation.checkOutDate).toLocaleDateString()} · 2 adults`
+            stayDisplay.checkInDate && stayDisplay.checkOutDate
+              ? `${new Date(stayDisplay.checkInDate).toLocaleDateString()} - ${new Date(stayDisplay.checkOutDate).toLocaleDateString()} · ${stayDisplay.adults} adults`
               : "April 26 - April 30 · 2 adults"
           }
           descriptionStyle="text-[12px] text-[#9C988E]"
@@ -98,17 +177,20 @@ export default function ItineraryScreen() {
 
       <View className="my-[17px]">
         <ScrollView
+          ref={scrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           className="flex-row gap-5 "
           contentContainerStyle={{ gap: 12 }}
         >
-          {availableDays.map((day, index) => (
+          {stayDays.map((day) => (
             <DayCard
-              id={index}
-              key={index}
-              day={day.day}
-              active={selectedDays.includes(day.id)}
+              key={day.id}
+              id={day.id}
+              day={day.dayLabel}
+              dayNumber={day.dayNumber}
+              status={day.status}
+              active={selectedDayIndex === day.id}
               onPress={() => handleDaySelection(day.id)}
             />
           ))}
@@ -137,7 +219,7 @@ export default function ItineraryScreen() {
           ))
         ) : (
           <Text className="text-center text-[#9C988E] mt-10">
-            No itinerary items for this stay
+            No itinerary items for this day
           </Text>
         )}
       </View>
@@ -148,22 +230,45 @@ export default function ItineraryScreen() {
 interface IDayCard {
   day: string;
   id: number;
+  dayNumber: number;
+  status: "past" | "today" | "future";
   active: boolean;
   onPress: any;
 }
 
-function DayCard({ id, day, active, onPress }: IDayCard) {
+function DayCard({ id, day, dayNumber, status, active, onPress }: IDayCard) {
+  // Determine styles based on status and active
+  let bgClass = "bg-white";
+  let textClass = "text-black";
+  let opacityClass = "";
+  let borderClass = "border-[#E8E5DD]";
+
+  if (status === "past") {
+    opacityClass = "opacity-50";
+  }
+
+  if (status === "today" && !active) {
+    bgClass = "bg-[#3F6B4F]"; // Same green as LIVE indicator
+    textClass = "text-white";
+    borderClass = "border-[#3F6B4F]";
+  }
+
+  if (active) {
+    bgClass = "bg-black";
+    textClass = "text-white";
+    opacityClass = "";
+    borderClass = "border-black";
+  }
+
   return (
     <TouchableOpacity
       activeOpacity={0.5}
       onPress={onPress}
-      className={`bg-${active ? "black" : "white"} border-[#E8E5DD] px-[20px] py-[17px] rounded-2xl`}
+      className={`${bgClass} ${opacityClass} border ${borderClass} px-[20px] py-[17px] rounded-2xl`}
     >
       <Text className="text-[#B6B6B5] text-[15px]">{day}</Text>
-      <Text
-        className={`text-${active ? "white" : "black"} text-[24px] font-bold`}
-      >
-        Day {id + 1}
+      <Text className={`${textClass} text-[24px] font-bold`}>
+        Day {dayNumber}
       </Text>
     </TouchableOpacity>
   );
