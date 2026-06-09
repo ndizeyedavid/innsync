@@ -1,11 +1,5 @@
-import {
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
-  useState,
-  useEffect,
-} from "react-native";
+import { Text, TouchableOpacity, View, ScrollView } from "react-native";
+import { useState, useEffect } from "react";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
@@ -146,7 +140,9 @@ export default function DigitalKeyScreen() {
             }}
           >
             <View>
-              <Text className="text-base font-semibold text-navy">Bluetooth</Text>
+              <Text className="text-base font-semibold text-navy">
+                Bluetooth
+              </Text>
               <Text className="text-sm text-gray-500">
                 Enable digital key access
               </Text>
@@ -168,7 +164,9 @@ export default function DigitalKeyScreen() {
             }}
           >
             <View>
-              <Text className="text-base font-semibold text-navy">Auto-connect</Text>
+              <Text className="text-base font-semibold text-navy">
+                Auto-connect
+              </Text>
               <Text className="text-sm text-gray-500">
                 Connect when near door
               </Text>
@@ -201,7 +199,9 @@ export default function DigitalKeyScreen() {
                   <Ionicons name="key-outline" size={20} color="#283D5A" />
                 </View>
                 <View>
-                  <Text className="text-base font-semibold text-navy">Backup PIN</Text>
+                  <Text className="text-base font-semibold text-navy">
+                    Backup PIN
+                  </Text>
                   <Text className="text-sm text-gray-500">
                     Use when Bluetooth unavailable
                   </Text>
@@ -260,7 +260,9 @@ export default function DigitalKeyScreen() {
         >
           <View className="flex-row items-center gap-3">
             <Ionicons name="help-circle-outline" size={20} color="#283D5A" />
-            <Text className="text-base font-semibold text-navy">Troubleshooting</Text>
+            <Text className="text-base font-semibold text-navy">
+              Troubleshooting
+            </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>
