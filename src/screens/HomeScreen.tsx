@@ -80,7 +80,7 @@ export default function HomeScreen() {
     return (
       <ScreenLayout>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color="#283D5A" />
         </View>
       </ScreenLayout>
     );
@@ -98,9 +98,9 @@ export default function HomeScreen() {
           title="Good Afternoon,"
           description={user?.name || "Guest"}
         />
-        <TouchableOpacity className="size-[47px] bg-[#E9E6DE] rounded-full items-center justify-center relative">
-          <Ionicons name="notifications-outline" color="black" size={24} />
-          <View className="size-[8px] bg-[#A8453E] rounded-full absolute top-2 right-3" />
+        <TouchableOpacity className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative">
+          <Ionicons name="notifications-outline" color="#283D5A" size={24} />
+          <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" />
         </TouchableOpacity>
       </View>
       {/* Notification */}

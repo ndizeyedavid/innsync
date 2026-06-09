@@ -54,7 +54,7 @@ export default function SelectField({
         <Ionicons
           name={iconName}
           size={22}
-          color="#000"
+          color="#283D5A"
           style={styles.leftIcon}
         />
 
@@ -67,7 +67,7 @@ export default function SelectField({
         <Ionicons
           name="chevron-down-outline"
           size={18}
-          color="#9C988E"
+          color="#9CA3AF"
           style={styles.rightChevron}
         />
       </TouchableOpacity>
@@ -122,7 +122,7 @@ export default function SelectField({
                       <Ionicons
                         name="checkmark-sharp"
                         size={20}
-                        color="#007AFF"
+                        color="#3A8AC3"
                       />
                     )}
                   </TouchableOpacity>
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 54,
     borderWidth: 1,
-    borderColor: "#E8E5DD",
+    borderColor: "#E5E7EB",
     borderRadius: 7,
     backgroundColor: "#ffffff",
     paddingHorizontal: 13,
@@ -157,11 +157,11 @@ const styles = StyleSheet.create({
   },
   inputText: {
     fontSize: 15,
-    color: "#333333",
+    color: "#283D5A",
     flex: 1,
   },
   placeholderText: {
-    color: "#9C988E",
+    color: "#9CA3AF",
   },
   rightChevron: {
     marginLeft: 10,
@@ -192,10 +192,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: "#283D5A",
   },
   closeText: {
-    color: "#FF3B30",
+    color: "#EF4444",
     fontSize: 15,
   },
   listContent: {
@@ -215,10 +215,10 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
-    color: "#333333",
+    color: "#283D5A",
   },
   selectedItemText: {
-    color: "#007AFF",
+    color: "#3A8AC3",
     fontWeight: "600",
   },
 });

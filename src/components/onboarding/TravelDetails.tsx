@@ -28,10 +28,10 @@ export default function TravelDetails({
 }: ITravelDetails) {
   return (
     <View>
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
+      <View className="bg-white border border-gray-200 px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px]">
           <Ionicons name="calendar-clear-outline" size={20} />
-          <Text className="text-[15px] font-semibold ">Dates</Text>
+          <Text className="text-[15px] font-semibold text-navy">Dates</Text>
         </View>
 
         <View className="flex-row justify-between gap-3">
@@ -60,10 +60,10 @@ export default function TravelDetails({
         </View>
       </View>
 
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
+      <View className="bg-white border border-gray-200 px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px]">
           <Ionicons name="people" size={20} />
-          <Text className="text-[15px] font-semibold ">Guests</Text>
+          <Text className="text-[15px] font-semibold text-navy">Guests</Text>
         </View>
 
         <View className="flex-row items-center justify-between mt-[22px]">

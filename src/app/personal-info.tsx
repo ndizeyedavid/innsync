@@ -52,7 +52,7 @@ export default function PersonalInfoScreen() {
         }}
         className="mb-4"
       >
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <Ionicons name="arrow-back" size={24} color="#283D5A" />
       </TouchableOpacity>
 
       <TabHeader alt="PROFILE" title="Personal Information" />
@@ -103,7 +103,7 @@ export default function PersonalInfoScreen() {
               setIsEditing(true);
             }
           }}
-          className="bg-black py-4 rounded-2xl mt-4 items-center"
+          className="bg-cobalt py-4 rounded-2xl mt-4 items-center"
         >
           <Text className="text-white font-semibold">
             {isEditing ? "Save Changes" : "Edit"}

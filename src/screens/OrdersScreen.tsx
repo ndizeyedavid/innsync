@@ -268,32 +268,32 @@ export default function OrdersScreen() {
         alt="CONCIERGE"
         title="Order anything"
         description="In-room dining, drinks, activities, housekeeping."
-        descriptionStyle="text-[16px] text-[#9C988E] mt-1"
+        descriptionStyle="text-[16px] text-gray-500 mt-1"
       />
 
       <View className="relative justify-center mt-4">
         <Ionicons
           name="search-outline"
           size={20}
-          color="#9C988E"
+          color="#9CA3AF"
           className="absolute z-10 left-4"
         />
         <TextInput
-          className={`rounded-[7px] border border-[#E8E5DD] bg-white py-[18px] px-[44px]`}
+          className={`rounded-[7px] border border-gray-200 bg-white py-[18px] px-[44px]`}
           placeholder="Search dishes, drinks, services"
-          placeholderTextColor="#9C988E"
+          placeholderTextColor="#9CA3AF"
           keyboardType="default"
           autoCapitalize="none"
         />
       </View>
 
       {loading ? (
-        <Text className="text-center text-[#9C988E] mt-10">
+        <Text className="text-center text-gray-500 mt-10">
           Loading orders...
         </Text>
       ) : (
         <View className="mt-4">
-          <Text className="text-[15px] text-[#9C988E] uppercase">
+          <Text className="text-[15px] text-gray-500 uppercase">
             In Progress
           </Text>
 
@@ -308,7 +308,7 @@ export default function OrdersScreen() {
                 <OrderProgress key={order.id} order={order} />
               ))
             ) : (
-              <Text className="text-[#9C988E] text-[14px]">
+              <Text className="text-gray-500 text-[14px]">
                 No active orders
               </Text>
             )}
@@ -329,10 +329,10 @@ export default function OrdersScreen() {
                 key={index}
                 activeOpacity={0.7}
                 onPress={() => setSelectedCategory(index)}
-                className={`px-[14px] py-[9px] ${selectedCategory === index && "bg-black"} rounded-3xl`}
+                className={`px-[14px] py-[9px] ${selectedCategory === index && "bg-cobalt"} rounded-3xl`}
               >
                 <Text
-                  className={`${selectedCategory === index ? "text-white" : "text-black"} text-[15px]`}
+                  className={`${selectedCategory === index ? "text-white" : "text-navy"} text-[15px]`}
                 >
                   {category}
                 </Text>
@@ -355,7 +355,7 @@ export default function OrdersScreen() {
                 />
               ))
             ) : (
-              <Text className="text-center text-[#9C988E] mt-10">
+              <Text className="text-center text-gray-500 mt-10">
                 No items available in this category
               </Text>
             )}

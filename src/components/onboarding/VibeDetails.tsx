@@ -27,7 +27,7 @@ export default function VibeDetails({
     <View className="mb-24">
       <View className="mt-6">
         <View>
-          <Text className="text-[15px] text-[#9C988E]">
+          <Text className="text-[15px] text-gray-500">
             Select at least one
           </Text>
         </View>

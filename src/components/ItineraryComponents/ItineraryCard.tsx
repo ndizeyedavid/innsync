@@ -44,7 +44,7 @@ export default function ItineraryCard({
         </View>
       </View>
       {/* Overlay */}
-      <View className="bg-black/20 absolute h-[205px] w-full z-10" />
+      <View className="bg-navy/20 absolute h-[205px] w-full z-10" />
 
       {/* Image */}
       <Image
@@ -57,28 +57,28 @@ export default function ItineraryCard({
       />
 
       <View className="px-3 mt-4">
-        <Text className="text-[24px] font-semibold">{title}</Text>
+        <Text className="text-[24px] font-semibold text-navy">{title}</Text>
         <View className="flex-row items-center gap-1 mt-2">
-          <Ionicons name="location" size={20} color="#6E6B63" />
-          <Text className="text-[#6E6B63] text-[14px]">{location}</Text>
+          <Ionicons name="location" size={20} color="#9CA3AF" />
+          <Text className="text-gray-500 text-[14px]">{location}</Text>
         </View>
 
-        <Text className="text-[14px] text-[#6E6B63] mt-3">{description}</Text>
+        <Text className="text-[14px] text-gray-500 mt-3">{description}</Text>
 
         <View className="flex-row items-center justify-between my-[18px]">
-          <Text className="text-[24px] font-semibold">
+          <Text className="text-[24px] font-semibold text-navy">
             {isIncluded ? "Included" : "Not Included"}
           </Text>
 
           {isConfirmed ? (
             <View className="flex-row items-center gap-1">
-              <Ionicons name="checkmark" size={20} color="green" />
-              <Text className="text-green-700">Confirmed</Text>
+              <Ionicons name="checkmark" size={20} color="#10B981" />
+              <Text className="text-success font-semibold">Confirmed</Text>
             </View>
           ) : (
             <View className="flex-row items-center gap-1">
-              <Ionicons name="close" size={20} color="red" />
-              <Text className="text-red-700">Unconfirmed</Text>
+              <Ionicons name="close" size={20} color="#EF4444" />
+              <Text className="text-error font-semibold">Unconfirmed</Text>
             </View>
           )}
         </View>

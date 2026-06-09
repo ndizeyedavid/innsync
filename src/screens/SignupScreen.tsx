@@ -86,7 +86,7 @@ export default function SignupScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#fafaf7]"
+      className="flex-1 bg-sand-50"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -95,9 +95,9 @@ export default function SignupScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View>
-          <Text className="text-[12px] text-[#9C988E]">INNSYNC</Text>
-          <Text className="text-[35px] ">Create a new account.</Text>
-          <Text className="text-[#9C988E] text-[14px]">
+          <Text className="text-[12px] text-gray-500">INNSYNC</Text>
+          <Text className="text-[35px] text-navy">Create a new account.</Text>
+          <Text className="text-gray-500 text-[14px]">
             Manage your reservation and digital key with ease.
           </Text>
         </View>
@@ -114,9 +114,9 @@ export default function SignupScreen() {
         </View>
 
         <View className="flex flex-row overflow-hidden items-center gap-1 mt-[14px]">
-          <View className="w-[115px] h-px bg-[#9E9A90]" />
-          <Text className="text-[12px] text-[#9E9A90]">Or Continue With</Text>
-          <View className="w-[115px] h-px bg-[#9E9A90]" />
+          <View className="w-[115px] h-px bg-gray-300" />
+          <Text className="text-[12px] text-gray-500">Or Continue With</Text>
+          <View className="w-[115px] h-px bg-gray-300" />
         </View>
 
         <View className="mt-[29px] gap-7">
@@ -177,7 +177,7 @@ export default function SignupScreen() {
 
         <TouchableOpacity
           activeOpacity={0.8}
-          className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
+          className="flex-row items-center justify-center gap-1 py-[18px] bg-cobalt rounded-[12px] mt-[28px]"
           onPress={handleSignUp}
           disabled={isLoading}
         >
@@ -196,10 +196,10 @@ export default function SignupScreen() {
         </TouchableOpacity>
 
         <View className="items-center mt-[14px]">
-          <Text className="items-center text-[#6E6B63] text-[15px]">
+          <Text className="items-center text-gray-600 text-[15px]">
             Already have an account?{" "}
             <TouchableOpacity onPress={() => router.push("/login")}>
-              <Text className="relative top-1 text-[#11110f] underline">
+              <Text className="relative top-1 text-navy underline">
                 Login
               </Text>
             </TouchableOpacity>
@@ -207,16 +207,16 @@ export default function SignupScreen() {
         </View>
 
         <View className="items-center w-full mt-3 mb-6">
-          <Text className="items-center text-[#6E6B63] text-[13px] text-center flex-row gap-2">
+          <Text className="items-center text-gray-600 text-[13px] text-center flex-row gap-2">
             By continuing you agree to our{" "}
             <TouchableOpacity>
-              <Text className="relative top-1  text-[#11110f] underline">
+              <Text className="relative top-1 text-navy underline">
                 Terms of Service
               </Text>
             </TouchableOpacity>
             <Text> and </Text>
             <TouchableOpacity>
-              <Text className="relative top-1  text-[#11110f] underline">
+              <Text className="relative top-1 text-navy underline">
                 Privacy Policy.
               </Text>
             </TouchableOpacity>

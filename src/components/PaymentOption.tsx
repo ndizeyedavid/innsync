@@ -22,31 +22,31 @@ export default function PaymentOption({
   return (
     <TouchableOpacity
       onPress={() => setSelectedPaymentOption(id)}
-      className={`rounded-[8px] border border-[#E8E5DD] ${checked ? "bg-black" : "bg-white"} px-[22px] py-[18px] flex-row justify-between items-center`}
+      className={`rounded-[8px] border border-gray-200 ${checked ? "bg-cobalt" : "bg-white"} px-[22px] py-[18px] flex-row justify-between items-center`}
     >
       <View className="flex-row gap-2 items-center">
         <View
-          className={`p-2 ${checked ? "bg-[#232321]" : "bg-[#f5f4ef]"} rounded-lg`}
+          className={`p-2 ${checked ? "bg-navy" : "bg-sand-100"} rounded-lg`}
         >
           <Ionicons
             name={icon}
             size={24}
-            color={`${checked ? "white" : "black"}`}
+            color={`${checked ? "white" : "#283D5A"}`}
           />
         </View>
         <View>
           <Text
-            className={`text-[15px] font-semibold ${checked ? "text-white" : "text-black"}`}
+            className={`text-[15px] font-semibold ${checked ? "text-white" : "text-navy"}`}
           >
             {title}
           </Text>
-          <Text className="text-[13px] text-[#716E67]">{description}</Text>
+          <Text className="text-[13px] text-gray-500">{description}</Text>
         </View>
       </View>
 
       <View className="flex-row items-center gap-2">
-        <View className="size-[20px] border rounded-full bg-white border-[#E8E5DD] items-center justify-center">
-          {checked && <Ionicons name="checkmark" size={16} color="black" />}
+        <View className="size-[20px] border rounded-full bg-white border-gray-200 items-center justify-center">
+          {checked && <Ionicons name="checkmark" size={16} color="#283D5A" />}
         </View>
       </View>
     </TouchableOpacity>

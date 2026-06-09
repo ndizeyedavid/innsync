@@ -57,7 +57,7 @@ export default function PaymentMethodsScreen() {
             >
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3 flex-1">
-                  <View className="size-12 bg-[#F5F4EF] rounded-full items-center justify-center">
+                  <View className="size-12 bg-sand-100 rounded-full items-center justify-center">
                     <Ionicons name={method.icon} size={24} color="black" />
                   </View>
                   <View className="flex-1">
@@ -93,13 +93,13 @@ export default function PaymentMethodsScreen() {
           }}
         >
           <View className="flex-row items-center gap-2">
-            <Ionicons name="add-circle-outline" size={24} color="#000" />
+            <Ionicons name="add-circle-outline" size={24} color="#283D5A" />
             <Text className="text-base font-semibold">Add Payment Method</Text>
           </View>
         </TouchableOpacity>
 
         {/* Payment Methods Info */}
-        <View className="bg-[#F5F4EF] rounded-2xl p-4 mt-4">
+        <View className="bg-sand-100 rounded-2xl p-4 mt-4">
           <Text className="text-sm font-semibold mb-2">Payment Methods</Text>
           <Text className="text-xs text-[#6E6B63] leading-relaxed">
             Manage your payment methods for hotel bookings and services. You can add or remove payment methods at any time. Your default payment method will be used for all transactions unless you specify otherwise.

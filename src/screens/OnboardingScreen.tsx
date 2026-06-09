@@ -270,7 +270,7 @@ export default function OnboardingScreen() {
 
         <TouchableOpacity
           activeOpacity={0.8}
-          className="w-full h-[56px] bg-black rounded-2xl mt-2 flex-row justify-center items-center gap-2"
+          className="w-full h-[56px] bg-cobalt rounded-2xl mt-2 flex-row justify-center items-center gap-2"
           onPress={handleContinue}
           disabled={isLoading}
         >

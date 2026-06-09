@@ -95,7 +95,7 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#fafaf7]"
+      className="flex-1 bg-sand-50"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -104,9 +104,9 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View>
-          <Text className="text-[12px] text-[#9C988E]">INNSYNC</Text>
-          <Text className="text-[40px] ">Welcome Back.</Text>
-          <Text className="text-[#9C988E] text-[14px]">
+          <Text className="text-[12px] text-gray-500">INNSYNC</Text>
+          <Text className="text-[40px] text-navy">Welcome Back.</Text>
+          <Text className="text-gray-500 text-[14px]">
             Sign in to access your reservation and digital key.
           </Text>
         </View>
@@ -123,12 +123,12 @@ export default function LoginScreen() {
         </View>
 
         <View className="flex flex-row overflow-hidden items-center gap-1 mt-[14px]">
-          <View className="w-[115px] h-px bg-[#9E9A90]" />
-          <Text className="text-[12px] text-[#9E9A90]">Or Continue With</Text>
-          <View className="w-[115px] h-px bg-[#9E9A90]" />
+          <View className="w-[115px] h-px bg-gray-300" />
+          <Text className="text-[12px] text-gray-500">Or Continue With</Text>
+          <View className="w-[115px] h-px bg-gray-300" />
         </View>
 
-        <View className="flex-row justify-around bg-[#f5f4ef] py-[8px] mt-[14px] rounded-[10px] relative overflow-hidden">
+        <View className="flex-row justify-around bg-sand-100 py-[8px] mt-[14px] rounded-[10px] relative overflow-hidden">
           <Animated.View
             style={{
               transform: [
@@ -150,8 +150,8 @@ export default function LoginScreen() {
               handleOptionPress("email");
             }}
           >
-            <Ionicons name="mail" size={20} />
-            <Text className="text-[16px] text-[#0A0A08]">Email</Text>
+            <Ionicons name="mail" size={20} color="#283D5A" />
+            <Text className="text-[16px] text-navy">Email</Text>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center justify-center px-[43px] py-[13px] rounded-[7px] gap-2 z-10"
@@ -160,8 +160,8 @@ export default function LoginScreen() {
               handleOptionPress("phone");
             }}
           >
-            <Ionicons name="call" size={20} />
-            <Text className="text-[16px] text-[#0A0A08]">Phone</Text>
+            <Ionicons name="call" size={20} color="#283D5A" />
+            <Text className="text-[16px] text-navy">Phone</Text>
           </TouchableOpacity>
         </View>
 
@@ -195,7 +195,7 @@ export default function LoginScreen() {
               <PhoneInput value={phoneNumber} onChangeText={setPhoneNumber} />
               <TouchableOpacity
                 activeOpacity={0.8}
-                className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
+                className="flex-row items-center justify-center gap-1 py-[18px] bg-cobalt rounded-[12px] mt-[28px]"
                 onPress={handlePhoneSubmit}
               >
                 <Text className="text-white text-[24px]">Send OTP</Text>
@@ -211,7 +211,7 @@ export default function LoginScreen() {
 
         {selectedOption === "email" && (
           <TouchableOpacity>
-            <Text className="text-[15px] text-[#6E6B63] mt-[21px]">
+            <Text className="text-[15px] text-gray-600 mt-[21px]">
               Forgot password?
             </Text>
           </TouchableOpacity>
@@ -220,7 +220,7 @@ export default function LoginScreen() {
         {selectedOption === "email" && (
           <TouchableOpacity
             activeOpacity={0.8}
-            className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
+            className="flex-row items-center justify-center gap-1 py-[18px] bg-cobalt rounded-[12px] mt-[28px]"
             onPress={handleSignIn}
             disabled={isLoading}
           >
@@ -241,10 +241,10 @@ export default function LoginScreen() {
 
         {!showOTP && (
           <View className="items-center mt-[14px]">
-            <Text className="items-center text-[#6E6B63] text-[15px]">
+            <Text className="items-center text-gray-600 text-[15px]">
               Don't have an account?{" "}
               <TouchableOpacity onPress={() => router.push("/signup")}>
-                <Text className="relative top-1 text-[#11110f] underline">
+                <Text className="relative top-1 text-navy underline">
                   Create one
                 </Text>
               </TouchableOpacity>
@@ -253,16 +253,16 @@ export default function LoginScreen() {
         )}
 
         <View className="items-center w-full absolute bottom-7">
-          <Text className="items-center text-[#6E6B63] text-[13px] text-center flex-row gap-2">
+          <Text className="items-center text-gray-600 text-[13px] text-center flex-row gap-2">
             By continuing you agree to our{" "}
             <TouchableOpacity>
-              <Text className="relative top-1  text-[#11110f] underline">
+              <Text className="relative top-1 text-navy underline">
                 Terms of Service
               </Text>
             </TouchableOpacity>
             <Text> and </Text>
             <TouchableOpacity>
-              <Text className="relative top-1  text-[#11110f] underline">
+              <Text className="relative top-1 text-navy underline">
                 Privacy Policy.
               </Text>
             </TouchableOpacity>

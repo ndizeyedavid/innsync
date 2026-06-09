@@ -143,7 +143,7 @@ export default function GuestHomeScreen() {
     return (
       <ScreenLayout>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color="#283D5A" />
         </View>
       </ScreenLayout>
     );
@@ -157,20 +157,20 @@ export default function GuestHomeScreen() {
           {/* Show Discover/Find Your Stay only if not authenticated */}
           {!isAuthenticated && (
             <View>
-              <Text className="text-[12px] text-[#9C988E] uppercase">
+              <Text className="text-[12px] text-gray-500 uppercase">
                 Discover
               </Text>
-              <Text className="text-[24px] font-semibold">Find Your Stay</Text>
+              <Text className="text-[24px] font-semibold text-navy">
+                Find Your Stay
+              </Text>
             </View>
           )}
 
           {/* Search Bar (only if authenticated) */}
           {isAuthenticated && (
             <View className="flex-1 flex-row items-center bg-white rounded-2xl px-4 py-3 mr-4">
-              <Ionicons name="search" size={20} color="#6E6B63" />
-              <Text className="ml-3 text-[#6E6B63]">
-                Search destinations...
-              </Text>
+              <Ionicons name="search" size={20} color="#9CA3AF" />
+              <Text className="ml-3 text-gray-500">Search destinations...</Text>
             </View>
           )}
 
@@ -180,7 +180,7 @@ export default function GuestHomeScreen() {
               <>
                 <TouchableOpacity
                   onPress={() => router.push("/login")}
-                  className="bg-black px-3 py-1 rounded-full"
+                  className="bg-cobalt px-3 py-1 rounded-full"
                 >
                   <Text className="text-white font-semibold relative top-px">
                     Sign In
@@ -189,28 +189,31 @@ export default function GuestHomeScreen() {
 
                 <TouchableOpacity
                   onPress={() => router.push("/signup")}
-                  className="bg-white px-3 py-1 rounded-full border-2 border-black"
+                  className="bg-white px-3 py-1 rounded-full border-2 border-cobalt"
                 >
-                  <Text className="text-black font-semibold">Sign Up</Text>
+                  <Text className="text-navy font-semibold">Sign Up</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
                 {/* Notification Bell */}
-                {/* <TouchableOpacity className="size-[47px] bg-[#E9E6DE] rounded-full items-center justify-center relative">
+                {/* <TouchableOpacity className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative">
                   <Ionicons
                     name="notifications-outline"
-                    color="black"
+                    color="#283D5A"
                     size={24}
                   />
-                  <View className="size-[8px] bg-[#A8453E] rounded-full absolute top-2 right-3" />
+                  <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" />
                 </TouchableOpacity> */}
 
                 {/* Profile Avatar */}
-                <TouchableOpacity className=" items-center justify-center">
+                <TouchableOpacity
+                  onPress={() => router.push("/profile")}
+                  className=" items-center justify-center"
+                >
                   <Ionicons
                     name="person-circle"
-                    className=" bg-black  rounded-full"
+                    className=" bg-navy  rounded-full"
                     color="white"
                     size={40}
                   />
@@ -223,8 +226,8 @@ export default function GuestHomeScreen() {
         {/* Search Bar (only if not authenticated) */}
         {!isAuthenticated && (
           <View className="mt-4 flex-row items-center bg-white rounded-2xl px-4 py-3">
-            <Ionicons name="search" size={20} color="#6E6B63" />
-            <Text className="ml-3 text-[#6E6B63]">Search destinations...</Text>
+            <Ionicons name="search" size={20} color="#9CA3AF" />
+            <Text className="ml-3 text-gray-500">Search destinations...</Text>
           </View>
         )}
       </View>
@@ -238,7 +241,7 @@ export default function GuestHomeScreen() {
 
       {/* Hotel Count */}
       <View className="flex-row justify-between items-center mt-4">
-        <Text className="text-lg font-semibold">
+        <Text className="text-lg font-semibold text-navy">
           {filteredHotels.length}{" "}
           {filteredHotels.length === 1 ? "Hotel" : "Hotels"}
         </Text>
@@ -250,7 +253,7 @@ export default function GuestHomeScreen() {
               setSelectedAmenities([]);
             }}
           >
-            <Text className="text-[#6E6B63]">Clear Filters</Text>
+            <Text className="text-gray-500">Clear Filters</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -278,13 +281,13 @@ export default function GuestHomeScreen() {
           ))
         ) : (
           <View className="items-center justify-center py-20">
-            <Ionicons name="search-outline" size={60} color="#9C988E" />
-            <Text className="text-[#6E6B63] mt-4 text-lg">
+            <Ionicons name="search-outline" size={60} color="#9CA3AF" />
+            <Text className="text-gray-500 mt-4 text-lg">
               No hotels found with selected filters
             </Text>
             <TouchableOpacity
               onPress={() => setSelectedAmenities([])}
-              className="mt-4 bg-black px-6 py-3 rounded-full"
+              className="mt-4 bg-cobalt px-6 py-3 rounded-full"
             >
               <Text className="text-white font-semibold">Clear Filters</Text>
             </TouchableOpacity>

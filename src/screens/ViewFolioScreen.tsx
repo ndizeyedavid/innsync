@@ -54,7 +54,7 @@ export default function ViewFolioScreen() {
     return (
       <ScreenLayout>
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color="#283D5A" />
         </View>
       </ScreenLayout>
     );
@@ -69,21 +69,21 @@ export default function ViewFolioScreen() {
         }}
         className="mb-4"
       >
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <Ionicons name="arrow-back" size={24} color="#283D5A" />
       </TouchableOpacity>
 
       <TabHeader alt="CURRENT STAY" title="View Folio" />
 
       {/* Summary Card */}
-      <View className="bg-black rounded-2xl p-5 mt-4">
-        <Text className="text-[#989896] text-sm mb-2">TOTAL BALANCE</Text>
+      <View className="bg-navy rounded-2xl p-5 mt-4">
+        <Text className="text-gray-400 text-sm mb-2">TOTAL BALANCE</Text>
         <Text className="text-white text-4xl font-bold mb-4">
           {folio ? `${folio.currency} ${folio.balanceDue.toFixed(2)}` : "$0.00"}
         </Text>
 
         <View className="flex-row justify-between border-t border-gray-700 pt-3">
           <View>
-            <Text className="text-[#989896] text-xs">TOTAL</Text>
+            <Text className="text-gray-400 text-xs">TOTAL</Text>
             <Text className="text-white text-lg font-semibold">
               {folio
                 ? `${folio.currency} ${folio.totalAmount.toFixed(2)}`
@@ -94,17 +94,17 @@ export default function ViewFolioScreen() {
       </View>
 
       {/* Guest Info */}
-      <View className="bg-white border border-[#EFEDE7] rounded-2xl p-4 mt-4">
+      <View className="bg-white border border-gray-200 rounded-2xl p-4 mt-4">
         <View className="flex-row justify-between items-start mb-3">
           <View>
-            <Text className="text-xs text-[#A4A097]">GUEST</Text>
-            <Text className="text-lg font-semibold">
+            <Text className="text-xs text-gray-500">GUEST</Text>
+            <Text className="text-lg font-semibold text-navy">
               {folio?.guestName || user?.name || "Guest"}
             </Text>
           </View>
           <View className="text-right">
-            <Text className="text-xs text-[#A4A097]">ROOM</Text>
-            <Text className="text-lg font-semibold">
+            <Text className="text-xs text-gray-500">ROOM</Text>
+            <Text className="text-lg font-semibold text-navy">
               {folio?.roomNumber ||
                 currentStay?.roomPreference ||
                 "Not assigned"}
@@ -113,16 +113,16 @@ export default function ViewFolioScreen() {
         </View>
         <View className="flex-row justify-between items-start">
           <View>
-            <Text className="text-xs text-[#A4A097]">CHECK-IN</Text>
-            <Text className="text-sm">
+            <Text className="text-xs text-gray-500">CHECK-IN</Text>
+            <Text className="text-sm text-gray-700">
               {currentStay
                 ? new Date(currentStay.checkIn).toLocaleDateString()
                 : ""}
             </Text>
           </View>
           <View className="text-right">
-            <Text className="text-xs text-[#A4A097]">CHECK-OUT</Text>
-            <Text className="text-sm">
+            <Text className="text-xs text-gray-500">CHECK-OUT</Text>
+            <Text className="text-sm text-gray-700">
               {currentStay
                 ? new Date(currentStay.checkOut).toLocaleDateString()
                 : ""}
@@ -132,29 +132,29 @@ export default function ViewFolioScreen() {
       </View>
 
       {/* Transaction List */}
-      <Text className="text-[18px] text-[#ACA9A0] mt-6 mb-3">TRANSACTIONS</Text>
+      <Text className="text-[18px] text-gray-500 mt-6 mb-3">TRANSACTIONS</Text>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="bg-white border border-[#EFEDE7] rounded-2xl overflow-hidden">
+        <View className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           {folio && folio.lines.length > 0 ? (
             folio.lines.map((item, index) => (
               <View
                 key={item.id}
-                className={`p-4 border-b border-[#EFEDE7] ${
+                className={`p-4 border-b border-gray-200 ${
                   index === folio.lines.length - 1 ? "border-b-0" : ""
                 }`}
               >
                 <View className="flex-row justify-between items-start mb-2">
                   <View className="flex-1">
-                    <Text className="text-sm font-semibold mb-1">
+                    <Text className="text-sm font-semibold mb-1 text-navy">
                       {item.description}
                     </Text>
-                    <Text className="text-xs text-[#A4A097]">
+                    <Text className="text-xs text-gray-500">
                       {new Date(item.date).toLocaleDateString()}
                     </Text>
                   </View>
                   <View className="flex-col items-end">
-                    <Text className="text-lg font-bold">
+                    <Text className="text-lg font-bold text-navy">
                       {item.currency} {item.amount.toFixed(2)}
                     </Text>
                   </View>
@@ -163,8 +163,8 @@ export default function ViewFolioScreen() {
             ))
           ) : (
             <View className="p-6 items-center">
-              <Ionicons name="receipt-outline" size={40} color="#ACA9A0" />
-              <Text className="text-[#ACA9A0] text-center mt-2">
+              <Ionicons name="receipt-outline" size={40} color="#9CA3AF" />
+              <Text className="text-gray-500 text-center mt-2">
                 No transactions yet
               </Text>
             </View>
@@ -173,7 +173,7 @@ export default function ViewFolioScreen() {
 
         {/* Download Button */}
         <TouchableOpacity
-          className="bg-black py-4 rounded-2xl mt-4 items-center"
+          className="bg-cobalt py-4 rounded-2xl mt-4 items-center"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           }}

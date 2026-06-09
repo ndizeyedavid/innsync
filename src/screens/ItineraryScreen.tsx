@@ -167,11 +167,11 @@ export default function ItineraryScreen() {
               ? `${new Date(stayDisplay.checkInDate).toLocaleDateString()} - ${new Date(stayDisplay.checkOutDate).toLocaleDateString()} · ${stayDisplay.adults} adults`
               : "April 26 - April 30 · 2 adults"
           }
-          descriptionStyle="text-[12px] text-[#9C988E]"
+          descriptionStyle="text-[12px] text-gray-500"
         />
-        <View className="px-[11px] py-[5px] bg-[#D9D9D9] flex-row gap-1 items-center rounded-2xl">
-          <View className="size-[6px] bg-[#3F6B4F] rounded-full" />
-          <Text className="text-[13px] text-[#3F6B4F]">LIVE</Text>
+        <View className="px-[11px] py-[5px] bg-success-light flex-row gap-1 items-center rounded-2xl">
+          <View className="size-[6px] bg-success rounded-full" />
+          <Text className="text-[13px] text-success">LIVE</Text>
         </View>
       </View>
 
@@ -199,7 +199,7 @@ export default function ItineraryScreen() {
 
       <View>
         {loading ? (
-          <Text className="text-center text-[#9C988E] mt-10">
+          <Text className="text-center text-gray-500 mt-10">
             Loading itinerary...
           </Text>
         ) : formattedItems.length > 0 ? (
@@ -218,7 +218,7 @@ export default function ItineraryScreen() {
             </TimelineItem>
           ))
         ) : (
-          <Text className="text-center text-[#9C988E] mt-10">
+          <Text className="text-center text-gray-500 mt-10">
             No itinerary items for this day
           </Text>
         )}
@@ -239,25 +239,25 @@ interface IDayCard {
 function DayCard({ id, day, dayNumber, status, active, onPress }: IDayCard) {
   // Determine styles based on status and active
   let bgClass = "bg-white";
-  let textClass = "text-black";
+  let textClass = "text-navy";
   let opacityClass = "";
-  let borderClass = "border-[#E8E5DD]";
+  let borderClass = "border-gray-200";
 
   if (status === "past") {
     opacityClass = "opacity-50";
   }
 
   if (status === "today" && !active) {
-    bgClass = "bg-[#3F6B4F]"; // Same green as LIVE indicator
+    bgClass = "bg-success"; // Same green as LIVE indicator
     textClass = "text-white";
-    borderClass = "border-[#3F6B4F]";
+    borderClass = "border-success";
   }
 
   if (active) {
-    bgClass = "bg-black";
+    bgClass = "bg-navy";
     textClass = "text-white";
     opacityClass = "";
-    borderClass = "border-black";
+    borderClass = "border-navy";
   }
 
   return (
@@ -266,7 +266,7 @@ function DayCard({ id, day, dayNumber, status, active, onPress }: IDayCard) {
       onPress={onPress}
       className={`${bgClass} ${opacityClass} border ${borderClass} px-[20px] py-[17px] rounded-2xl`}
     >
-      <Text className="text-[#B6B6B5] text-[15px]">{day}</Text>
+      <Text className="text-gray-400 text-[15px]">{day}</Text>
       <Text className={`${textClass} text-[24px] font-bold`}>
         Day {dayNumber}
       </Text>

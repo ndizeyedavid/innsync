@@ -18,9 +18,9 @@ export default function OnboardingProgress({
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
           step != 1 ? setProgress((prev: any) => prev - 1) : null;
         }}
-        className="size-[45px] bg-[#F5F4EF] items-center justify-center rounded-full"
+        className="size-[45px] bg-sand-100 items-center justify-center rounded-full"
       >
-        <Ionicons name="chevron-back" size={25} className={"text-[#E8E5DD]"} />
+        <Ionicons name="chevron-back" size={25} color="#9CA3AF" />
       </TouchableOpacity>
 
       <View className="flex-row gap-[12px]">
@@ -28,14 +28,14 @@ export default function OnboardingProgress({
           <View
             key={index}
             className={`w-[50px] h-[4px] rounded-[2px] ${
-              index < step + 1 ? "bg-black" : "bg-[#E8E5DD]"
+              index < step + 1 ? "bg-cobalt" : "bg-gray-200"
             }`}
           />
         ))}
       </View>
 
-      <TouchableOpacity className="size-[45px] bg-[#F5F4EF] items-center justify-center rounded-full">
-        <Ionicons name="close" size={30} className="text-[#E8E5DD]" />
+      <TouchableOpacity className="size-[45px] bg-sand-100 items-center justify-center rounded-full">
+        <Ionicons name="close" size={30} color="#9CA3AF" />
       </TouchableOpacity>
     </View>
   );

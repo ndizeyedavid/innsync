@@ -49,7 +49,7 @@ export default function Preference({
 
   return (
     <View className="mb-24">
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
+      <View className="bg-white border border-gray-200 px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px]">
           <Text className="text-[16px] font-semibold ">Room Preferences</Text>
         </View>
@@ -80,7 +80,7 @@ export default function Preference({
           </View>
 
           <View className="gap-2">
-            <Text className="text-[15px] text-[#9C988E]">FLOOR PREFERENCE</Text>
+            <Text className="text-[15px] text-gray-500">FLOOR PREFERENCE</Text>
             <SelectField
               label="Floor Preference"
               placeholder="Choose your floor preference"
@@ -93,7 +93,7 @@ export default function Preference({
         </View>
       </View>
 
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
+      <View className="bg-white border border-gray-200 px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px] mb-[22px]">
           <Text className="text-[16px] font-semibold ">Meal plan</Text>
         </View>
@@ -113,7 +113,7 @@ export default function Preference({
         </View>
       </View>
 
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
+      <View className="bg-white border border-gray-200 px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px] mb-[14px]">
           <Text className="text-[16px] font-semibold ">
             Dietary Restrictions
@@ -126,7 +126,7 @@ export default function Preference({
               className={`px-4 py-2 rounded-full border ${
                 dietaryRestrictions.includes(restriction)
                   ? "bg-black border-black"
-                  : "bg-white border-[#E8E5DD]"
+                  : "bg-white border-gray-200"
               }`}
               onPress={() => toggleDietaryRestriction(restriction)}
             >
@@ -144,12 +144,12 @@ export default function Preference({
         </View>
       </View>
 
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
+      <View className="bg-white border border-gray-200 px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px] mb-[14px]">
-          <Text className="text-[16px] font-semibold ">Special Requests</Text>
+          <Text className="text-[16px] font-semibold text-navy">Special Requests</Text>
         </View>
         <TextInput
-          className="border border-[#E8E5DD] rounded-lg px-4 py-3 text-base"
+          className="border border-gray-200 rounded-lg px-4 py-3 text-base"
           placeholder="Any special requests or notes..."
           value={specialRequests}
           onChangeText={setSpecialRequests}

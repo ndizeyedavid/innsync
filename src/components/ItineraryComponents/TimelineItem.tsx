@@ -18,7 +18,7 @@ export default function TimelineItem({
 }: TimelineItemProps) {
   return (
     <View style={styles.rowContainer}>
-      <Text className="absolute -right-7 top-1.5 w-full flex-1">
+      <Text className="absolute -right-7 top-1.5 w-full flex-1 text-gray-700">
         {startTime}
       </Text>
 
@@ -34,7 +34,7 @@ export default function TimelineItem({
             isFirst && styles.firstDotAdjust,
           ]}
         >
-          <View className="size-[9px] bg-black rounded-full" />
+          <View className="size-[9px] bg-navy rounded-full" />
         </View>
       </View>
 
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E8E5DD",
   },
   activeLine: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#3A8AC3",
   },
   bulletDot: {
     width: 17,
@@ -81,8 +81,8 @@ const styles = StyleSheet.create({
     borderColor: "#9C988E",
   },
   activeDot: {
-    borderColor: "#007AFF",
-    backgroundColor: "#007AFF",
+    borderColor: "#3A8AC3",
+    backgroundColor: "#3A8AC3",
   },
   firstDotAdjust: {
     marginTop: 12,
