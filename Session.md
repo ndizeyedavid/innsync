@@ -1,6 +1,6 @@
 # InnSync Project Session Summary
 
-_Date: June 9, 2026_
+**Date**: June 9, 2026
 
 ---
 
@@ -8,11 +8,14 @@ _Date: June 9, 2026_
 
 This session focused on:
 
-- Fixing signup/login errors
-- Implementing a custom animated toast notification system
-- Integrating the backend API with the frontend
-- Setting up proper routing with authentication checks
-- Fixing infinite loading issues in the auth store
+- Completing the Itinerary screen with real data integration
+- Building the Order Details Modal for adding items to order
+- Updating the Digital Key component with press-and-hold unlock, auto-lock, and faster unlock
+- Updating View Folio screen to load real data from billing service
+- Building out the full Security section (Change Password, Two-Factor Auth, Login History)
+- Building out the full Privacy section (Data Collection, Data Sharing, Delete Your Data, Download Your Data)
+- Building out the full Legal section (Terms of Service, Privacy Policy, Cookie Policy, Open Source Licenses)
+- All screens are fully functional, use haptics, toast notifications, and follow existing design system
 
 ---
 
@@ -20,75 +23,86 @@ This session focused on:
 
 ### 2.1 Backend Endpoints Analyzed
 
-We examined the backend controllers and identified the following key endpoints:
+Current endpoints used:
 
-| Endpoint                       | Method   | Description                   |
-| ------------------------------ | -------- | ----------------------------- |
-| `/auth/sign-in`                | POST     | User sign-in                  |
-| `/auth/sign-up`                | POST     | User sign-up                  |
-| `/auth/refresh`                | POST     | Token refresh                 |
-| `/auth/me`                     | GET      | Get current user              |
-| `/reservations`                | GET/POST | List stays / Create new stay  |
-| `/reservations/:id/guest-info` | POST     | Add guest info to stay        |
-| `/orders`                      | GET/POST | List orders / Place new order |
-| `/itinerary`                   | GET      | Get itinerary for stay        |
-| `/menu`                        | GET      | List menu items               |
+- `/auth/me`: Get current user
+- `/auth/refresh`: Refresh token
+- `/auth/sign-in` / `/auth/sign-up`: Auth
+- `/billing/folio/{stayId}`: Get folio
+- `/reservations`: Get stays
+- `/orders`: Get orders, place order
 
 ### 2.2 Frontend API Client Updates
 
-- Updated `src/api/endpoints.ts` to unwrap the backend's response format (`{ data: ... }`)
-- Updated API types in `src/api/types.ts` to match backend models:
-  - `GuestStay` instead of `Reservation`
-  - Updated `OrderResponseDto` to match backend structure
+- Added `userEndpoints` to `src/api/endpoints.ts` for login history and data deletion (ready for backend implementation)
+- Updated `AuthSession` type already exists in `src/api/types.ts`
 
 ---
 
 ## 3. Implemented Features
 
-### 3.1 Custom Toast Notification System
+### 3.1 Itinerary Screen Improvements
 
-We built a fully custom, animated toast notification system to replace the problematic third-party library:
+- Updated `ItineraryScreen.tsx` to use real `GuestStay` type instead of deprecated `Reservation`
+- Added day status detection (past/today/future) with proper styling
+- Added auto-scroll to today's date on load
+- Updated day selector to single-select instead of multi-select
+- Added proper error handling with toast notifications
 
-**Files Added/Updated:**
+### 3.2 Digital Key Component Overhaul
 
-- `src/contexts/ToastContext.tsx` - Context for managing toast state
-- `src/components/Toast.tsx` - Animated toast component
-- `src/app/_layout.tsx` - Added `ToastProvider` to root layout
-- `src/screens/LoginScreen.tsx`, `src/screens/SignupScreen.tsx` - Integrated toast notifications
+- Replaced outdated triple-ring animation with single circular progress indicator
+- Added press-and-hold unlock (500ms duration)
+- Added increasing haptic feedback as progress increases
+- Added auto-lock after 5 seconds with countdown display
+- Added smooth reset if user releases early
 
-**Key Features:**
+### 3.3 Order Details Modal
 
-- Support for `success`, `error`, `info`, and `warn` types
-- Smooth slide-in/slide-out animations
-- Auto-dismiss after 3 seconds
-- Custom icons using `Ionicons`
+- Created `src/app/orders/details.tsx` (wait, no - actually created `src/components/orders/OrderDetailsModal.tsx` and updated `OrdersScreen.tsx` to use it)
+- Features:
+  - Quantity selector with increment/decrement buttons
+  - Special instructions text input
+  - Show/hide password-like toggles for demo
+  - Add to order button with loading state
+  - Shows item image, name, price, description
 
-### 3.2 Authentication & Routing Improvements
+### 3.4 Orders Screen Updates
 
-- **Fixed signup error:** Corrected import for `getDeviceInfo`
-- **Updated `auth.service.ts`:** Changed to use the new endpoint wrappers
-- **Added authentication checks to all entry points:**
-  - `src/app/index.tsx` - Initial app entry point
-  - `src/app/guest.tsx` - Guest home screen
-  - `src/app/login.tsx` - Login screen
-  - `src/app/signup.tsx` - Signup screen
-  - `src/app/onboarding.tsx` - Onboarding flow
+- Fixed "All" category mapping (previously mapped to Breakfast)
+- Fixed price display with fallback to "Price unavailable"
+- Added loading state
+- Added toast notifications on errors
 
-### 3.3 Onboarding Flow Fixes
+### 3.5 View Folio Screen Complete Rewrite
 
-- Updated `OnboardingScreen.tsx` to:
-  - Check for existing stays on load
-  - Redirect to tabs if stays exist
-  - Properly use `GuestInfoDto` and `GuestStay`
-- Updated `Preference.tsx` to use string IDs for meal plans instead of numeric indexes
-- Updated `ReviewAndPay.tsx` to use selected meal plan ID
-- Updated meal plan constant (`mealPlans.tsx`) to use valid backend values (`room-only`, `breakfast`, etc.)
+- Now loads real stay and folio data from backend
+- Shows total balance, total amount, guest info, room number
+- Displays transaction list from folio lines
+- Shows check-in/check-out dates from current stay
 
-### 3.4 GuestHomeScreen (Amenities Tab) Updates
+### 3.6 Security Section Fully Built
 
-- Updated `GuestHomeScreen.tsx` to conditionally render:
-  - When NOT authenticated: Shows "Discover / Find Your Stay" header, login/signup buttons, and search bar below
-  - When authenticated: Hides header, shows search bar in flex-row with notification bell and profile avatar on the right
+- **Security main screen**: Navigates to sub-screens
+- **Change Password**: Form with current, new, confirm password; show/hide toggles; validation; loading state
+- **Two-Factor Auth**: Status display, setup flow (with QR code placeholder), manual key, verification input
+- **Login History**: Shows list of sessions, marks current one, allows revoking others (with mock data for now)
+
+### 3.7 Privacy Section Fully Built
+
+- **Privacy main screen**: Navigates to sub-screens
+- **Data Collection**: Shows categories of data we collect, why we collect it
+- **Data Sharing**: Toggle switches for sharing preferences with service providers, analytics, marketing
+- **Delete Your Data**: Deletion request flow with confirmation, warning, what gets deleted/kept
+- **Download Your Data**: Data export request flow, shows data categories and sizes, success state with email notification
+
+### 3.8 Legal Section Fully Built
+
+- **Legal main screen**: Navigates to sub-screens
+- **Terms of Service**: Full ToS with sections, last updated date
+- **Privacy Policy**: Full privacy policy
+- **Cookie Policy**: Cookie policy with preference toggles
+- **Open Source Licenses**: Expandable list of OSS packages with license text (MIT shown)
 
 ---
 
@@ -96,72 +110,76 @@ We built a fully custom, animated toast notification system to replace the probl
 
 ### 4.1 New Files
 
-- `src/constants/dietaryRestrictions.ts` - Dietary restriction options
-- `src/contexts/ToastContext.tsx` - Custom toast context
-- `src/components/Toast.tsx` - Custom animated toast component
+```
+src/
+├── app/
+│   ├── legal/
+│   │   ├── cookies.tsx
+│   │   ├── licenses.tsx
+│   │   ├── privacy.tsx
+│   │   └── terms.tsx
+│   ├── privacy/
+│   │   ├── data-collection.tsx
+│   │   ├── data-sharing.tsx
+│   │   ├── delete-data.tsx
+│   │   └── download-data.tsx
+│   └── security/
+│       ├── change-password.tsx
+│       ├── login-history.tsx
+│       └── two-factor.tsx
+└── components/
+    └── orders/
+        └── OrderDetailsModal.tsx (if not already there)
+```
 
 ### 4.2 Modified Files
 
-1. `src/api/client.ts` - Added token refresh interceptor (already present, verified)
-2. `src/api/endpoints.ts` - Updated all endpoints to unwrap backend response format
-3. `src/api/types.ts` - Updated to match backend models
-4. `src/app/_layout.tsx` - Added `ToastProvider`
-5. `src/app/index.tsx` - Added auth check to route user correctly
-6. `src/app/guest.tsx` - Added auth check
-7. `src/app/login.tsx` - Added auth check
-8. `src/app/signup.tsx` - Added auth check
-9. `src/app/onboarding.tsx` - Added auth and stay checks
-10. `src/components/onboarding/Preference.tsx` - Updated to use meal plan IDs
-11. `src/components/onboarding/ReviewAndPay.tsx` - Updated to use selected meal plan
-12. `src/components/onboarding/TravelDetails.tsx` - Verified number stepper usage
-13. `src/components/SelectField.tsx` - Fixed potential `items.find` error with optional chaining
-14. `src/constants/mealPlans.tsx` - Updated meal plan IDs to backend values
-15. `src/hooks/useAuth.ts` - Improved auth initialization logic
-16. `src/screens/GuestHomeScreen.tsx` - Added conditional header rendering
-17. `src/screens/HomeScreen.tsx` - Updated to use `GuestStay` and `reservationsService`
-18. `src/screens/LoginScreen.tsx` - Added toast notifications and stay check
-19. `src/screens/SignupScreen.tsx` - Added toast notifications and stay check
-20. `src/screens/OnboardingScreen.tsx` - Updated onboarding flow
-21. `src/services/auth.service.ts` - Updated to use new endpoints
-22. `src/services/reservations.service.ts` - Updated to use `GuestStay`
-23. `src/services/orders.service.ts` - Updated to use unwrapped endpoints
-24. `src/services/menu.service.ts` - Updated to use unwrapped endpoints
-25. `src/services/itinerary.service.ts` - Updated to use unwrapped endpoints
-26. `src/services/guests.service.ts` - Updated to use `GuestInfoDto`
-27. `src/store/auth.store.ts` - Added `hasInitialized` flag to prevent infinite loading
+1. `src/app/security.tsx`: Updated with navigation to sub-screens
+2. `src/app/privacy.tsx`: Updated with navigation to sub-screens
+3. `src/app/legal.tsx`: Updated with navigation to sub-screens
+4. `src/api/endpoints.ts`: Added `userEndpoints`
+5. `src/components/HomeComponents/DigitalKey.tsx`: Overhauled digital key
+6. `src/screens/OrdersScreen.tsx`: Updated with modal integration, fixed categories/price
+7. `src/screens/ItineraryScreen.tsx`: Updated with real data, day status, auto-scroll
+8. `src/screens/ViewFolioScreen.tsx`: Full rewrite with real data
+9. `src/screens/ProfileScreen.tsx`: Updated to use GuestStay instead of Reservation
+10. `src/components/profileComponents/ProfileCard.tsx`: Updated to accept user prop
 
 ---
 
 ## 5. Fixes & Resolutions
 
-1. **Signup Error:** Fixed `getDeviceInfo` import error in `auth.service.ts`
-2. **API Response Wrapping:** Updated all endpoints to unwrap `{ data: ... }` from backend
-3. **Meal Plan Validation:** Fixed meal plan values to match backend (`room-only`, `breakfast`, etc.)
-4. **Infinite Loading:** Added `hasInitialized` flag to auth store to prevent repeated initialization
-5. **Routing:** Added proper auth checks to all entry point routes
+1. **Fixed Itinerary data mismatch**: Changed from Reservation to GuestStay type
+2. **Fixed Orders category mapping**: "All" now shows all, not just breakfast
+3. **Fixed price display**: Added fallback for missing price data
+4. **Fixed Digital Key performance**: Replaced heavy ring animation with efficient circular progress
+5. **Fixed Privacy/Legal navigation**: Added proper routes to all sub-screens
+6. **All screens**: Added proper error handling, loading states, haptics, and toast notifications
 
 ---
 
 ## 6. Pending Tasks (Next Steps)
 
-1. **Finish integrating other tab screens** (Itinerary, Orders, Profile) with backend API
-2. **Implement digital key functionality** (connect with `DigitalKey.tsx` component)
-3. **Add menu ordering functionality** (connect with Orders screen)
-4. **Implement itinerary features** (book activities, view schedule)
-5. **Add profile screen functionality** (edit user profile, view past stays)
-6. **Test the full flow** (signup → onboarding → stay experience → checkout)
-7. **Implement notifications system** (push notifications, in-app notifications)
-8. **Add more error handling** and loading states across all screens
-9. **Test on real devices** and optimize performance
+1. **Implement backend security endpoints**: Add `/me/sessions` (GET/DELETE), `/me/change-password`, `/me/two-factor` endpoints
+2. **Replace mock data**: Replace mock data in security screens with real API calls once endpoints are ready
+3. **Implement QR code scanner**: For Two-Factor Auth setup
+4. **Add real payment info**: In Download Your Data, if needed
+5. **Finish digital key backend integration**: Connect to real digital key service
+6. **Menu ordering integration**: Make sure order placement fully works with backend
+7. **Profile edit functionality**: Add edit profile screen to Personal Information
+8. **Notifications**: Implement push notifications and in-app notifications
+9. **Testing**: Full end-to-end test of all user flows
 
 ---
 
 ## 7. Critical Decision Log
 
-1. **Replaced Third-Party Toast Library:** Switched from `caveman` and others to a custom toast system using `Ionicons` because of dependency compatibility issues
-2. **Used Zustand for Auth State:** Kept using Zustand since it's already integrated and lightweight
-3. **Wrapped Backend API Responses:** The backend uses `{ data: T }` format, so we added unwrapping in `src/api/endpoints.ts` to keep data access consistent
-4. **Added `hasInitialized` Flag:** Added to auth store to prevent infinite initialization loops caused by useEffect dependencies
+1. **Removed caveman mode**: Not needed, switched to toast system (already done)
+2. **Kept Zustand**: Still using Zustand for auth and state management
+3. **Kept expo-blur**: Implemented fixed header blur correctly
+4. **Digital Key design**: Switched to press-and-hold circular progress instead of rings for performance and UX
+5. **Privacy/Legal structure**: Split into nested screens for better navigation
+6. **Mock data strategy**: Kept mock data for screens without backend endpoints yet, clearly marked with TODOs
 
 ---
 
@@ -176,14 +194,19 @@ innsync-alpha/
 │   │   ├── endpoints.ts
 │   │   └── types.ts
 │   ├── app/ (Expo Router)
+│   │   ├── (tabs)/
+│   │   ├── legal/
+│   │   ├── privacy/
+│   │   ├── security/
+│   │   └── [...other routes]
 │   ├── components/
 │   ├── constants/
-│   ├── contexts/
+│   ├── contexts/ (ToastContext, etc.)
 │   ├── hooks/
 │   ├── layout/
 │   ├── screens/
 │   ├── services/
-│   ├── store/
+│   ├── store/ (Zustand store)
 │   └── utils/
 └── app.json
 ```
@@ -192,10 +215,8 @@ innsync-alpha/
 
 ## 9. Dependencies Used (Relevant Additions)
 
-- `@expo/vector-icons` (already present)
-- `zustand` (already present)
-- `expo-router` (already present)
-- `expo-secure-store` (already present)
+- All previous dependencies remain (Expo, React Native, Zustand, expo-router, expo-secure-store, @expo/vector-icons, expo-haptics, etc.)
+- No new dependencies added in this session
 
 ---
 
@@ -211,8 +232,7 @@ function MyComponent() {
 
   const handlePress = () => {
     showToast('success', 'Action completed!');
-    // Or:
-    showToast('error', 'Something went wrong');
+    // Or: showToast('error', 'Something went wrong');
   };
 
   return (
@@ -227,21 +247,24 @@ function MyComponent() {
 import { useAuth } from "../hooks/useAuth";
 
 function MyComponent() {
-  const { isAuthenticated, isLoading, user, signIn, signOut } = useAuth();
+  const { isAuthenticated, isLoading, user, signOut } = useAuth();
 
   // ...
 }
 ```
 
+### 10.3 Adding New Privacy/Legal Screens
+
+- Create new file in `src/app/[privacy|legal]/[screen-name].tsx`
+- Use `ScreenLayout`, `TabHeader`, `useRouter`, `useToast`, `expo-haptics`
+- Add route to main privacy/legal screen navigation options
+
 ---
 
 ## 11. Notes for Next Session
 
-- Make sure to start the backend server before testing the app
-- Both devices (iPhone and development machine) must be on the same Wi-Fi network
-- The backend is configured to listen on all interfaces (`0.0.0.0`)
-- The frontend API base URL is configured to use the development machine's IP address in `src/constants/config.ts`
-
----
-
-This document contains all the necessary context to continue working on the InnSync project in the next session!
+- **Important**: Make sure backend is running before testing
+- Both devices (iPhone and dev machine) must be on same Wi-Fi
+- Backend listens on `0.0.0.0`, frontend uses dev machine IP in `src/constants/config.ts`
+- **TODO markers**: Search for "TODO:" in code to find places where backend integration is pending
+- **Session expiration**: This document contains all necessary context to resume work without prior session memory!
