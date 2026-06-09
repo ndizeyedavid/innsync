@@ -37,7 +37,7 @@ export default function TabsLayout() {
         screenOptions={{
           headerShown: false,
 
-          tabBarActiveTintColor: "#323232",
+          tabBarActiveTintColor: "#283D5A",
 
           tabBarStyle: styles.tabStyle,
         }}
@@ -55,7 +55,7 @@ export default function TabsLayout() {
                 />
 
                 {focused && (
-                  <View className="size-[8px] bg-black rounded-full absolute bottom-[-27px]" />
+                  <View className="size-[8px] bg-sky rounded-full absolute bottom-[-27px]" />
                 )}
               </View>
             ),
@@ -82,7 +82,7 @@ export default function TabsLayout() {
                   />
 
                   {focused && (
-                    <View className="size-[8px] bg-black rounded-full absolute bottom-[-27px]" />
+                    <View className="size-[8px] bg-sky rounded-full absolute bottom-[-27px]" />
                   )}
                 </View>
               ),
@@ -105,11 +105,10 @@ const styles = StyleSheet.create({
     height: 87,
     width: "94%",
     margin: "auto",
-    // paddingBottom: 8,
     paddingTop: 15,
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: "#EFEDE7",
+    borderColor: "#E8ECEF",
     borderRadius: 20,
     backgroundColor: "white",
   },

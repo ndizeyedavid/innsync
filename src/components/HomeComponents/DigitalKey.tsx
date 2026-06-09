@@ -271,19 +271,19 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
     <View style={styles.container}>
       <View className="flex-1 w-full flex-row justify-between items-start">
         <View>
-          <Text className="text-[13px] text-[#989896]">DIGITAL KEY</Text>
+          <Text className="text-[13px] text-gray-400">DIGITAL KEY</Text>
           <Text className="text-[32px] text-white">
             {stay?.roomPreference || "Room"}
           </Text>
-          <Text className="text-[12px] text-[#989896]">
+          <Text className="text-[12px] text-gray-400">
             {hotelName || "Hotel"} - until{" "}
             {stay?.checkOut ? formatDate(stay.checkOut) : ""}
           </Text>
         </View>
 
-        <View className="px-[11px] py-[5px] bg-[#D9D9D9] flex-row gap-1 items-center rounded-2xl">
-          <View className="size-[6px] bg-[#3F6B4F] rounded-full" />
-          <Text className="text-[13px] text-[#3F6B4F]">
+        <View className="px-[11px] py-[5px] bg-success-light flex-row gap-1 items-center rounded-2xl">
+          <View className="size-[6px] bg-success rounded-full" />
+          <Text className="text-[13px] text-success">
             {stay?.status === "CHECKED_IN" ? "active" : "inactive"}
           </Text>
         </View>
@@ -299,7 +299,7 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
                     cx={size / 2}
                     cy={size / 2}
                     r={radius}
-                    stroke="#00ffff"
+                    stroke="#4AB3DE"
                     strokeWidth={strokeWidth}
                     fill="transparent"
                     strokeDasharray={[circumference, circumference]}
@@ -316,7 +316,7 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
                 cx={size / 2}
                 cy={size / 2}
                 r={radius}
-                stroke="rgba(0,255,255,0.3)"
+                stroke="rgba(74,179,222,0.3)"
                 strokeWidth={strokeWidth}
                 fill="transparent"
               />
@@ -324,7 +324,7 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
                 cx={size / 2}
                 cy={size / 2}
                 r={radius}
-                stroke="#00ffff"
+                stroke="#4AB3DE"
                 strokeWidth={strokeWidth}
                 fill="transparent"
                 strokeDasharray={[circumference, circumference]}
@@ -345,7 +345,7 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
 
         {!isLocked && (
           <Animated.View style={[styles.successBadge, successAnimatedStyle]}>
-            <Ionicons name="checkmark" size={24} color="#3F6B4F" />
+            <Ionicons name="checkmark" size={24} color="#10B981" />
           </Animated.View>
         )}
 
@@ -361,7 +361,7 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
               <Ionicons
                 name={isLocked ? "lock-closed" : "lock-open"}
                 size={40}
-                color="black"
+                color="#283D5A"
               />
             </Animated.View>
           </TouchableOpacity>
@@ -374,21 +374,21 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
             <Text className="text-[32px] text-white">
               {Math.round(progress * 100)}%
             </Text>
-            <Text className="text-[13px] text-[#959592]">
+            <Text className="text-[13px] text-gray-400">
               Hold to unlock...
             </Text>
           </>
         ) : !isLocked ? (
           <>
             <Text className="text-[32px] text-white">Unlocked</Text>
-            <Text className="text-[13px] text-[#959592]">
+            <Text className="text-[13px] text-gray-400">
               Auto-lock in {countdown}s
             </Text>
           </>
         ) : (
           <>
             <Text className="text-[32px] text-white">Hold to unlock</Text>
-            <Text className="text-[13px] text-[#959592]">
+            <Text className="text-[13px] text-gray-400">
               Press and hold the button
             </Text>
           </>
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     gap: 24,
-    backgroundColor: "black",
+    backgroundColor: "#283D5A",
     alignItems: "center",
     borderRadius: 24,
     padding: 20,
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     width: 137,
     height: 137,
     borderRadius: 68.5,
-    backgroundColor: "rgba(63, 107, 79, 0.3)",
+    backgroundColor: "rgba(16, 185, 129, 0.3)",
   },
   successBadge: {
     position: "absolute",
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 3,
-    borderColor: "#3F6B4F",
+    borderColor: "#10B981",
     zIndex: 20,
   },
 });

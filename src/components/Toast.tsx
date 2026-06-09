@@ -14,7 +14,7 @@ interface ToastProps {
 const toastColors: Record<ToastType, { bg: string; text: string; icon: string }> = {
   success: { bg: "#10B981", text: "#FFFFFF", icon: "checkmark-circle-outline" },
   error: { bg: "#EF4444", text: "#FFFFFF", icon: "close-circle-outline" },
-  info: { bg: "#3B82F6", text: "#FFFFFF", icon: "information-circle-outline" },
+  info: { bg: "#4AB3DE", text: "#FFFFFF", icon: "information-circle-outline" },
   warn: { bg: "#F59E0B", text: "#FFFFFF", icon: "warning-outline" },
 };
 
