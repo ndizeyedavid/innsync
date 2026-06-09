@@ -14,7 +14,7 @@ export default function Login() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading) {
+  if (true) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator size="large" color="#283D5A" />
