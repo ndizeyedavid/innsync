@@ -171,13 +171,14 @@ export interface GuestInfo {
 // Order Types
 export interface PlaceOrderDto {
   stayId: string;
+  category: 'FOOD' | 'DRINKS' | 'ACTIVITIES' | 'ROOM_SERVICE' | 'HOUSEKEEPING';
   items: OrderItem[];
   specialInstructions?: string;
   deliveryRoom?: string;
 }
 
 export interface OrderItem {
-  menuItemId: string;
+  externalMenuItemId: string;
   quantity: number;
   notes?: string;
 }

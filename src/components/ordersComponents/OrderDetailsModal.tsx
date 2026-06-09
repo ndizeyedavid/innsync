@@ -20,7 +20,11 @@ interface OrderDetailsModalProps {
   menuItem: MenuItem | null;
   stayId: string | null;
   onClose: () => void;
-  onAddToOrder: (item: MenuItem, quantity: number, notes: string) => Promise<void>;
+  onAddToOrder: (
+    item: MenuItem,
+    quantity: number,
+    notes: string,
+  ) => Promise<void>;
 }
 
 export default function OrderDetailsModal({
@@ -67,21 +71,47 @@ export default function OrderDetailsModal({
   };
 
   // Calculate price safely
-  const getItemPrice = () => {
-    if (!menuItem) return "0.00";
-    const price = typeof menuItem.price === 'number' ? menuItem.price : 0;
+  const getPriceAndCurrency = () => {
+    if (!menuItem) return { price: 0, currency: "USD" };
+
+    let priceValue: number = 0;
+    let currencyValue: string = "USD";
+
+    // Check for price in multiple possible fields
+    if (typeof menuItem.price === "number") {
+      priceValue = menuItem.price;
+    } else if (typeof (menuItem as any).amount === "number") {
+      priceValue = (menuItem as any).amount;
+    } else if (typeof (menuItem as any).priceCents === "number") {
+      priceValue = (menuItem as any).priceCents / 100;
+    } else if (typeof (menuItem as any).priceInCents === "number") {
+      priceValue = (menuItem as any).priceInCents / 100;
+    }
+
+    // Check for currency in multiple possible fields
+    if (menuItem.currency) {
+      currencyValue = menuItem.currency;
+    } else if ((menuItem as any).currencyCode) {
+      currencyValue = (menuItem as any).currencyCode;
+    } else if ((menuItem as any).currency_code) {
+      currencyValue = (menuItem as any).currency_code;
+    }
+
+    return { price: priceValue, currency: currencyValue };
+  };
+
+  const getItemPriceText = () => {
+    const { price } = getPriceAndCurrency();
     return price.toFixed(2);
   };
 
-  const getTotalPrice = () => {
-    if (!menuItem) return "0.00";
-    const price = typeof menuItem.price === 'number' ? menuItem.price : 0;
+  const getTotalPriceText = () => {
+    const { price } = getPriceAndCurrency();
     return (price * quantity).toFixed(2);
   };
 
-  const getCurrency = () => {
-    if (!menuItem) return "USD";
-    return menuItem.currency || "USD";
+  const getCurrencyText = () => {
+    return getPriceAndCurrency().currency;
   };
 
   if (!menuItem) return null;
@@ -92,15 +122,25 @@ export default function OrderDetailsModal({
       transparent={true}
       animationType="slide"
       onRequestClose={onClose}
+      presentationStyle="overFullScreen"
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-3xl max-h-[90%]">
+        <TouchableOpacity
+          className="flex-1 bg-black/50 justify-end"
+          activeOpacity={1}
+          onPress={onClose}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            className="bg-white rounded-t-3xl w-full"
+            style={{ maxHeight: "90%" }}
+          >
             {/* Header */}
-            <View className="flex-row justify-between items-center p-5 border-b border-[#EFEDE7]">
+            <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#EFEDE7]">
               <TouchableOpacity onPress={onClose} className="p-2">
                 <Ionicons name="close" size={24} color="black" />
               </TouchableOpacity>
@@ -131,7 +171,7 @@ export default function OrderDetailsModal({
                   {menuItem.description || "No description available"}
                 </Text>
                 <Text className="text-2xl font-bold text-[#3F6B4F]">
-                  {getItemPrice()} {getCurrency()}
+                  {getItemPriceText()} {getCurrencyText()}
                 </Text>
               </View>
 
@@ -189,7 +229,7 @@ export default function OrderDetailsModal({
               <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-base">Total</Text>
                 <Text className="text-2xl font-bold">
-                  {getTotalPrice()} {getCurrency()}
+                  {getTotalPriceText()} {getCurrencyText()}
                 </Text>
               </View>
               <TouchableOpacity
@@ -209,8 +249,8 @@ export default function OrderDetailsModal({
                 )}
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </Modal>
   );

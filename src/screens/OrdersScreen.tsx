@@ -193,6 +193,21 @@ export default function OrdersScreen() {
     }, 300);
   };
 
+  // Map MenuItem category to backend order category
+  const mapCategoryToOrderCategory = (
+    category: MenuItem['category']
+  ): PlaceOrderDto['category'] => {
+    const mapping: Record<MenuItem['category'], PlaceOrderDto['category']> = {
+      BREAKFAST: 'FOOD',
+      LUNCH: 'FOOD',
+      DINNER: 'FOOD',
+      SNACKS: 'FOOD',
+      BEVERAGES: 'DRINKS',
+      DESSERT: 'FOOD',
+    };
+    return mapping[category] || 'FOOD';
+  };
+
   // Place the order
   const handleAddToOrder = async (
     menuItem: MenuItem,
@@ -204,12 +219,21 @@ export default function OrdersScreen() {
       return;
     }
 
+    // Check if current stay is in a status that allows ordering
+    const currentStay = stays.find(s => s.id === currentStayId);
+    if (currentStay && currentStay.status === "PENDING") {
+      showToast("error", "Cannot order while stay is pending. Please check in first.");
+      handleCloseModal();
+      return;
+    }
+
     try {
       const orderDto: PlaceOrderDto = {
         stayId: currentStayId,
+        category: mapCategoryToOrderCategory(menuItem.category),
         items: [
           {
-            menuItemId: menuItem.id,
+            externalMenuItemId: menuItem.id,
             quantity,
             notes: notes || undefined,
           },
@@ -223,10 +247,18 @@ export default function OrdersScreen() {
       setActiveOrders(Array.isArray(ordersData) ? ordersData : []);
 
       showToast("success", "Order placed successfully!");
-    } catch (error) {
+      handleCloseModal(); // Close modal only on success
+    } catch (error: any) {
       console.error("Error placing order:", error);
-      showToast("error", "Failed to place order");
-      throw error;
+      
+      // Show detailed error message
+      const errorMessage = 
+        error?.response?.data?.message || 
+        error?.message || 
+        "Failed to place order";
+      
+      showToast("error", errorMessage);
+      handleCloseModal(); // Close modal on error
     }
   };
 
