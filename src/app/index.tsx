@@ -9,15 +9,15 @@ export default function App() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  // useEffect(() => {
-  //   if (!authLoading) {
-  //     if (isAuthenticated) {
-  //       router.replace("/(tabs)");
-  //     } else {
-  //       router.replace("/guest");
-  //     }
-  //   }
-  // }, [authLoading, isAuthenticated, router]);
+  useEffect(() => {
+    if (!authLoading) {
+      if (isAuthenticated) {
+        router.replace("/(tabs)");
+      } else {
+        router.replace("/guest");
+      }
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   return <LoadingComponent />;
 }

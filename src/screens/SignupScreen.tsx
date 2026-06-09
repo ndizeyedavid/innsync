@@ -7,6 +7,8 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Image,
+  StyleSheet,
 } from "react-native";
 import { useState } from "react";
 import SocialLoginButton from "../components/SocialLoginButton";
@@ -19,6 +21,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../contexts/ToastContext";
 import reservationsService from "../services/reservations.service";
+import { BlurView } from "expo-blur";
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -86,23 +89,37 @@ export default function SignupScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-sand-50"
+      className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <BlurView intensity={50} tint="light" style={styles.blurContainer} />
+
       <ScrollView
         className="flex-1 px-5"
-        contentContainerStyle={{ flexGrow: 1, marginTop: 70 }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: 60 }}
         showsVerticalScrollIndicator={false}
       >
-        <View>
-          <Text className="text-[12px] text-gray-500">INNSYNC</Text>
-          <Text className="text-[35px] text-navy">Create a new account.</Text>
-          <Text className="text-gray-500 text-[14px]">
+        {/* Logo Section */}
+        <View className="items-start mb-4">
+          <Image
+            source={require("../assets/images/logo/logo-single.png")}
+            className="size-[100px]"
+            // style={{ width: 80, height: 80, resizeMode: "contain" }}
+          />
+          {/* <Text className="text-xl font-bold text-navy mt-2">InnSync</Text> */}
+        </View>
+
+        <View className="mb-8">
+          {/* <Text className="text-[12px] text-gray-500 mb-1">INNSYNC</Text> */}
+          <Text className="text-[35px] text-navy font-semibold">
+            Create a new account.
+          </Text>
+          <Text className="text-gray-500 text-[14px] mt-1">
             Manage your reservation and digital key with ease.
           </Text>
         </View>
 
-        <View className="flex-row justify-between mt-[25px]">
+        <View className="flex-row justify-between ">
           <SocialLoginButton
             buttonLogo={require("../assets/google-logo.png")}
             buttonText="Google"
@@ -199,9 +216,7 @@ export default function SignupScreen() {
           <Text className="items-center text-gray-600 text-[15px]">
             Already have an account?{" "}
             <TouchableOpacity onPress={() => router.push("/login")}>
-              <Text className="relative top-1 text-navy underline">
-                Login
-              </Text>
+              <Text className="relative top-1 text-navy underline">Login</Text>
             </TouchableOpacity>
           </Text>
         </View>
@@ -227,3 +242,14 @@ export default function SignupScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  blurContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 50,
+    zIndex: 100,
+  },
+});

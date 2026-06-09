@@ -6,6 +6,8 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Image,
+  StyleSheet,
 } from "react-native";
 import { useState } from "react";
 import { Animated } from "react-native";
@@ -22,6 +24,7 @@ import { useToast } from "../contexts/ToastContext";
 import reservationsService from "../services/reservations.service";
 
 import * as Haptics from "expo-haptics";
+import { BlurView } from "expo-blur";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -95,23 +98,34 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-sand-50"
+      className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <BlurView intensity={50} tint="light" style={styles.blurContainer} />
       <ScrollView
         className="flex-1 px-5"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: 60 }}
         showsVerticalScrollIndicator={false}
       >
-        <View>
-          <Text className="text-[12px] text-gray-500">INNSYNC</Text>
-          <Text className="text-[40px] text-navy">Welcome Back.</Text>
-          <Text className="text-gray-500 text-[14px]">
+        <View className="items-start mb-4">
+          <Image
+            source={require("../assets/images/logo/logo-single.png")}
+            className="size-[100px]"
+            // style={{ width: 80, height: 80, resizeMode: "contain" }}
+          />
+        </View>
+
+        <View className="mb-8">
+          {/* <Text className="text-[12px] text-gray-500 mb-1">INNSYNC</Text> */}
+          <Text className="text-[40px] text-navy font-semibold">
+            Welcome Back.
+          </Text>
+          <Text className="text-gray-500 text-[14px] mt-1">
             Sign in to access your reservation and digital key.
           </Text>
         </View>
 
-        <View className="flex-row justify-between mt-[25px]">
+        <View className="flex-row justify-between ">
           <SocialLoginButton
             buttonLogo={require("../assets/google-logo.png")}
             buttonText="Google"
@@ -252,8 +266,8 @@ export default function LoginScreen() {
           </View>
         )}
 
-        <View className="items-center w-full absolute bottom-7">
-          <Text className="items-center text-gray-600 text-[13px] text-center flex-row gap-2">
+        <View className="items-center w-full mt-8 mb-6">
+          <Text className="items-center text-gray-500 text-[13px] text-center flex-row gap-2">
             By continuing you agree to our{" "}
             <TouchableOpacity>
               <Text className="relative top-1 text-navy underline">
@@ -273,3 +287,14 @@ export default function LoginScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  blurContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 50,
+    zIndex: 100,
+  },
+});

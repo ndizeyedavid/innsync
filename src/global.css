@@ -3,39 +3,39 @@
 
 @theme {
   /* InnSync Design System - Brand Palette */
-  --color-navy: #283D5A; /* Night Navy - primary brand */
-  --color-cobalt: #2F538E; /* Cobalt Trust - CTAs */
-  --color-azure: #3A8AC3; /* Azure Route - secondary */
-  --color-sky: #4AB3DE; /* Sky Accent - highlights */
-  --color-sand: #EEDBCC; /* Warm Sand - warmth */
+  --color-navy: #283d5a; /* Night Navy - primary brand */
+  --color-cobalt: #2f538e; /* Cobalt Trust - CTAs */
+  --color-azure: #3a8ac3; /* Azure Route - secondary */
+  --color-sky: #4ab3de; /* Sky Accent - highlights */
+  --color-sand: #eedbcc; /* Warm Sand - warmth */
 
   /* Tint Scales - Night Navy */
-  --color-navy-50: #E8ECEF;
-  --color-navy-100: #CED7DD;
-  --color-navy-200: #A9B7C4;
-  --color-navy-300: #7F96AA;
-  --color-navy-500: #283D5A;
-  --color-navy-700: #1C2A3E;
+  --color-navy-50: #e8ecef;
+  --color-navy-100: #ced7dd;
+  --color-navy-200: #a9b7c4;
+  --color-navy-300: #7f96aa;
+  --color-navy-500: #283d5a;
+  --color-navy-700: #1c2a3e;
   --color-navy-900: #101925;
-  --color-navy-950: #0A0F15;
+  --color-navy-950: #0a0f15;
 
   /* Tint Scales - Sky Accent */
-  --color-sky-50: #E7F5FB;
-  --color-sky-100: #CDEAF6;
-  --color-sky-200: #9DD4ED;
-  --color-sky-300: #6CBFE4;
-  --color-sky-500: #4AB3DE;
-  --color-sky-700: #2E8DB3;
-  --color-sky-900: #1E5C75;
+  --color-sky-50: #e7f5fb;
+  --color-sky-100: #cdeaf6;
+  --color-sky-200: #9dd4ed;
+  --color-sky-300: #6cbfe4;
+  --color-sky-500: #4ab3de;
+  --color-sky-700: #2e8db3;
+  --color-sky-900: #1e5c75;
 
   /* Tint Scales - Warm Sand */
-  --color-sand-50: #FDF8F4;
-  --color-sand-100: #F9EFE7;
-  --color-sand-200: #F3DFCE;
-  --color-sand-400: #EEDBCC;
-  --color-sand-600: #D9BFA8;
-  --color-sand-800: #C2A385;
-  --color-sand-950: #6B5644;
+  --color-sand-50: #fdf8f4;
+  --color-sand-100: #f9efe7;
+  --color-sand-200: #f3dfce;
+  --color-sand-400: #eedbcc;
+  --color-sand-600: #d9bfa8;
+  --color-sand-800: #c2a385;
+  --color-sand-950: #6b5644;
 
   /* Semantic Aliases */
   --color-primary: var(--color-navy);
@@ -45,25 +45,25 @@
   --color-warmth: var(--color-sand);
 
   /* Neutral Colors (WCAG AA compliant) */
-  --color-white: #FFFFFF;
-  --color-gray-50: #F9FAFB;
-  --color-gray-100: #F3F4F6;
-  --color-gray-200: #E5E7EB;
-  --color-gray-300: #D1D5DB;
-  --color-gray-400: #9CA3AF;
-  --color-gray-500: #6B7280;
-  --color-gray-600: #4B5563;
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
   --color-gray-700: #374151;
-  --color-gray-800: #1F2937;
+  --color-gray-800: #1f2937;
   --color-gray-900: #111827;
 
   /* Status Colors */
-  --color-success: #10B981;
-  --color-success-light: #D1FAE5;
-  --color-warning: #F59E0B;
-  --color-warning-light: #FEF3C7;
-  --color-error: #EF4444;
-  --color-error-light: #FEE2E2;
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
   --color-info: var(--color-sky);
   --color-info-light: var(--color-sky-50);
 
@@ -91,6 +91,8 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }

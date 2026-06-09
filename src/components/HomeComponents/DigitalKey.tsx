@@ -371,24 +371,26 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
       <View>
         {isHolding ? (
           <>
-            <Text className="text-[32px] text-white">
+            <Text className="text-[32px] text-white text-center">
               {Math.round(progress * 100)}%
             </Text>
-            <Text className="text-[13px] text-gray-400">
+            <Text className="text-[13px] text-gray-400 text-center">
               Hold to unlock...
             </Text>
           </>
         ) : !isLocked ? (
           <>
-            <Text className="text-[32px] text-white">Unlocked</Text>
-            <Text className="text-[13px] text-gray-400">
+            <Text className="text-[32px] text-white text-center">Unlocked</Text>
+            <Text className="text-[13px] text-gray-400 text-center">
               Auto-lock in {countdown}s
             </Text>
           </>
         ) : (
           <>
-            <Text className="text-[32px] text-white">Hold to unlock</Text>
-            <Text className="text-[13px] text-gray-400">
+            <Text className="text-[32px] text-white text-center">
+              Hold to unlock
+            </Text>
+            <Text className="text-[13px] text-gray-400 text-center">
               Press and hold the button
             </Text>
           </>

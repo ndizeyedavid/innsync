@@ -4,7 +4,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 // @ts-ignore
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import * as Haptic from "expo-haptics";
 
 export default function TabsLayout() {
@@ -31,14 +31,15 @@ export default function TabsLayout() {
     },
   ];
 
+  const focusedColor = "#4ab3de";
+
   return (
     <>
       <Tabs
         screenOptions={{
           headerShown: false,
-
           tabBarActiveTintColor: "#283D5A",
-
+          tabBarInactiveTintColor: "#9CA3AF",
           tabBarStyle: styles.tabStyle,
         }}
       >
@@ -46,12 +47,23 @@ export default function TabsLayout() {
           name="index"
           options={{
             title: "Home",
+            tabBarLabel: ({ focused, color }) => (
+              <Text
+                style={{
+                  color: focused ? focusedColor : color,
+                  fontSize: 12,
+                  marginTop: 4,
+                }}
+              >
+                Home
+              </Text>
+            ),
             tabBarIcon: ({ color, focused }) => (
               <View className="relative items-center justify-center">
                 <MaterialCommunityIcons
                   name={focused ? "home" : "home-outline"}
                   size={28}
-                  color={color}
+                  color={focused ? focusedColor : color}
                 />
 
                 {focused && (
@@ -72,13 +84,23 @@ export default function TabsLayout() {
             name={tab.name}
             options={{
               title: tab.title,
-
+              tabBarLabel: ({ focused, color }) => (
+                <Text
+                  style={{
+                    color: focused ? focusedColor : color,
+                    fontSize: 12,
+                    marginTop: 4,
+                  }}
+                >
+                  {tab.title}
+                </Text>
+              ),
               tabBarIcon: ({ color, focused }) => (
                 <View className="relative items-center justify-center">
                   <Ionicons
                     name={focused ? tab.icon : `${tab.icon}-outline`}
                     size={28}
-                    color={color}
+                    color={focused ? focusedColor : color}
                   />
 
                   {focused && (

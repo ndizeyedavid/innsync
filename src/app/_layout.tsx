@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "../store/auth.store";
 import LoadingScreen from "../components/LoadingScreen";
 import { ToastProvider } from "../contexts/ToastContext";
+import LoadingComponent from "../components/LoadingComponent";
 
 export default function Layout() {
   const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
@@ -20,7 +21,7 @@ export default function Layout() {
 
   // Only show loading screen on initial load, not on navigation
   if (isInitialLoad || isLoading) {
-    // return <LoadingScreen />;
+    // return <LoadingComponent />;
   }
 
   return (
