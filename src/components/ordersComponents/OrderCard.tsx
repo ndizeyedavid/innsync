@@ -15,6 +15,8 @@ interface IOrderCard {
   description: string;
   price: string;
   time: string;
+  onPress?: () => void;
+  onAdd?: () => void;
 }
 
 export default function OrderCard({
@@ -23,9 +25,15 @@ export default function OrderCard({
   description,
   price,
   time,
+  onPress,
+  onAdd,
 }: IOrderCard) {
   return (
-    <View className="flex-row items-center rounded-2xl border border-[#EFEDE7] bg-white px-[7px] py-[14px] gap-3">
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      className="flex-row items-center rounded-2xl border border-[#EFEDE7] bg-white px-[7px] py-[14px] gap-3"
+    >
       <Image source={image} className="size-[92px] rounded-[8px] bg-gray-400" />
 
       <View className="flex-1 gap-1">
@@ -46,6 +54,7 @@ export default function OrderCard({
 
           <TouchableOpacity
             activeOpacity={0.7}
+            onPress={onAdd}
             className="px-[13px] py-[6px] bg-black rounded-3xl flex-row items-center gap-2 flex-shrink-0"
           >
             <Ionicons name="add" size={20} color="white" />
@@ -53,6 +62,6 @@ export default function OrderCard({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

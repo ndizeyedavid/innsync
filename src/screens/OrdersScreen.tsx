@@ -13,16 +13,28 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import OrderProgress from "../components/ordersComponents/OrderProgress";
 import RepeatLastOrder from "../components/ordersComponents/RepeatLastOrder";
 import OrderCard from "../components/ordersComponents/OrderCard";
+import OrderDetailsModal from "../components/ordersComponents/OrderDetailsModal";
 import ordersService from "../services/orders.service";
 import menuService from "../services/menu.service";
-import { OrderResponseDto, MenuItem } from "../api/types";
+import reservationsService from "../services/reservations.service";
+import {
+  OrderResponseDto,
+  MenuItem,
+  GuestStay,
+  PlaceOrderDto,
+} from "../api/types";
 import { useToast } from "../contexts/ToastContext";
 
 export default function OrdersScreen() {
   const [selectedCategory, setSelectedCategory] = useState<number>(0);
   const [activeOrders, setActiveOrders] = useState<OrderResponseDto[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [stays, setStays] = useState<GuestStay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(
+    null,
+  );
   const { showToast } = useToast();
 
   // Categories mapped to backend MenuItem.category enum
@@ -72,10 +84,15 @@ export default function OrdersScreen() {
         });
       }
       setMenuItems(Array.isArray(menuData) ? menuData : []);
+
+      // Load stays to get current stayId
+      const staysData = await reservationsService.listMine();
+      setStays(Array.isArray(staysData) ? staysData : []);
     } catch (error) {
       console.error("Error loading orders data:", error);
       setActiveOrders([]);
       setMenuItems([]);
+      setStays([]);
       showToast("error", "Failed to load orders");
     } finally {
       setLoading(false);
@@ -92,6 +109,14 @@ export default function OrdersScreen() {
     if (!targetCategory) return menuItems;
     return menuItems.filter((item) => item.category === targetCategory);
   }, [menuItems, selectedCategory]);
+
+  // Get current stay ID
+  const currentStayId = useMemo(() => {
+    if (!Array.isArray(stays) || stays.length === 0) return null;
+    // Try to find checked-in stay first, else just first stay
+    const checkedIn = stays.find((s) => s.status === "CHECKED_IN");
+    return (checkedIn || stays[0])?.id || null;
+  }, [stays]);
 
   // Convert menu items to order card format
   const orderItems = useMemo(() => {
@@ -142,6 +167,7 @@ export default function OrdersScreen() {
       }
 
       return {
+        item, // Keep the original item for modal
         image: item.imageUrl
           ? { uri: item.imageUrl }
           : require("../assets/images/order-1.jpg"),
@@ -152,6 +178,57 @@ export default function OrdersScreen() {
       };
     });
   }, [filteredMenuItems]);
+
+  // Open the order details modal
+  const handleOpenModal = (item: MenuItem) => {
+    setSelectedMenuItem(item);
+    setIsModalVisible(true);
+  };
+
+  // Close the order details modal
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setTimeout(() => {
+      setSelectedMenuItem(null);
+    }, 300);
+  };
+
+  // Place the order
+  const handleAddToOrder = async (
+    menuItem: MenuItem,
+    quantity: number,
+    notes: string,
+  ) => {
+    if (!currentStayId) {
+      showToast("error", "Please check in first to place an order");
+      return;
+    }
+
+    try {
+      const orderDto: PlaceOrderDto = {
+        stayId: currentStayId,
+        items: [
+          {
+            menuItemId: menuItem.id,
+            quantity,
+            notes: notes || undefined,
+          },
+        ],
+        specialInstructions: notes || undefined,
+      };
+
+      const newOrder = await ordersService.placeOrder(orderDto);
+      // Refresh active orders
+      const ordersData = await ordersService.getActiveOrders();
+      setActiveOrders(Array.isArray(ordersData) ? ordersData : []);
+
+      showToast("success", "Order placed successfully!");
+    } catch (error) {
+      console.error("Error placing order:", error);
+      showToast("error", "Failed to place order");
+      throw error;
+    }
+  };
 
   return (
     <ScreenLayout>
@@ -241,6 +318,8 @@ export default function OrdersScreen() {
                   price={orderItem.price}
                   description={orderItem.description}
                   time={orderItem.time}
+                  onPress={() => handleOpenModal(orderItem.item)}
+                  onAdd={() => handleOpenModal(orderItem.item)}
                 />
               ))
             ) : (
@@ -251,6 +330,15 @@ export default function OrdersScreen() {
           </View>
         </View>
       )}
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        visible={isModalVisible}
+        menuItem={selectedMenuItem}
+        stayId={currentStayId}
+        onClose={handleCloseModal}
+        onAddToOrder={handleAddToOrder}
+      />
     </ScreenLayout>
   );
 }
