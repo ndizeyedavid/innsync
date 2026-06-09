@@ -2,6 +2,6 @@
 
 import OrdersScreen from "../../screens/OrdersScreen";
 
-export default function oders() {
+export default function orders() {
   return <OrdersScreen />;
 }

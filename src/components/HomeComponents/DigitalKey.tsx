@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Text,
   TouchableOpacity,
@@ -9,136 +9,41 @@ import {
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Haptics from "expo-haptics";
+import { GuestStay } from "../../api/types";
+import { Svg, Circle, Defs, ClipPath } from "react-native-svg";
 
-export default function DigitalKey() {
+interface DigitalKeyProps {
+  stay?: GuestStay | null;
+  hotelName?: string;
+}
+
+// Helper to describe circular progress arc
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
   const [isLocked, setIsLocked] = useState(true);
-  const [isScanning, setIsScanning] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [countdown, setCountdown] = useState(5);
+  const lastHapticRef = useRef(0);
+  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoLockTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const progressRef = useRef(0);
 
-  const ringScale1 = useRef(new Animated.Value(0)).current;
-  const ringScale2 = useRef(new Animated.Value(0)).current;
-  const ringScale3 = useRef(new Animated.Value(0)).current;
-  const ringOpacity1 = useRef(new Animated.Value(0)).current;
-  const ringOpacity2 = useRef(new Animated.Value(0)).current;
-  const ringOpacity3 = useRef(new Animated.Value(0)).current;
   const buttonScale = useRef(new Animated.Value(1)).current;
   const iconRotation = useRef(new Animated.Value(0)).current;
   const iconScale = useRef(new Animated.Value(1)).current;
   const successOpacity = useRef(new Animated.Value(0)).current;
   const glowScale = useRef(new Animated.Value(0)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
 
-  let scanningAnimation1: Animated.CompositeAnimation | null = null;
-  let scanningAnimation2: Animated.CompositeAnimation | null = null;
-  let scanningAnimation3: Animated.CompositeAnimation | null = null;
-
-  const startScanningAnimation = () => {
-    // Reset all rings
-    ringScale1.setValue(0);
-    ringScale2.setValue(0);
-    ringScale3.setValue(0);
-    ringOpacity1.setValue(0);
-    ringOpacity2.setValue(0);
-    ringOpacity3.setValue(0);
-
-    // Ring 1 - First wave
-    scanningAnimation1 = Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(ringScale1, {
-            toValue: 2.5,
-            duration: 1200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(ringOpacity1, {
-            toValue: 0,
-            duration: 800,
-            delay: 400,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.timing(ringScale1, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-    scanningAnimation1.start();
-
-    // Ring 2 - Second wave (delayed)
-    setTimeout(() => {
-      scanningAnimation2 = Animated.loop(
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(ringScale2, {
-              toValue: 2.5,
-              duration: 1200,
-              useNativeDriver: true,
-            }),
-            Animated.timing(ringOpacity2, {
-              toValue: 0,
-              duration: 800,
-              delay: 400,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.timing(ringScale2, {
-            toValue: 0,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-        ]),
-      );
-      scanningAnimation2.start();
-    }, 400);
-
-    // Ring 3 - Third wave (delayed more)
-    setTimeout(() => {
-      scanningAnimation3 = Animated.loop(
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(ringScale3, {
-              toValue: 2.5,
-              duration: 1200,
-              useNativeDriver: true,
-            }),
-            Animated.timing(ringOpacity3, {
-              toValue: 0,
-              duration: 800,
-              delay: 400,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.timing(ringScale3, {
-            toValue: 0,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-        ]),
-      );
-      scanningAnimation3.start();
-    }, 800);
-  };
-
-  const stopScanningAnimation = () => {
-    if (scanningAnimation1) scanningAnimation1.stop();
-    if (scanningAnimation2) scanningAnimation2.stop();
-    if (scanningAnimation3) scanningAnimation3.stop();
-
-    ringScale1.stopAnimation();
-    ringScale2.stopAnimation();
-    ringScale3.stopAnimation();
-    ringOpacity1.stopAnimation();
-    ringOpacity2.stopAnimation();
-    ringOpacity3.stopAnimation();
-
-    ringScale1.setValue(0);
-    ringScale2.setValue(0);
-    ringScale3.setValue(0);
-    ringOpacity1.setValue(0);
-    ringOpacity2.setValue(0);
-    ringOpacity3.setValue(0);
-  };
+  // SVG circle configuration
+  const size = 160;
+  const strokeWidth = 6;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
 
   const showSuccessAnimation = () => {
     successOpacity.setValue(0);
@@ -192,70 +97,136 @@ export default function DigitalKey() {
   };
 
   const resetAnimations = () => {
-    stopScanningAnimation();
     successOpacity.setValue(0);
     glowScale.setValue(0);
     iconRotation.setValue(0);
     iconScale.setValue(1);
+    progressAnim.setValue(0);
+    setProgress(0);
+    progressRef.current = 0;
+    setCountdown(5);
   };
 
-  const handleUnlock = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  const handleAutoLock = useCallback(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setIsLocked(true);
+    setIsUnlocked(false);
+    resetAnimations();
 
-    if (isLocked) {
-      setIsScanning(true);
-      buttonScale.setValue(0.9);
-
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 150,
+    Animated.sequence([
+      Animated.timing(iconRotation, {
+        toValue: -1,
+        duration: 300,
         useNativeDriver: true,
-      }).start();
+      }),
+      Animated.timing(iconRotation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
-      startScanningAnimation();
+  const handleUnlockComplete = useCallback(() => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setIsUnlocked(true);
+    setIsLocked(false);
+    setIsHolding(false);
+    setCountdown(5);
+    showSuccessAnimation();
 
-      setTimeout(() => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        setIsScanning(false);
-        setIsUnlocked(true);
-        setIsLocked(false);
-        showSuccessAnimation();
-      }, 2000);
-    } else {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setIsLocked(true);
-      setIsUnlocked(false);
-      resetAnimations();
+    // Start auto-lock countdown
+    countdownTimerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownTimerRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-      Animated.sequence([
-        Animated.timing(iconRotation, {
-          toValue: -1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(iconRotation, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+    autoLockTimerRef.current = setTimeout(() => {
+      handleAutoLock();
+    }, 5000);
+  }, [handleAutoLock]);
+
+  const handlePressIn = useCallback(() => {
+    if (!isLocked) return;
+
+    // Cancel any ongoing auto-lock
+    if (autoLockTimerRef.current) {
+      clearTimeout(autoLockTimerRef.current);
+      autoLockTimerRef.current = null;
     }
-  };
+    if (countdownTimerRef.current) {
+      clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
 
-  const ringAnimatedStyle1 = {
-    transform: [{ scale: ringScale1 }],
-    opacity: ringOpacity1,
-  };
+    setIsHolding(true);
+    buttonScale.setValue(0.95);
+    Animated.timing(buttonScale, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
 
-  const ringAnimatedStyle2 = {
-    transform: [{ scale: ringScale2 }],
-    opacity: ringOpacity2,
-  };
+    // Start very fast progress animation
+    let startTime = Date.now();
+    const duration = 800; // Very fast unlock
+    lastHapticRef.current = 0;
 
-  const ringAnimatedStyle3 = {
-    transform: [{ scale: ringScale3 }],
-    opacity: ringOpacity3,
-  };
+    const updateProgress = () => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min(elapsed / duration, 1);
+      setProgress(newProgress);
+      progressRef.current = newProgress;
+      progressAnim.setValue(newProgress);
+
+      // Trigger increasing haptic feedback based on progress
+      const hapticLevel = Math.floor(newProgress * 6); // 0-5 levels
+      if (hapticLevel > lastHapticRef.current) {
+        lastHapticRef.current = hapticLevel;
+        const intensity = Math.min(hapticLevel / 5, 1);
+        Haptics.impactAsync(
+          hapticLevel < 3
+            ? Haptics.ImpactFeedbackStyle.Light
+            : hapticLevel < 5
+              ? Haptics.ImpactFeedbackStyle.Medium
+              : Haptics.ImpactFeedbackStyle.Heavy,
+        );
+      }
+
+      if (newProgress < 1) {
+        holdTimerRef.current = setTimeout(updateProgress, 8); // Faster updates for smooth progress
+      } else {
+        handleUnlockComplete();
+      }
+    };
+    updateProgress();
+  }, [isLocked, handleUnlockComplete]);
+
+  const handlePressOut = useCallback(() => {
+    if (!isLocked) return;
+
+    setIsHolding(false);
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+
+    // Reset progress if not complete
+    if (progressRef.current < 1) {
+      Animated.timing(progressAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+      setProgress(0);
+      progressRef.current = 0;
+    }
+  }, [isLocked]);
 
   const buttonAnimatedStyle = {
     transform: [{ scale: buttonScale }],
@@ -281,36 +252,91 @@ export default function DigitalKey() {
     transform: [{ scale: glowScale }],
   };
 
+  // Format date
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  };
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+      if (autoLockTimerRef.current) clearTimeout(autoLockTimerRef.current);
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    };
+  }, []);
+
   return (
     <View style={styles.container}>
-      <View className="flex-row justify-between items-start">
+      <View className="flex-1 w-full flex-row justify-between items-start">
         <View>
           <Text className="text-[13px] text-[#989896]">DIGITAL KEY</Text>
-          <Text className="text-[32px] text-white">Suite 1207</Text>
+          <Text className="text-[32px] text-white">
+            {stay?.roomPreference || "Room"}
+          </Text>
           <Text className="text-[12px] text-[#989896]">
-            Sereno Bay Resort - until April 30
+            {hotelName || "Hotel"} - until{" "}
+            {stay?.checkOut ? formatDate(stay.checkOut) : ""}
           </Text>
         </View>
 
         <View className="px-[11px] py-[5px] bg-[#D9D9D9] flex-row gap-1 items-center rounded-2xl">
           <View className="size-[6px] bg-[#3F6B4F] rounded-full" />
-          <Text className="text-[13px] text-[#3F6B4F]">active</Text>
+          <Text className="text-[13px] text-[#3F6B4F]">
+            {stay?.status === "CHECKED_IN" ? "active" : "inactive"}
+          </Text>
         </View>
       </View>
 
       <View className="relative items-center justify-center">
-        {isScanning && (
-          <>
-            <Animated.View
-              style={[styles.ring, styles.ring1, ringAnimatedStyle1]}
-            />
-            <Animated.View
-              style={[styles.ring, styles.ring2, ringAnimatedStyle2]}
-            />
-            <Animated.View
-              style={[styles.ring, styles.ring3, ringAnimatedStyle3]}
-            />
-          </>
+        {isHolding && isLocked && (
+          <View style={styles.progressContainer}>
+            <Svg width={size} height={size} style={styles.svg}>
+              <Defs>
+                <ClipPath id="clip">
+                  <AnimatedCircle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    stroke="#00ffff"
+                    strokeWidth={strokeWidth}
+                    fill="transparent"
+                    strokeDasharray={[circumference, circumference]}
+                    strokeDashoffset={progressAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [circumference, 0],
+                    })}
+                    strokeLinecap="round"
+                    transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                  />
+                </ClipPath>
+              </Defs>
+              <Circle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke="rgba(0,255,255,0.3)"
+                strokeWidth={strokeWidth}
+                fill="transparent"
+              />
+              <AnimatedCircle
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke="#00ffff"
+                strokeWidth={strokeWidth}
+                fill="transparent"
+                strokeDasharray={[circumference, circumference]}
+                strokeDashoffset={progressAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [circumference, 0],
+                })}
+                strokeLinecap="round"
+                transform={`rotate(-90 ${size / 2} ${size / 2})`}
+              />
+            </Svg>
+          </View>
         )}
 
         {!isLocked && (
@@ -327,7 +353,9 @@ export default function DigitalKey() {
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.buttonTouchable}
-            onPress={handleUnlock}
+            onPressIn={isLocked ? handlePressIn : undefined}
+            onPressOut={isLocked ? handlePressOut : undefined}
+            delayLongPress={0}
           >
             <Animated.View style={iconAnimatedStyle}>
               <Ionicons
@@ -341,23 +369,27 @@ export default function DigitalKey() {
       </View>
 
       <View>
-        {isScanning ? (
+        {isHolding ? (
           <>
-            <Text className="text-[32px] text-white">Scanning...</Text>
+            <Text className="text-[32px] text-white">
+              {Math.round(progress * 100)}%
+            </Text>
             <Text className="text-[13px] text-[#959592]">
-              Connecting to door lock
+              Hold to unlock...
             </Text>
           </>
         ) : !isLocked ? (
           <>
             <Text className="text-[32px] text-white">Unlocked</Text>
-            <Text className="text-[13px] text-[#959592]">Tap to lock door</Text>
+            <Text className="text-[13px] text-[#959592]">
+              Auto-lock in {countdown}s
+            </Text>
           </>
         ) : (
           <>
-            <Text className="text-[32px] text-white">Tap to unlock</Text>
+            <Text className="text-[32px] text-white">Hold to unlock</Text>
             <Text className="text-[13px] text-[#959592]">
-              Hold near the door for 1 second
+              Press and hold the button
             </Text>
           </>
         )}
@@ -368,6 +400,7 @@ export default function DigitalKey() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     gap: 24,
     backgroundColor: "black",
     alignItems: "center",
@@ -388,36 +421,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  ring: {
+  progressContainer: {
     position: "absolute",
-    borderRadius: 100,
-    borderWidth: 4,
-    backgroundColor: "transparent",
     zIndex: 1,
   },
-  ring1: {
-    width: 137,
-    height: 137,
-    borderColor: "#00ffff",
-    shadowColor: "#00ffff",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 20,
-  },
-  ring2: {
-    width: 137,
-    height: 137,
-    borderColor: "#00ccff",
-    shadowColor: "#00ccff",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 16,
-  },
-  ring3: {
-    width: 137,
-    height: 137,
-    borderColor: "#0099ff",
-    shadowRadius: 12,
+  svg: {
+    transform: [{ rotate: "-90deg" }],
   },
   successGlow: {
     position: "absolute",

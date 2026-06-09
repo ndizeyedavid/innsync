@@ -24,10 +24,11 @@ class OrdersService {
     limit?: number;
   }): Promise<OrderResponseDto[]> {
     try {
-      return await orderEndpoints.list(params);
+      const result = await orderEndpoints.list(params);
+      return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error("Error fetching orders:", error);
-      throw error;
+      return [];
     }
   }
 

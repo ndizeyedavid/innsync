@@ -9,13 +9,20 @@ import DigitalKey from "../components/HomeComponents/DigitalKey";
 import QuickActionButton from "../components/HomeComponents/QuickActionButton";
 import reservationsService from "../services/reservations.service";
 import authService from "../services/auth.service";
-import { GuestStay, User } from "../api/types";
+import {
+  GuestStay,
+  User,
+  Notification as NotificationType,
+} from "../api/types";
+import { useToast } from "../contexts/ToastContext";
 
 export default function HomeScreen() {
   const [stays, setStays] = useState<GuestStay[]>([]);
   const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const { showToast } = useToast();
 
   const quickActions = [
     { icon: "restaurant", title: "Order food", description: "12 min Avg" },
@@ -49,6 +56,8 @@ export default function HomeScreen() {
       ]);
       setUser(userData);
       setStays(staysData);
+      // TODO: Load notifications from API once endpoint is available
+      setNotifications([]);
 
       // Find current active stay (checked in)
       const active =
@@ -56,6 +65,7 @@ export default function HomeScreen() {
       setCurrentStay(active);
     } catch (error) {
       console.error("Error loading data:", error);
+      showToast("error", "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -95,11 +105,19 @@ export default function HomeScreen() {
       </View>
       {/* Notification */}
       <View className="mt-3">
-        <Notification />
+        {notifications.length > 0 && (
+          <Notification
+            notification={notifications[0]}
+            onClose={() => {
+              // TODO: Mark notification as read via API
+              setNotifications((prev) => prev.slice(1));
+            }}
+          />
+        )}
       </View>
 
       <View className="mt-5">
-        <DigitalKey />
+        <DigitalKey stay={currentStay} hotelName="Hotel" />
       </View>
 
       <View className="mt-5">
