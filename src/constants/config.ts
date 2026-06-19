@@ -8,6 +8,23 @@ export const CONFIG = {
     RETRY_DELAY: 1000,
   },
 
+  // External APIs
+  EXTERNAL: {
+    GOOGLE_MAPS: {
+      API_KEY: "",
+      PLACES_BASE_URL: "https://maps.googleapis.com/maps/api/place",
+      MAPS_BASE_URL: "https://maps.googleapis.com/maps/api",
+    },
+    OPEN_WEATHER: {
+      API_KEY: "",
+      BASE_URL: "https://api.openweathermap.org/data/2.5",
+    },
+    EVENTBRITE: {
+      API_KEY: "",
+      BASE_URL: "https://www.eventbriteapi.com/v3",
+    },
+  },
+
   // WebSocket Configuration
   WEBSOCKET: {
     URL: __DEV__ ? "http://localhost:3000" : "https://api.innsync.com",

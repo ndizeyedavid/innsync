@@ -8,7 +8,10 @@ import itineraryService from "../services/itinerary.service";
 import reservationsService from "../services/reservations.service";
 import { ItineraryItem, GuestStay } from "../api/types";
 import { useToast } from "../contexts/ToastContext";
-
+import { useRouter } from "expo-router";
+// @ts-ignore
+import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Haptics from "expo-haptics";
 // Helper to generate days between checkIn and checkOut
 const generateStayDays = (checkIn: string, checkOut: string) => {
   const days = [];
@@ -69,6 +72,8 @@ export default function ItineraryScreen() {
 
   const scrollViewRef = useRef<ScrollView>(null);
   const dayCardWidth = 100; // Approximate width of each day card + gap
+
+  const router = useRouter();
 
   // Generate stay days when currentStay changes
   const stayDays = useMemo(() => {
@@ -169,10 +174,15 @@ export default function ItineraryScreen() {
           }
           descriptionStyle="text-[12px] text-gray-500"
         />
-        <View className="px-[11px] py-[5px] bg-success-light flex-row gap-1 items-center rounded-2xl">
-          <View className="size-[6px] bg-success rounded-full" />
-          <Text className="text-[13px] text-success">LIVE</Text>
-        </View>
+        <TouchableOpacity
+          className="size-[47px] bg-sand-100 rounded-full items-center justify-center"
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/profile");
+          }}
+        >
+          <Ionicons name="person-outline" color="#283D5A" size={24} />
+        </TouchableOpacity>
       </View>
 
       <View className="my-[17px]">

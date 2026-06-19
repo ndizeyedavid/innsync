@@ -208,15 +208,13 @@ export default function GuestHomeScreen() {
 
                 {/* Profile Avatar */}
                 <TouchableOpacity
-                  onPress={() => router.push("/profile")}
-                  className=" items-center justify-center"
+                  className="size-[47px] bg-sand-100 rounded-full items-center justify-center"
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push("/profile");
+                  }}
                 >
-                  <Ionicons
-                    name="person-circle"
-                    className=" bg-navy  rounded-full"
-                    color="white"
-                    size={40}
-                  />
+                  <Ionicons name="person-outline" color="#283D5A" size={24} />
                 </TouchableOpacity>
               </>
             )}
