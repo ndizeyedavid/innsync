@@ -47,7 +47,7 @@ export default function LanguageCurrencyScreen() {
         <View className="bg-[#F5F4EF] rounded-2xl p-4 mt-4">
           <View className="flex-row items-center justify-between">
             <View>
-              <Text className="text-xs text-[#A4A097] mb-1">CURRENT SELECTION</Text>
+              <Text className="text-xs text-gray-500 mb-1">CURRENT SELECTION</Text>
               <Text className="text-lg font-semibold">English · USD ($)</Text>
             </View>
             <View className="size-10 bg-black rounded-full items-center justify-center">
@@ -57,7 +57,7 @@ export default function LanguageCurrencyScreen() {
         </View>
 
         {/* Language */}
-        <Text className="text-[18px] text-[#ACA9A0] mt-6 mb-3">LANGUAGE</Text>
+        <Text className="text-[18px] text-gray-500 mt-6 mb-3">LANGUAGE</Text>
 
         <View className="bg-white border border-[#EFEDE7] rounded-2xl overflow-hidden">
           {languages.map((lang, index) => (

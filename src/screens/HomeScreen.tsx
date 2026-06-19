@@ -1,4 +1,5 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
+import { useEffect, useState } from "react";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ScreenLayout from "../layout/ScreenLayout";
@@ -6,14 +7,29 @@ import TabHeader from "../components/TabHeader";
 import Notification from "../components/Notification";
 import DigitalKey from "../components/HomeComponents/DigitalKey";
 import QuickActionButton from "../components/HomeComponents/QuickActionButton";
+import reservationsService from "../services/reservations.service";
+import authService from "../services/auth.service";
+import {
+  GuestStay,
+  User,
+  Notification as NotificationType,
+} from "../api/types";
+import { useToast } from "../contexts/ToastContext";
 
 export default function HomeScreen() {
+  const [stays, setStays] = useState<GuestStay[]>([]);
+  const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const { showToast } = useToast();
+
   const quickActions = [
     { icon: "restaurant", title: "Order food", description: "12 min Avg" },
     {
       icon: "calendar-clear",
       title: "Itinerary",
-      description: "Day 2 of 4",
+      description: currentStay ? "View your itinerary" : "View itinerary",
     },
     {
       icon: "bonfire",
@@ -27,26 +43,81 @@ export default function HomeScreen() {
     },
   ];
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [userData, staysData] = await Promise.all([
+        authService.getCurrentUser(),
+        reservationsService.listMine(),
+      ]);
+      setUser(userData);
+      setStays(staysData);
+      // TODO: Load notifications from API once endpoint is available
+      setNotifications([]);
+
+      // Find current active stay (checked in)
+      const active =
+        staysData.find((s) => s.status === "CHECKED_IN") || staysData[0];
+      setCurrentStay(active);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      showToast("error", "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <ScreenLayout>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#283D5A" />
+        </View>
+      </ScreenLayout>
+    );
+  }
+
   return (
     <ScreenLayout>
       <View className="flex-row justify-between">
         <TabHeader
-          alt="HEAVY RAIN AT 20:42"
+          alt={
+            currentStay
+              ? `${currentStay.roomPreference || "No room preference"}`
+              : "Welcome back"
+          }
           title="Good Afternoon,"
-          description="Mellow."
+          description={user?.name || "Guest"}
         />
-        <TouchableOpacity className="size-[47px] bg-[#E9E6DE] rounded-full items-center justify-center relative">
-          <Ionicons name="notifications-outline" color="black" size={24} />
-          <View className="size-[8px] bg-[#A8453E] rounded-full absolute top-2 right-3" />
+        <TouchableOpacity className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative">
+          <Ionicons name="notifications-outline" color="#283D5A" size={24} />
+          <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" />
         </TouchableOpacity>
       </View>
       {/* Notification */}
       <View className="mt-3">
-        <Notification />
+        {notifications.length > 0 && (
+          <Notification
+            notification={notifications[0]}
+            onClose={() => {
+              // TODO: Mark notification as read via API
+              setNotifications((prev) => prev.slice(1));
+            }}
+          />
+        )}
       </View>
 
       <View className="mt-5">
-        <DigitalKey />
+        <DigitalKey stay={currentStay} hotelName="Hotel" />
       </View>
 
       <View className="mt-5">

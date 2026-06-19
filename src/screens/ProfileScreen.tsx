@@ -1,4 +1,5 @@
 import { Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import TabHeader from "../components/TabHeader";
 import ScreenLayout from "../layout/ScreenLayout";
@@ -7,9 +8,37 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import ProfileCard from "../components/profileComponents/ProfileCard";
 import SettingItem from "../components/profileComponents/SettingItem";
 import * as Haptics from "expo-haptics";
+import { useAuth } from "../hooks/useAuth";
+import reservationsService from "../services/reservations.service";
+import { GuestStay } from "../api/types";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { user, signOut } = useAuth();
+  const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
+
+  useEffect(() => {
+    loadCurrentStay();
+  }, []);
+
+  const loadCurrentStay = async () => {
+    try {
+      const stays = await reservationsService.listMine();
+      const active = stays.find((s) => s.status === "CHECKED_IN") || stays[0];
+      setCurrentStay(active || null);
+    } catch (error) {
+      console.error("Error loading current stay:", error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.replace("/login");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   const settingItems = [
     {
@@ -42,20 +71,30 @@ export default function ProfileScreen() {
       description: "About this app",
       route: "/help",
     },
+    {
+      icon: "log-out-outline",
+      title: "Sign out",
+      description: "Log out of your account",
+      action: handleSignOut,
+    },
   ];
 
   return (
     <ScreenLayout>
       <TabHeader alt="ACCOUNT" title="Profile" />
-      <ProfileCard />
+      <ProfileCard user={user} />
 
       {/* Stay details */}
       <View className="bg-white border border-[#EFEDE7] rounded-3xl overflow-hidden mt-5">
         <View className="gap-2 py-[20px] px-[27px] border-b-2 border-[#EFEDE7]">
           <Text className="text-[12px] text-[#A4A097]">CURRENT STAY</Text>
-          <Text className="text-[24px]">The Fremen House</Text>
+          <Text className="text-[24px]">
+            {currentStay?.hotelName || "The Fremen House"}
+          </Text>
           <Text className="text-[12px] text-[#A4A097]">
-            April 26 - April 30 · Suite 1207
+            {currentStay
+              ? `${new Date(currentStay.checkIn).toLocaleDateString()} - ${new Date(currentStay.checkOut).toLocaleDateString()} · ${currentStay.roomPreference || "Suite 1207"}`
+              : "April 26 - April 30 · Suite 1207"}
           </Text>
         </View>
         <View className="flex-row justify-between">
@@ -100,7 +139,11 @@ export default function ProfileScreen() {
             description={item.description}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push(item.route);
+              if (item.action) {
+                item.action();
+              } else if (item.route) {
+                router.push(item.route);
+              }
             }}
             isLast={index === settingItems.length - 1}
           />

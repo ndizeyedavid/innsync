@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
@@ -9,6 +16,10 @@ import AmenitiesSection from "../components/GuestComponents/AmenitiesSection";
 import HotelDetailsModal from "../components/GuestComponents/HotelDetailsModal";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
+import { useAuth } from "../hooks/useAuth";
+import authService from "../services/auth.service";
+import { User } from "../api/types";
+import { useToast } from "../contexts/ToastContext";
 
 interface Hotel {
   id: string;
@@ -28,118 +39,6 @@ interface Hotel {
   }[];
 }
 
-// Mock hotel data
-const hotels: Hotel[] = [
-  {
-    id: "1",
-    name: "Sereno Bay Resort",
-    location: "Malibu, California",
-    rating: 4.8,
-    price: 350,
-    image: require("../assets/images/order-1.jpg"),
-    amenities: ["Pool", "Spa", "Restaurant", "Gym", "Beach Access", "WiFi"],
-    description:
-      "Nestled along the pristine shores of Malibu, Sereno Bay Resort offers breathtaking ocean views and world-class amenities. Our infinity pool seems to merge with the Pacific, while our award-winning spa provides ultimate relaxation.",
-    meals: [
-      {
-        id: "m1",
-        name: "Oceanview Breakfast",
-        description: "Fresh coastal cuisine with organic ingredients",
-        image: require("../assets/images/meal.png"),
-        price: 25,
-      },
-      {
-        id: "m2",
-        name: "Sunset Seafood Dinner",
-        description: "Premium seafood caught daily",
-        image: require("../assets/images/order-2.jpg"),
-        price: 45,
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Mountain View Lodge",
-    location: "Aspen, Colorado",
-    rating: 4.9,
-    price: 425,
-    image: require("../assets/images/order-2.jpg"),
-    amenities: ["Ski Access", "Spa", "Restaurant", "Fireplace", "WiFi"],
-    description:
-      "Experience the ultimate mountain getaway at Mountain View Lodge. With ski-in/ski-out access, cozy fireplaces in every room, and panoramic views of the Rockies, we're the perfect destination for winter adventures and summer escapes.",
-    meals: [
-      {
-        id: "m3",
-        name: "Alpine Breakfast",
-        description: "Hearty mountain breakfast to start your day",
-        image: require("../assets/images/meal.png"),
-        price: 20,
-      },
-      {
-        id: "m4",
-        name: "Cabin Comfort Dinner",
-        description: "Rustic comfort food with mountain views",
-        image: require("../assets/images/order-3.jpg"),
-        price: 38,
-      },
-    ],
-  },
-  {
-    id: "3",
-    name: "Urban Oasis Hotel",
-    location: "New York City",
-    rating: 4.7,
-    price: 280,
-    image: require("../assets/images/order-3.jpg"),
-    amenities: ["Rooftop Bar", "Gym", "Restaurant", "WiFi", "Concierge"],
-    description:
-      "In the heart of Manhattan, Urban Oasis Hotel is your sanctuary in the city that never sleeps. Our rooftop bar offers stunning skyline views, while our concierge team ensures your NYC experience is unforgettable.",
-    meals: [
-      {
-        id: "m5",
-        name: "City Sunrise Breakfast",
-        description: "Energy-boosting breakfast for busy mornings",
-        image: require("../assets/images/meal.png"),
-        price: 22,
-      },
-      {
-        id: "m6",
-        name: "Manhattan Steak Dinner",
-        description: "Prime cuts with skyline views",
-        image: require("../assets/images/order-1.jpg"),
-        price: 55,
-      },
-    ],
-  },
-  {
-    id: "4",
-    name: "Coastal Paradise Inn",
-    location: "Miami, Florida",
-    rating: 4.6,
-    price: 310,
-    image: require("../assets/images/yoga.jpg"),
-    amenities: ["Beach Access", "Pool", "Restaurant", "Spa", "WiFi"],
-    description:
-      "Step into paradise at Coastal Paradise Inn, where Miami's vibrant energy meets tropical tranquility. Our beachfront location, refreshing pool, and full-service spa create the perfect backdrop for your Florida vacation.",
-    meals: [
-      {
-        id: "m7",
-        name: "Tropical Breakfast",
-        description: "Fresh fruits and tropical specialties",
-        image: require("../assets/images/meal.png"),
-        price: 18,
-      },
-      {
-        id: "m8",
-        name: "Beachside Seafood",
-        description: "Fresh catch with ocean breeze",
-        image: require("../assets/images/yoga.jpg"),
-        price: 42,
-      },
-    ],
-  },
-];
-
 // Amenity filter options
 const amenityOptions = [
   { id: "pool", name: "Pool", icon: "water" },
@@ -152,10 +51,37 @@ const amenityOptions = [
 
 export default function GuestHomeScreen() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [filteredHotels, setFilteredHotels] = useState<Hotel[]>(hotels);
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [filteredHotels, setFilteredHotels] = useState<Hotel[]>([]);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    loadData();
+  }, [isAuthenticated]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      if (isAuthenticated) {
+        const userData = await authService.getCurrentUser();
+        setUser(userData);
+      }
+      // TODO: Load hotels from API once endpoint is available
+      setHotels([]);
+      setFilteredHotels([]);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      showToast("error", "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleToggleAmenity = (amenityId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -189,7 +115,7 @@ export default function GuestHomeScreen() {
       );
       setFilteredHotels(filtered);
     }
-  }, [selectedAmenities]);
+  }, [selectedAmenities, hotels]);
 
   const handleHotelPress = (hotelId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -213,42 +139,97 @@ export default function GuestHomeScreen() {
     router.push("/signup");
   };
 
+  if (loading) {
+    return (
+      <ScreenLayout>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#283D5A" />
+        </View>
+      </ScreenLayout>
+    );
+  }
+
   return (
     <ScreenLayout>
       {/* Header */}
       <View>
         <View className="flex-row justify-between items-center">
-          <View>
-            <Text className="text-[12px] text-[#9C988E] uppercase">
-              Discover
-            </Text>
-            <Text className="text-[24px] font-semibold">Find Your Stay</Text>
-          </View>
-
-          <View className="flex-row gap-2">
-            <TouchableOpacity
-              onPress={() => router.push("/login")}
-              className="bg-black px-3 py-1 rounded-full"
-            >
-              <Text className="text-white font-semibold relative top-px">
-                Sign In
+          {/* Show Discover/Find Your Stay only if not authenticated */}
+          {!isAuthenticated && (
+            <View>
+              <Text className="text-[12px] text-gray-500 uppercase">
+                Discover
               </Text>
-            </TouchableOpacity>
+              <Text className="text-[24px] font-semibold text-navy">
+                Find Your Stay
+              </Text>
+            </View>
+          )}
 
-            <TouchableOpacity
-              onPress={() => router.push("/signup")}
-              className="bg-white px-3 py-1 rounded-full border-2 border-black"
-            >
-              <Text className="text-black font-semibold">Sign Up</Text>
-            </TouchableOpacity>
+          {/* Search Bar (only if authenticated) */}
+          {isAuthenticated && (
+            <View className="flex-1 flex-row items-center bg-white rounded-2xl px-4 py-3 mr-4">
+              <Ionicons name="search" size={20} color="#9CA3AF" />
+              <Text className="ml-3 text-gray-500">Search destinations...</Text>
+            </View>
+          )}
+
+          {/* Right side buttons */}
+          <View className="flex-row gap-3 items-center">
+            {!isAuthenticated ? (
+              <>
+                <TouchableOpacity
+                  onPress={() => router.push("/login")}
+                  className="bg-cobalt px-3 py-1 rounded-full"
+                >
+                  <Text className="text-white font-semibold relative top-px">
+                    Sign In
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => router.push("/signup")}
+                  className="bg-white px-3 py-1 rounded-full border-2 border-cobalt"
+                >
+                  <Text className="text-navy font-semibold">Sign Up</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                {/* Notification Bell */}
+                {/* <TouchableOpacity className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative">
+                  <Ionicons
+                    name="notifications-outline"
+                    color="#283D5A"
+                    size={24}
+                  />
+                  <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" />
+                </TouchableOpacity> */}
+
+                {/* Profile Avatar */}
+                <TouchableOpacity
+                  onPress={() => router.push("/profile")}
+                  className=" items-center justify-center"
+                >
+                  <Ionicons
+                    name="person-circle"
+                    className=" bg-navy  rounded-full"
+                    color="white"
+                    size={40}
+                  />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
 
-        {/* Search Bar */}
-        <View className="mt-4 flex-row items-center bg-white rounded-2xl px-4 py-3">
-          <Ionicons name="search" size={20} color="#6E6B63" />
-          <Text className="ml-3 text-[#6E6B63]">Search destinations...</Text>
-        </View>
+        {/* Search Bar (only if not authenticated) */}
+        {!isAuthenticated && (
+          <View className="mt-4 flex-row items-center bg-white rounded-2xl px-4 py-3">
+            <Ionicons name="search" size={20} color="#9CA3AF" />
+            <Text className="ml-3 text-gray-500">Search destinations...</Text>
+          </View>
+        )}
       </View>
 
       {/* Amenities Filter */}
@@ -260,7 +241,7 @@ export default function GuestHomeScreen() {
 
       {/* Hotel Count */}
       <View className="flex-row justify-between items-center mt-4">
-        <Text className="text-lg font-semibold">
+        <Text className="text-lg font-semibold text-navy">
           {filteredHotels.length}{" "}
           {filteredHotels.length === 1 ? "Hotel" : "Hotels"}
         </Text>
@@ -272,7 +253,7 @@ export default function GuestHomeScreen() {
               setSelectedAmenities([]);
             }}
           >
-            <Text className="text-[#6E6B63]">Clear Filters</Text>
+            <Text className="text-gray-500">Clear Filters</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -300,13 +281,13 @@ export default function GuestHomeScreen() {
           ))
         ) : (
           <View className="items-center justify-center py-20">
-            <Ionicons name="search-outline" size={60} color="#9C988E" />
-            <Text className="text-[#6E6B63] mt-4 text-lg">
+            <Ionicons name="search-outline" size={60} color="#9CA3AF" />
+            <Text className="text-gray-500 mt-4 text-lg">
               No hotels found with selected filters
             </Text>
             <TouchableOpacity
               onPress={() => setSelectedAmenities([])}
-              className="mt-4 bg-black px-6 py-3 rounded-full"
+              className="mt-4 bg-cobalt px-6 py-3 rounded-full"
             >
               <Text className="text-white font-semibold">Clear Filters</Text>
             </TouchableOpacity>

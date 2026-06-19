@@ -1,2 +1,98 @@
 @import "tailwindcss";
 @import "uniwind";
+
+@theme {
+  /* InnSync Design System - Brand Palette */
+  --color-navy: #283d5a; /* Night Navy - primary brand */
+  --color-cobalt: #2f538e; /* Cobalt Trust - CTAs */
+  --color-azure: #3a8ac3; /* Azure Route - secondary */
+  --color-sky: #4ab3de; /* Sky Accent - highlights */
+  --color-sand: #eedbcc; /* Warm Sand - warmth */
+
+  /* Tint Scales - Night Navy */
+  --color-navy-50: #e8ecef;
+  --color-navy-100: #ced7dd;
+  --color-navy-200: #a9b7c4;
+  --color-navy-300: #7f96aa;
+  --color-navy-500: #283d5a;
+  --color-navy-700: #1c2a3e;
+  --color-navy-900: #101925;
+  --color-navy-950: #0a0f15;
+
+  /* Tint Scales - Sky Accent */
+  --color-sky-50: #e7f5fb;
+  --color-sky-100: #cdeaf6;
+  --color-sky-200: #9dd4ed;
+  --color-sky-300: #6cbfe4;
+  --color-sky-500: #4ab3de;
+  --color-sky-700: #2e8db3;
+  --color-sky-900: #1e5c75;
+
+  /* Tint Scales - Warm Sand */
+  --color-sand-50: #fdf8f4;
+  --color-sand-100: #f9efe7;
+  --color-sand-200: #f3dfce;
+  --color-sand-400: #eedbcc;
+  --color-sand-600: #d9bfa8;
+  --color-sand-800: #c2a385;
+  --color-sand-950: #6b5644;
+
+  /* Semantic Aliases */
+  --color-primary: var(--color-navy);
+  --color-interactive: var(--color-cobalt);
+  --color-accent: var(--color-sky);
+  --color-surface-dark: var(--color-navy);
+  --color-warmth: var(--color-sand);
+
+  /* Neutral Colors (WCAG AA compliant) */
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  --color-info: var(--color-sky);
+  --color-info-light: var(--color-sky-50);
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}

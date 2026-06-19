@@ -1,20 +1,25 @@
 import { Text, View } from "react-native";
 import VibeButton from "../VibeButton";
-import { useState } from "react";
 import { vibeCards } from "../../constants/vibeCards";
 import * as Haptics from "expo-haptics";
 
-export default function VibeDetails() {
-  const [selectedVibes, setSelectedVibes] = useState<number[]>([]);
+interface VibeDetailsProps {
+  selectedVibeIndices: number[];
+  setSelectedVibeIndices: (indices: number[]) => void;
+}
 
-  const handleVibeSelection = (id: any) => {
+export default function VibeDetails({
+  selectedVibeIndices,
+  setSelectedVibeIndices,
+}: VibeDetailsProps) {
+  const handleVibeSelection = (index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
-    if (selectedVibes.includes(id)) {
-      setSelectedVibes((prevSelectedVibes) =>
-        prevSelectedVibes.filter((vibe) => vibe !== id),
+    if (selectedVibeIndices.includes(index)) {
+      setSelectedVibeIndices(
+        selectedVibeIndices.filter((i) => i !== index),
       );
     } else {
-      setSelectedVibes((prevSelectedVibes) => [...prevSelectedVibes, id]);
+      setSelectedVibeIndices([...selectedVibeIndices, index]);
     }
   };
 
@@ -22,7 +27,7 @@ export default function VibeDetails() {
     <View className="mb-24">
       <View className="mt-6">
         <View>
-          <Text className="text-[15px] text-[#9C988E]">
+          <Text className="text-[15px] text-gray-500">
             Select at least one
           </Text>
         </View>
@@ -35,7 +40,7 @@ export default function VibeDetails() {
               icon={data.icon}
               title={data.title}
               description={data.description}
-              checked={selectedVibes.includes(index)}
+              checked={selectedVibeIndices.includes(index)}
               onPress={() => handleVibeSelection(index)}
             />
           ))}

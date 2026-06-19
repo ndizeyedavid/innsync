@@ -33,7 +33,7 @@ export default function RestartCheckinScreen() {
       <View className="bg-white border border-[#EFEDE7] rounded-2xl p-5 mt-4">
         <View className="flex-row items-center gap-3 mb-4">
           <View className="size-12 bg-green-100 rounded-full items-center justify-center">
-            <Ionicons name="checkmark-circle" size={24} color="#3F6B4F" />
+            <Ionicons name="checkmark-circle" size={24} color="#10B981" />
           </View>
           <View>
             <Text className="text-sm text-[#A4A097]">CURRENT STATUS</Text>
@@ -43,15 +43,15 @@ export default function RestartCheckinScreen() {
 
         <View className="bg-[#F5F4EF] rounded-xl p-4">
           <View className="flex-row justify-between mb-2">
-            <Text className="text-sm text-[#6E6B63]">Room</Text>
+            <Text className="text-sm text-gray-500">Room</Text>
             <Text className="text-sm font-semibold">Suite 1207</Text>
           </View>
           <View className="flex-row justify-between mb-2">
-            <Text className="text-sm text-[#6E6B63]">Check-in Time</Text>
+            <Text className="text-sm text-gray-500">Check-in Time</Text>
             <Text className="text-sm font-semibold">2:45 PM</Text>
           </View>
           <View className="flex-row justify-between">
-            <Text className="text-sm text-[#6E6B63]">Check-in Date</Text>
+            <Text className="text-sm text-gray-500">Check-in Date</Text>
             <Text className="text-sm font-semibold">April 26, 2024</Text>
           </View>
         </View>
@@ -78,36 +78,36 @@ export default function RestartCheckinScreen() {
 
         <View className="gap-4">
           <View className="flex-row items-start gap-3">
-            <View className="size-6 bg-black rounded-full items-center justify-center mt-1">
+            <View className="size-6 bg-cobalt rounded-full items-center justify-center mt-1">
               <Text className="text-white text-xs font-bold">1</Text>
             </View>
             <View className="flex-1">
               <Text className="text-sm font-semibold mb-1">Current Session Ends</Text>
-              <Text className="text-xs text-[#6E6B63]">
+              <Text className="text-xs text-gray-500">
                 Your current check-in session will be terminated immediately
               </Text>
             </View>
           </View>
 
           <View className="flex-row items-start gap-3">
-            <View className="size-6 bg-black rounded-full items-center justify-center mt-1">
+            <View className="size-6 bg-cobalt rounded-full items-center justify-center mt-1">
               <Text className="text-white text-xs font-bold">2</Text>
             </View>
             <View className="flex-1">
               <Text className="text-sm font-semibold mb-1">Digital Key Deactivated</Text>
-              <Text className="text-xs text-[#6E6B63]">
+              <Text className="text-xs text-gray-500">
                 Your room access via digital key will be temporarily suspended
               </Text>
             </View>
           </View>
 
           <View className="flex-row items-start gap-3">
-            <View className="size-6 bg-black rounded-full items-center justify-center mt-1">
+            <View className="size-6 bg-cobalt rounded-full items-center justify-center mt-1">
               <Text className="text-white text-xs font-bold">3</Text>
             </View>
             <View className="flex-1">
               <Text className="text-sm font-semibold mb-1">New Check-in Required</Text>
-              <Text className="text-xs text-[#6E6B63]">
+              <Text className="text-xs text-gray-500">
                 You'll need to go through the check-in process again to regain access
               </Text>
             </View>
@@ -118,7 +118,7 @@ export default function RestartCheckinScreen() {
       {/* Action Buttons */}
       <View className="flex-1 justify-end mt-6">
         <TouchableOpacity
-          className="bg-black py-4 rounded-2xl items-center mb-3"
+          className="bg-cobalt py-4 rounded-2xl items-center mb-3"
           onPress={handleRestartCheckin}
         >
           <Text className="text-white font-semibold text-lg">

@@ -2,9 +2,79 @@ import React, { useState } from "react";
 import { Text, View } from "react-native";
 import PaymentOption from "../PaymentOption";
 import { paymentOptions } from "../../constants/paymentOptions";
+import { vibeCards } from "../../constants/vibeCards";
+import { mealPlans } from "../../constants/mealPlans";
 
-export default function ReviewAndPay() {
+interface ReviewAndPayProps {
+  checkIn: Date | null;
+  checkOut: Date | null;
+  adults: number;
+  children: number;
+  roomPreference?: string;
+  bedPreference?: string;
+  floorPreference?: string;
+  selectedMealPlanId: string;
+  specialRequests?: string;
+  selectedVibeIndices: number[];
+  dietaryRestrictions: string[];
+}
+
+export default function ReviewAndPay({
+  checkIn,
+  checkOut,
+  adults,
+  children,
+  roomPreference,
+  bedPreference,
+  floorPreference,
+  selectedMealPlanId,
+  selectedVibeIndices,
+  dietaryRestrictions,
+}: ReviewAndPayProps) {
+  // const selectedMealPlan = mealPlans.find((plan) => plan.id === selectedMealPlanId);
   const [selectedPaymentOption, setSelectedPaymentOption] = useState<number>(0);
+
+  const formatDate = (date: Date) => {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}/${day}`;
+  };
+
+  const calculateNights = () => {
+    if (!checkIn || !checkOut) return 0;
+    const diffTime = checkOut.getTime() - checkIn.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const nights = calculateNights();
+
+  const selectedMealPlan = mealPlans.find(
+    (plan) => plan.id === selectedMealPlanId,
+  );
+  const tags = [];
+  if (checkIn && checkOut) {
+    tags.push(`${formatDate(checkIn)} → ${formatDate(checkOut)}`);
+  }
+  tags.push(`${adults} adult${adults !== 1 ? "s" : ""}`);
+  if (children > 0) {
+    tags.push(`${children} child${children !== 1 ? "ren" : ""}`);
+  }
+  if (roomPreference) tags.push(roomPreference);
+  if (bedPreference) tags.push(bedPreference);
+  if (floorPreference) tags.push(floorPreference);
+  tags.push(selectedMealPlan?.title || "");
+
+  if (selectedVibeIndices.length > 0) {
+    tags.push(
+      `${selectedVibeIndices.length} vibe${selectedVibeIndices.length !== 1 ? "s" : ""}`,
+    );
+  }
+  if (dietaryRestrictions.length > 0) {
+    tags.push(
+      `${dietaryRestrictions.length} dietary restriction${dietaryRestrictions.length !== 1 ? "s" : ""}`,
+    );
+  }
 
   return (
     <View className="mb-[200px]">
@@ -17,37 +87,35 @@ export default function ReviewAndPay() {
 
         <View className="mt-3 gap-4">
           <CheckoutDetail
-            title="Ocean Loft X 4 nights"
-            description="$580/night"
-            price="$2,320"
+            title={`Stay - ${nights} night${nights !== 1 ? "s" : ""}`}
+            description={`${adults} adult${adults !== 1 ? "s" : ""}${children > 0 ? `, ${children} child${children !== 1 ? "ren" : ""}` : ""}`}
+            price="To be confirmed"
           />
           <CheckoutDetail
-            title="Breakfast X 4 nights X 2 guests"
-            description="$28/night/guest"
-            price="$224"
+            title={`Meal Plan: ${selectedMealPlan?.title}`}
+            description={selectedMealPlan?.description}
+            price=""
           />
-
-          <View className="gap-2">
-            <View className="bg-[#F0EEE6] w-full h-px" />
-            <View className="relative top-2">
-              <CheckoutDetail
-                title="Taxes & fees (12%)"
-                description=""
-                price="$305"
-              />
-            </View>
-            <View className="bg-[#F0EEE6] w-full h-px" />
-          </View>
-          <CheckoutDetail title="Total" description="" price="$2849" />
+          {selectedVibeIndices.length > 0 && (
+            <CheckoutDetail
+              title="Vibes"
+              description={selectedVibeIndices
+                .map((i) => vibeCards[i].title)
+                .join(", ")}
+              price=""
+            />
+          )}
+          {dietaryRestrictions.length > 0 && (
+            <CheckoutDetail
+              title="Dietary Restrictions"
+              description={dietaryRestrictions.join(", ")}
+              price=""
+            />
+          )}
 
           {/* total summary */}
-          <View className="flex-row flex-wrap gap-2">
-            {[
-              "Apr 26 → Apr 30",
-              "2 adults",
-              "Ocean view",
-              "2 vibes selected",
-            ].map((text, index) => (
+          <View className="flex-row flex-wrap gap-2 mt-4">
+            {tags.map((text, index) => (
               <View
                 key={index}
                 className="px-[11px] py-[4px] bg-[#F5F4EF] rounded-[2px]"
@@ -85,12 +153,13 @@ interface ICheckoutDetail {
 function CheckoutDetail({ title, description, price }: ICheckoutDetail) {
   return (
     <View className="flex-row justify-between">
-      <View>
+      <View className="flex-1">
         <Text className="text-[16px]">{title}</Text>
-        <Text className="text-[12px] text-[#9C988E]">{description}</Text>
+        {description && (
+          <Text className="text-[12px] text-[#9C988E]">{description}</Text>
+        )}
       </View>
-
-      <Text className="text-[16px]">{price}</Text>
+      {price ? <Text className="text-[16px]">{price}</Text> : null}
     </View>
   );
 }

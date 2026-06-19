@@ -45,7 +45,7 @@ export default function HotelCard({
         />
 
         {/* Rating Badge */}
-        <View className="absolute top-3 right-3 bg-black/80 px-3 py-1 rounded-full flex-row items-center gap-1">
+        <View className="absolute top-3 right-3 bg-navy/80 px-3 py-1 rounded-full flex-row items-center gap-1">
           <Ionicons name="star" size={16} color="#FFD700" />
           <Text className="text-white text-sm font-semibold">{rating}</Text>
         </View>
@@ -64,20 +64,20 @@ export default function HotelCard({
         <Text className="text-2xl font-semibold">{name}</Text>
 
         <View className="flex-row items-center gap-1 mt-2">
-          <Ionicons name="location" size={16} color="#6E6B63" />
-          <Text className="text-[#6E6B63] text-sm">{location}</Text>
+          <Ionicons name="location" size={16} color="#9CA3AF" />
+          <Text className="text-gray-500 text-sm">{location}</Text>
         </View>
 
         {/* Amenities Preview */}
         <View className="flex-row flex-wrap gap-2 mt-3">
           {amenities.slice(0, 4).map((amenity, index) => (
-            <View key={index} className="bg-[#F5F4EF] px-3 py-1 rounded-full">
-              <Text className="text-xs text-[#6E6B63]">{amenity}</Text>
+            <View key={index} className="bg-sand-100 px-3 py-1 rounded-full">
+              <Text className="text-xs text-gray-500">{amenity}</Text>
             </View>
           ))}
           {amenities.length > 4 && (
-            <View className="bg-[#F5F4EF] px-3 py-1 rounded-full">
-              <Text className="text-xs text-[#6E6B63]">
+            <View className="bg-sand-100 px-3 py-1 rounded-full">
+              <Text className="text-xs text-gray-500">
                 +{amenities.length - 4}
               </Text>
             </View>
@@ -85,7 +85,7 @@ export default function HotelCard({
         </View>
 
         {/* View Details Button */}
-        <View className="mt-4 bg-black py-3 rounded-xl items-center">
+        <View className="mt-4 bg-cobalt py-3 rounded-xl items-center">
           <Text className="text-white font-semibold">View Details</Text>
         </View>
       </View>

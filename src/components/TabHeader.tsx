@@ -15,10 +15,10 @@ export default function TabHeader({
 }: ITabHeader) {
   return (
     <View>
-      <Text className="uppercase text-[12px] text-[#9C988E]">{alt}</Text>
-      <Text className="text-[32px] font-semibold">{title}</Text>
+      <Text className="uppercase text-[12px] text-gray-500">{alt}</Text>
+      <Text className="text-[32px] font-semibold text-navy">{title}</Text>
       <Text
-        className={`${descriptionStyle != null ? descriptionStyle : "text-[32px] font-semibold"}`}
+        className={`${descriptionStyle != null ? descriptionStyle : "text-[32px] font-semibold text-navy"}`}
       >
         {description}
       </Text>

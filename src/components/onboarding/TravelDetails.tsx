@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Text, View } from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -8,9 +8,12 @@ import NumberStepper from "../NumberStepper";
 interface ITravelDetails {
   checkIn: Date | null;
   checkOut: Date | null;
-
   setCheckIn: any;
   setCheckOut: any;
+  adults: number;
+  setAdults: (count: number) => void;
+  children: number;
+  setChildren: (count: number) => void;
 }
 
 export default function TravelDetails({
@@ -18,13 +21,17 @@ export default function TravelDetails({
   checkOut,
   setCheckIn,
   setCheckOut,
+  adults,
+  setAdults,
+  children,
+  setChildren,
 }: ITravelDetails) {
   return (
     <View>
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
+      <View className="bg-white border border-gray-200 px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px]">
           <Ionicons name="calendar-clear-outline" size={20} />
-          <Text className="text-[15px] font-semibold ">Dates</Text>
+          <Text className="text-[15px] font-semibold text-navy">Dates</Text>
         </View>
 
         <View className="flex-row justify-between gap-3">
@@ -53,15 +60,15 @@ export default function TravelDetails({
         </View>
       </View>
 
-      <View className="bg-white border border-[#E8E5DD] px-[20px] py-[24px] rounded-[10px] mt-6">
+      <View className="bg-white border border-gray-200 px-[20px] py-[24px] rounded-[10px] mt-6">
         <View className="flex-row items-center gap-[6px]">
           <Ionicons name="people" size={20} />
-          <Text className="text-[15px] font-semibold ">Guests</Text>
+          <Text className="text-[15px] font-semibold text-navy">Guests</Text>
         </View>
 
         <View className="flex-row items-center justify-between mt-[22px]">
           <Text className="text-[15px] font-semibold">Adults</Text>
-          <NumberStepper />
+          <NumberStepper value={adults} onChange={setAdults} min={1} />
         </View>
 
         <View className="flex-row items-center justify-between mt-[22px]">
@@ -72,7 +79,7 @@ export default function TravelDetails({
             </Text>
           </View>
 
-          <NumberStepper />
+          <NumberStepper value={children} onChange={setChildren} min={0} />
         </View>
       </View>
     </View>

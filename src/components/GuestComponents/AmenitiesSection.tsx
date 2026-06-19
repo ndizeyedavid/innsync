@@ -23,7 +23,7 @@ export default function AmenitiesSection({
 }: AmenitiesSectionProps) {
   return (
     <View className="mt-6">
-      <Text className="text-xl font-semibold mb-4">Filter by Amenities</Text>
+      <Text className="text-xl font-semibold text-navy mb-4">Filter by Amenities</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -49,7 +49,7 @@ export default function AmenitiesSection({
               />
               <Text
                 className={`text-sm ${
-                  isSelected ? "text-white" : "text-[#6E6B63]"
+                  isSelected ? "text-white" : "text-gray-500"
                 }`}
               >
                 {amenity.name}

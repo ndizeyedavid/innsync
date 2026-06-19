@@ -2,14 +2,15 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
+  Image,
+  StyleSheet,
 } from "react-native";
 import { useState } from "react";
 import { Animated } from "react-native";
-import { LoginCredentials } from "../types";
 import SocialLoginButton from "../components/SocialLoginButton";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -18,21 +19,26 @@ import PhoneInput from "../components/PhoneInput";
 import OTPInput from "../components/OTPInput";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
+import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../contexts/ToastContext";
+import reservationsService from "../services/reservations.service";
 
 import * as Haptics from "expo-haptics";
+import { BlurView } from "expo-blur";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signIn, isLoading } = useAuth();
+  const { showToast } = useToast();
+
   const [selectedOption, setSelectedOption] = useState<"email" | "phone">(
     "email",
   );
   const slideAnimation = useState(new Animated.Value(0))[0];
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showOTP, setShowOTP] = useState(false);
-  const [credentials, setCredentials] = useState<LoginCredentials>({
-    email: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleOptionPress = (option: "email" | "phone") => {
     setSelectedOption(option);
@@ -49,33 +55,77 @@ export default function LoginScreen() {
     if (phoneNumber.length >= 9) {
       // Simulate OTP sending
       setShowOTP(true);
+      showToast("info", "OTP sent successfully!", "top");
     }
   };
 
   const handleOTPComplete = (otp: string) => {
-    Alert.alert("Success", "OTP verification successful!");
+    showToast("success", "OTP verification successful!", "top");
     // Handle successful OTP verification
+  };
+
+  const handleSignIn = async () => {
+    try {
+      if (selectedOption === "email") {
+        if (!email || !password) {
+          showToast("error", "Please fill in all fields", "top");
+          return;
+        }
+
+        await signIn({
+          email,
+          password,
+        });
+
+        showToast("success", "Successfully signed in!", "top");
+
+        // Check if user already has stays
+        const stays = await reservationsService.listMine();
+        if (stays.length > 0) {
+          router.replace("/(tabs)");
+        } else {
+          router.replace("/onboarding");
+        }
+      }
+    } catch (error: any) {
+      showToast(
+        "error",
+        error.message || "An error occurred during sign in",
+        "top",
+      );
+    }
   };
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#fafaf7]"
+      className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <BlurView intensity={50} tint="light" style={styles.blurContainer} />
       <ScrollView
         className="flex-1 px-5"
-        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        contentContainerStyle={{ flexGrow: 1, paddingTop: 60 }}
         showsVerticalScrollIndicator={false}
       >
-        <View>
-          <Text className="text-[12px] text-[#9C988E]">INNSYNC</Text>
-          <Text className="text-[40px] ">Welcome Back.</Text>
-          <Text className="text-[#9C988E] text-[14px]">
+        <View className="items-start mb-4">
+          <Image
+            source={require("../assets/images/logo/logo-single.png")}
+            className="size-[100px]"
+            // style={{ width: 80, height: 80, resizeMode: "contain" }}
+          />
+        </View>
+
+        <View className="mb-8">
+          {/* <Text className="text-[12px] text-gray-500 mb-1">INNSYNC</Text> */}
+          <Text className="text-[40px] text-navy font-semibold">
+            Welcome Back.
+          </Text>
+          <Text className="text-gray-500 text-[14px] mt-1">
             Sign in to access your reservation and digital key.
           </Text>
         </View>
 
-        <View className="flex-row justify-between mt-[25px]">
+        <View className="flex-row justify-between ">
           <SocialLoginButton
             buttonLogo={require("../assets/google-logo.png")}
             buttonText="Google"
@@ -87,19 +137,18 @@ export default function LoginScreen() {
         </View>
 
         <View className="flex flex-row overflow-hidden items-center gap-1 mt-[14px]">
-          <View className="w-[115px] h-px bg-[#9E9A90]" />
-          <Text className="text-[12px] text-[#9E9A90]">Or Continue With</Text>
-          <View className="w-[115px] h-px bg-[#9E9A90]" />
+          <View className="w-[115px] h-px bg-gray-300" />
+          <Text className="text-[12px] text-gray-500">Or Continue With</Text>
+          <View className="w-[115px] h-px bg-gray-300" />
         </View>
 
-        <View className="flex-row justify-around bg-[#f5f4ef] py-[8px] mt-[14px] rounded-[10px] relative overflow-hidden">
+        <View className="flex-row justify-around bg-sand-100 py-[8px] mt-[14px] rounded-[10px] relative overflow-hidden">
           <Animated.View
             style={{
               transform: [
                 {
                   translateX: slideAnimation.interpolate({
                     inputRange: [0, 1],
-                    // backup: outputRange: [-82, 82],
                     outputRange: [-82, 82],
                   }),
                 },
@@ -115,8 +164,8 @@ export default function LoginScreen() {
               handleOptionPress("email");
             }}
           >
-            <Ionicons name="mail" size={20} />
-            <Text className="text-[16px] text-[#0A0A08]">Email</Text>
+            <Ionicons name="mail" size={20} color="#283D5A" />
+            <Text className="text-[16px] text-navy">Email</Text>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center justify-center px-[43px] py-[13px] rounded-[7px] gap-2 z-10"
@@ -125,8 +174,8 @@ export default function LoginScreen() {
               handleOptionPress("phone");
             }}
           >
-            <Ionicons name="call" size={20} />
-            <Text className="text-[16px] text-[#0A0A08]">Phone</Text>
+            <Ionicons name="call" size={20} color="#283D5A" />
+            <Text className="text-[16px] text-navy">Phone</Text>
           </TouchableOpacity>
         </View>
 
@@ -139,6 +188,8 @@ export default function LoginScreen() {
                 placeholder="e.g mellow@gmail.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
               />
               <TextField
                 text="PASSWORD"
@@ -147,6 +198,8 @@ export default function LoginScreen() {
                 keyboardType="text"
                 autoCapitalize="none"
                 secureTextEntry={true}
+                value={password}
+                onChangeText={setPassword}
               />
             </>
           ) : showOTP ? (
@@ -156,7 +209,7 @@ export default function LoginScreen() {
               <PhoneInput value={phoneNumber} onChangeText={setPhoneNumber} />
               <TouchableOpacity
                 activeOpacity={0.8}
-                className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
+                className="flex-row items-center justify-center gap-1 py-[18px] bg-cobalt rounded-[12px] mt-[28px]"
                 onPress={handlePhoneSubmit}
               >
                 <Text className="text-white text-[24px]">Send OTP</Text>
@@ -172,7 +225,7 @@ export default function LoginScreen() {
 
         {selectedOption === "email" && (
           <TouchableOpacity>
-            <Text className="text-[15px] text-[#6E6B63] mt-[21px]">
+            <Text className="text-[15px] text-gray-600 mt-[21px]">
               Forgot password?
             </Text>
           </TouchableOpacity>
@@ -181,27 +234,31 @@ export default function LoginScreen() {
         {selectedOption === "email" && (
           <TouchableOpacity
             activeOpacity={0.8}
-            className="flex-row items-center justify-center gap-1 py-[18px] bg-[#0a0a08] rounded-[12px] mt-[28px]"
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-              router.replace("/onboarding");
-            }}
+            className="flex-row items-center justify-center gap-1 py-[18px] bg-cobalt rounded-[12px] mt-[28px]"
+            onPress={handleSignIn}
+            disabled={isLoading}
           >
-            <Text className="text-white text-[24px]">Sign in</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={23}
-              style={{ color: "white" }}
-            />
+            {isLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Text className="text-white text-[24px]">Sign in</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={23}
+                  style={{ color: "white" }}
+                />
+              </>
+            )}
           </TouchableOpacity>
         )}
 
         {!showOTP && (
           <View className="items-center mt-[14px]">
-            <Text className="items-center text-[#6E6B63] text-[15px]">
+            <Text className="items-center text-gray-600 text-[15px]">
               Don't have an account?{" "}
               <TouchableOpacity onPress={() => router.push("/signup")}>
-                <Text className="relative top-1 text-[#11110f] underline">
+                <Text className="relative top-1 text-navy underline">
                   Create one
                 </Text>
               </TouchableOpacity>
@@ -209,17 +266,17 @@ export default function LoginScreen() {
           </View>
         )}
 
-        <View className="items-center w-full absolute bottom-7">
-          <Text className="items-center text-[#6E6B63] text-[13px] text-center flex-row gap-2">
+        <View className="items-center w-full mt-8 mb-6">
+          <Text className="items-center text-gray-500 text-[13px] text-center flex-row gap-2">
             By continuing you agree to our{" "}
             <TouchableOpacity>
-              <Text className="relative top-1  text-[#11110f] underline">
+              <Text className="relative top-1 text-navy underline">
                 Terms of Service
               </Text>
             </TouchableOpacity>
             <Text> and </Text>
             <TouchableOpacity>
-              <Text className="relative top-1  text-[#11110f] underline">
+              <Text className="relative top-1 text-navy underline">
                 Privacy Policy.
               </Text>
             </TouchableOpacity>
@@ -230,3 +287,14 @@ export default function LoginScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  blurContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 50,
+    zIndex: 100,
+  },
+});
