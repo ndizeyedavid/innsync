@@ -163,7 +163,7 @@ export default function ItineraryScreen() {
 
   return (
     <ScreenLayout>
-      <View className="flex-row justify-between items-center">
+      <View className="flex-row justify-between">
         <TabHeader
           alt={stayDisplay.hotelName}
           title="Your itinerary,"

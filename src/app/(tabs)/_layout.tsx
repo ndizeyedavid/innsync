@@ -13,7 +13,6 @@ export default function TabsLayout() {
       >
         <Tabs.Screen name="index" />
         <Tabs.Screen name="amenities" />
-        <Tabs.Screen name="map" />
         <Tabs.Screen name="itinerary" />
         <Tabs.Screen name="orders" />
       </Tabs>

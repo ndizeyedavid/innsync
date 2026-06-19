@@ -24,6 +24,8 @@ import {
   PlaceOrderDto,
 } from "../api/types";
 import { useToast } from "../contexts/ToastContext";
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 
 export default function OrdersScreen() {
   const [selectedCategory, setSelectedCategory] = useState<number>(0);
@@ -36,6 +38,7 @@ export default function OrdersScreen() {
     null,
   );
   const { showToast } = useToast();
+  const router = useRouter();
 
   // Categories mapped to backend MenuItem.category enum
   const categories = [
@@ -195,17 +198,17 @@ export default function OrdersScreen() {
 
   // Map MenuItem category to backend order category
   const mapCategoryToOrderCategory = (
-    category: MenuItem['category']
-  ): PlaceOrderDto['category'] => {
-    const mapping: Record<MenuItem['category'], PlaceOrderDto['category']> = {
-      BREAKFAST: 'FOOD',
-      LUNCH: 'FOOD',
-      DINNER: 'FOOD',
-      SNACKS: 'FOOD',
-      BEVERAGES: 'DRINKS',
-      DESSERT: 'FOOD',
+    category: MenuItem["category"],
+  ): PlaceOrderDto["category"] => {
+    const mapping: Record<MenuItem["category"], PlaceOrderDto["category"]> = {
+      BREAKFAST: "FOOD",
+      LUNCH: "FOOD",
+      DINNER: "FOOD",
+      SNACKS: "FOOD",
+      BEVERAGES: "DRINKS",
+      DESSERT: "FOOD",
     };
-    return mapping[category] || 'FOOD';
+    return mapping[category] || "FOOD";
   };
 
   // Place the order
@@ -220,9 +223,12 @@ export default function OrdersScreen() {
     }
 
     // Check if current stay is in a status that allows ordering
-    const currentStay = stays.find(s => s.id === currentStayId);
+    const currentStay = stays.find((s) => s.id === currentStayId);
     if (currentStay && currentStay.status === "PENDING") {
-      showToast("error", "Cannot order while stay is pending. Please check in first.");
+      showToast(
+        "error",
+        "Cannot order while stay is pending. Please check in first.",
+      );
       handleCloseModal();
       return;
     }
@@ -250,13 +256,13 @@ export default function OrdersScreen() {
       handleCloseModal(); // Close modal only on success
     } catch (error: any) {
       console.error("Error placing order:", error);
-      
+
       // Show detailed error message
-      const errorMessage = 
-        error?.response?.data?.message || 
-        error?.message || 
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
         "Failed to place order";
-      
+
       showToast("error", errorMessage);
       handleCloseModal(); // Close modal on error
     }
@@ -264,12 +270,23 @@ export default function OrdersScreen() {
 
   return (
     <ScreenLayout>
-      <TabHeader
-        alt="CONCIERGE"
-        title="Order anything"
-        description="In-room dining, drinks, activities, housekeeping."
-        descriptionStyle="text-[16px] text-gray-500 mt-1"
-      />
+      <View className="flex-row justify-between">
+        <TabHeader
+          alt="CONCIERGE"
+          title="Order anything"
+          description="In-room dining, drinks, activities, housekeeping."
+          descriptionStyle="text-[16px] text-gray-500 mt-1"
+        />
+        <TouchableOpacity
+          className="size-[47px] bg-sand-100 rounded-full items-center justify-center"
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/profile");
+          }}
+        >
+          <Ionicons name="person-outline" color="#283D5A" size={24} />
+        </TouchableOpacity>
+      </View>
 
       <View className="relative justify-center mt-4">
         <Ionicons
