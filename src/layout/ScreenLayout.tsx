@@ -25,6 +25,7 @@ export default function ScreenLayout({ children }: { children: any }) {
         contentContainerStyle={{
           flexGrow: 1,
           paddingTop: 50, // Match blur height
+          paddingBottom: 130, // Account for tab bar (87) + bottom offset (20) + extra space
         }}
         showsVerticalScrollIndicator={false}
       >
