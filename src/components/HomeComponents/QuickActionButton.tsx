@@ -6,17 +6,20 @@ interface IQuickActionButton {
   icon: string;
   title: string;
   description: string;
+  onPress?: () => void;
 }
 
 export default function QuickActionButton({
   icon,
   title,
   description,
+  onPress,
 }: IQuickActionButton) {
   return (
     <TouchableOpacity
       activeOpacity={0.5}
       className="bg-white p-3 pb-5 gap-[16px] rounded-2xl w-[48%]"
+      onPress={onPress}
     >
       <View className="size-[40px] rounded-xl bg-sand-100 items-center justify-center">
         <Ionicons name={icon} size={20} color="#283D5A" />

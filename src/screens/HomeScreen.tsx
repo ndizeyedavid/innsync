@@ -9,12 +9,14 @@ import DigitalKey from "../components/HomeComponents/DigitalKey";
 import QuickActionButton from "../components/HomeComponents/QuickActionButton";
 import reservationsService from "../services/reservations.service";
 import authService from "../services/auth.service";
+import notificationsService from "../services/notifications.service";
 import {
   GuestStay,
   User,
   Notification as NotificationType,
 } from "../api/types";
 import { useToast } from "../contexts/ToastContext";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const [stays, setStays] = useState<GuestStay[]>([]);
@@ -23,23 +25,37 @@ export default function HomeScreen() {
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const { showToast } = useToast();
+  const router = useRouter();
 
   const quickActions = [
-    { icon: "restaurant", title: "Order food", description: "12 min Avg" },
+    {
+      icon: "restaurant",
+      title: "Order food",
+      description: "12 min Avg",
+      onPress: () => router.push("/(tabs)/orders"),
+    },
     {
       icon: "calendar-clear",
       title: "Itinerary",
       description: currentStay ? "View your itinerary" : "View itinerary",
+      onPress: () => router.push("/(tabs)/itinerary"),
     },
     {
-      icon: "bonfire",
-      title: "Book activity",
-      description: "Swimming, Hiking, etc..",
+      icon: "home-outline",
+      title: "Housekeeping",
+      description: "Cleaning, towels, etc..",
+      onPress: () => router.push("/housekeeping"),
     },
     {
       icon: "cash",
       title: "View folio",
       description: "Invoice profoma & receipts",
+      onPress: () =>
+        currentStay &&
+        router.push({
+          pathname: "/view-folio",
+          params: { stayId: currentStay.id },
+        }),
     },
   ];
 
@@ -50,14 +66,14 @@ export default function HomeScreen() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [userData, staysData] = await Promise.all([
+      const [userData, staysData, notificationsData] = await Promise.all([
         authService.getCurrentUser(),
         reservationsService.listMine(),
+        notificationsService.listMine(),
       ]);
       setUser(userData);
       setStays(staysData);
-      // TODO: Load notifications from API once endpoint is available
-      setNotifications([]);
+      setNotifications(notificationsData);
 
       // Find current active stay (checked in)
       const active =
@@ -130,6 +146,7 @@ export default function HomeScreen() {
               icon={data.icon}
               title={data.title}
               description={data.description}
+              onPress={data.onPress}
             />
           ))}
         </View>

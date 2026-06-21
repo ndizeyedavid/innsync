@@ -22,10 +22,12 @@ import {
   MenuItem,
   GuestStay,
   PlaceOrderDto,
+  OrderUpdateEvent,
 } from "../api/types";
 import { useToast } from "../contexts/ToastContext";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { useOrderUpdates } from "../hooks/useWebSocket";
 
 export default function OrdersScreen() {
   const [selectedCategory, setSelectedCategory] = useState<number>(0);
@@ -39,6 +41,14 @@ export default function OrdersScreen() {
   );
   const { showToast } = useToast();
   const router = useRouter();
+
+  // Real-time order updates
+  useOrderUpdates((event: OrderUpdateEvent) => {
+    console.log("Order update received:", event);
+    // Refresh orders list when update is received
+    loadData();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  });
 
   // Categories mapped to backend MenuItem.category enum
   const categories = [
