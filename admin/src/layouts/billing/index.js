@@ -1,12 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
-import Table from "@mui/material/Table";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableCell from "@mui/material/TableCell";
-import TableBody from "@mui/material/TableBody";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
@@ -15,6 +10,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import Snackbar from "@mui/material/Snackbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
@@ -25,10 +21,12 @@ import DataTable from "examples/Tables/DataTable";
 import { hotelManagerAPI } from "services/hotelManager";
 
 function Billing() {
+  const queryClient = useQueryClient();
   const [selectedStay, setSelectedStay] = useState(null);
   const [chargeOpen, setChargeOpen] = useState(false);
   const [chargeAmount, setChargeAmount] = useState("");
   const [chargeDesc, setChargeDesc] = useState("");
+  const [saved, setSaved] = useState(false);
 
   const { data: stays } = useQuery({
     queryKey: ["hotelStays"],
@@ -39,6 +37,20 @@ function Billing() {
     queryKey: ["hotelFolio", selectedStay],
     queryFn: () => hotelManagerAPI.getFolio(selectedStay),
     enabled: !!selectedStay,
+  });
+
+  const chargeMutation = useMutation({
+    mutationFn: () => hotelManagerAPI.addCharge(selectedStay, {
+      amountCents: Math.round(parseFloat(chargeAmount) * 100),
+      description: chargeDesc,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelFolio", selectedStay] });
+      setChargeOpen(false);
+      setChargeAmount("");
+      setChargeDesc("");
+      setSaved(true);
+    },
   });
 
   const folioLines = folio?.lines || [];
@@ -71,12 +83,10 @@ function Billing() {
                 <MDTypography variant="h6" color="white">Billing & Folio</MDTypography>
                 <MDBox display="flex" gap={1} alignItems="center">
                   <MDTypography variant="body2" color="white" sx={{ mr: 1 }}>Guest:</MDTypography>
-                  <TextField
-                    select size="small" value={selectedStay || ""}
+                  <TextField select size="small" value={selectedStay || ""}
                     onChange={(e) => setSelectedStay(e.target.value)}
                     sx={{ bgcolor: "rgba(255,255,255,0.15)", borderRadius: 1, minWidth: 180 }}
-                    SelectProps={{ native: true }}
-                    inputProps={{ style: { color: "white" } }}
+                    SelectProps={{ native: true }} inputProps={{ style: { color: "white" } }}
                   >
                     <option value="">Select guest...</option>
                     {(stays || []).map((s) => (
@@ -119,25 +129,21 @@ function Billing() {
         <DialogContent>
           <MDBox display="flex" flexDirection="column" gap={2} mt={1}>
             <TextField label="Description" fullWidth value={chargeDesc} onChange={(e) => setChargeDesc(e.target.value)} />
-            <TextField label="Amount (cents)" type="number" fullWidth value={chargeAmount} onChange={(e) => setChargeAmount(e.target.value)} />
+            <TextField label="Amount ($)" type="number" fullWidth value={chargeAmount}
+              onChange={(e) => setChargeAmount(e.target.value)}
+              helperText="e.g. 25.50 = $25.50" />
           </MDBox>
         </DialogContent>
         <DialogActions>
           <MDButton onClick={() => setChargeOpen(false)} color="secondary">Cancel</MDButton>
-          <MDButton
-            variant="gradient" color="success"
-            onClick={async () => {
-              await hotelManagerAPI.addCharge(selectedStay, { amountCents: parseInt(chargeAmount), description: chargeDesc });
-              setChargeOpen(false);
-              setChargeAmount("");
-              setChargeDesc("");
-            }}
-            disabled={!chargeAmount || !chargeDesc}
-          >
-            Add
+          <MDButton variant="gradient" color="success" onClick={() => chargeMutation.mutate()}
+            disabled={!chargeAmount || !chargeDesc || chargeMutation.isPending}>
+            {chargeMutation.isPending ? "Adding..." : "Add Charge"}
           </MDButton>
         </DialogActions>
       </Dialog>
+
+      <Snackbar open={saved} autoHideDuration={3000} onClose={() => setSaved(false)} message="Charge added" />
     </DashboardLayout>
   );
 }

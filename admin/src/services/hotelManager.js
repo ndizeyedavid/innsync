@@ -27,8 +27,8 @@ export const hotelManagerAPI = {
   // Housekeeping
   getHousekeeping: (status) =>
     api.get(`/manager/housekeeping${status ? `?status=${status}` : ""}`).then(unwrap),
-  updateHousekeepingStatus: (id, status, notes) =>
-    api.put(`/manager/housekeeping/${id}/status`, { status, notes }).then(unwrap),
+  updateHousekeepingStatus: (id, status, notes, assignedTo) =>
+    api.put(`/manager/housekeeping/${id}/status`, { status, notes, assignedTo }).then(unwrap),
 
   // Folio / Billing
   getFolio: (stayId) => api.get(`/manager/folio/${stayId}`).then(unwrap),
@@ -45,6 +45,7 @@ export const hotelManagerAPI = {
 
   // Amenities
   getAmenities: () => api.get("/manager/amenities").then(unwrap),
+  createAmenity: (dto) => api.post("/manager/amenities", dto).then(unwrap),
   updateAmenity: (id, dto) =>
     api.put(`/manager/amenities/${id}`, dto).then(unwrap),
 

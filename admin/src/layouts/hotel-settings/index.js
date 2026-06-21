@@ -4,6 +4,8 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
 import Snackbar from "@mui/material/Snackbar";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -58,6 +60,18 @@ function HotelSettings() {
               </MDBox>
               <MDBox pt={4} px={3} pb={3}>
                 {error && <Alert severity="error" sx={{ mb: 3 }}>Failed to load settings</Alert>}
+
+                {form.imageUrl && (
+                  <Box mb={3} display="flex" justifyContent="center">
+                    <Box
+                      component="img"
+                      src={form.imageUrl}
+                      alt="Hotel"
+                      sx={{ width: "100%", maxWidth: 400, height: 180, borderRadius: 2, objectFit: "cover" }}
+                    />
+                  </Box>
+                )}
+
                 <MDBox component="form" role="form">
                   <MDBox mb={3}>
                     <MDInput type="text" label="Hotel Name" variant="standard" fullWidth value={form.name || ""} onChange={update("name")} />
@@ -85,6 +99,17 @@ function HotelSettings() {
                   </MDBox>
                   <MDBox mb={3}>
                     <MDInput type="email" label="Email" variant="standard" fullWidth value={form.email || ""} onChange={update("email")} />
+                  </MDBox>
+                  <MDBox mb={3}>
+                    <TextField
+                      label="Hotel Photo URL"
+                      variant="standard"
+                      fullWidth
+                      value={form.imageUrl || ""}
+                      onChange={update("imageUrl")}
+                      placeholder="https://example.com/hotel-photo.jpg"
+                      helperText="Optional — paste an image URL to show on the dashboard"
+                    />
                   </MDBox>
                   <MDBox mt={4} mb={1}>
                     <MDButton variant="gradient" color="info" fullWidth onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending}>
