@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Haptics from "expo-haptics";
 import ScreenLayout from "../layout/ScreenLayout";
 import HotelCard from "../components/HotelCard";
 import ContextualLoadingComponent from "../components/ContextualLoadingComponent";
@@ -49,13 +50,15 @@ export default function HotelSearchScreen() {
     }
   };
 
-  const filteredHotels = hotels.filter((hotel) =>
-    hotel.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    hotel.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    hotel.address.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredHotels = hotels.filter(
+    (hotel) =>
+      hotel.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      hotel.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      hotel.address.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleSelectHotel = (hotel: Hotel) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedHotel(hotel);
   };
 
@@ -64,6 +67,8 @@ export default function HotelSearchScreen() {
       showToast("error", "Please select a hotel");
       return;
     }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     // Pass selected hotel to onboarding
     router.push({

@@ -46,26 +46,6 @@ export const authEndpoints = {
     apiClient.get<ApiResponse<User>>("/auth/me").then((r) => r.data.data),
 };
 
-// Reservations Endpoints
-// export const reservationEndpoints = {
-//   list: () =>
-//     apiClient
-//       .get<ApiResponse<GuestStay[]>>("/reservations")
-//       .then((r) => r.data.data),
-
-//   create: (dto: CreateStayDto) =>
-//     apiClient
-//       .post<ApiResponse<GuestStay>>("/reservations", dto)
-//       .then((r) => r.data.data),
-
-//   getOne: (id: string) =>
-//     apiClient
-//       .get<ApiResponse<GuestStay>>(`/reservations/${id}`)
-//       .then((r) => r.data.data),
-
-//   checkIn: (id: string) => apiClient.post(`/reservations/${id}/check-in`),
-// };
-
 // Orders Endpoints
 export const orderEndpoints = {
   place: (dto: PlaceOrderDto, idempotencyKey: string) =>

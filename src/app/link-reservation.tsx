@@ -27,6 +27,7 @@ export default function LinkReservationScreen() {
 
   const handleLink = async () => {
     if (!confirmationNumber.trim()) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       showToast("error", "Please enter your confirmation number");
       return;
     }
@@ -42,14 +43,17 @@ export default function LinkReservationScreen() {
           email: email || undefined,
           phone: phone || undefined,
         });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast("success", "Reservation linked successfully!");
         router.replace("/(tabs)");
       } catch {
         // Mock success for now
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         showToast("success", "Reservation linked successfully! (Mock)");
         router.replace("/(tabs)");
       }
     } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       console.error("Error linking reservation:", error);
       showToast("error", "Failed to link reservation. Please try again.");
     } finally {

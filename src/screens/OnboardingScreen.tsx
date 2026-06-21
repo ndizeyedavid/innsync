@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -34,6 +34,11 @@ import { mealPlans } from "../constants/mealPlans";
 import { vibeCards } from "../constants/vibeCards";
 import reservationsService from "../services/reservations.service";
 import ContextualLoadingComponent from "../components/ContextualLoadingComponent";
+import {
+  setOnboardingProgress,
+  getOnboardingProgress,
+  clearOnboardingProgress,
+} from "../utils/storage";
 
 interface OnboardingScreenProps {
   hotelId?: string;
@@ -41,8 +46,8 @@ interface OnboardingScreenProps {
 }
 
 export default function OnboardingScreen({
-  hotelId,
-  hotelName,
+  hotelId: propHotelId,
+  hotelName: propHotelName,
 }: OnboardingScreenProps) {
   const { showToast } = useToast();
   const router = useRouter();
@@ -60,7 +65,93 @@ export default function OnboardingScreen({
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [checkingStays, setCheckingStays] = useState(!hotelId);
+  const [checkingStays, setCheckingStays] = useState(!propHotelId);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+  const [hotelId, setHotelId] = useState<string | undefined>(propHotelId);
+  const [hotelName, setHotelName] = useState<string | undefined>(propHotelName);
+
+  // Save progress to storage whenever relevant state changes
+  const saveProgress = useCallback(() => {
+    const progress = {
+      hotelId,
+      hotelName,
+      step,
+      checkIn: checkIn?.toISOString(),
+      checkOut: checkOut?.toISOString(),
+      adults,
+      children,
+      roomPreference,
+      bedPreference,
+      floorPreference,
+      selectedMealPlanId,
+      specialRequests,
+      selectedVibeIndices,
+      dietaryRestrictions,
+    };
+    setOnboardingProgress(progress);
+  }, [
+    hotelId,
+    hotelName,
+    step,
+    checkIn,
+    checkOut,
+    adults,
+    children,
+    roomPreference,
+    bedPreference,
+    floorPreference,
+    selectedMealPlanId,
+    specialRequests,
+    selectedVibeIndices,
+    dietaryRestrictions,
+  ]);
+
+  // Load progress from storage on mount
+  useEffect(() => {
+    const loadProgress = async () => {
+      try {
+        const progress = await getOnboardingProgress();
+        if (progress) {
+          if (!propHotelId && progress.hotelId) {
+            setHotelId(progress.hotelId);
+            setHotelName(progress.hotelName);
+            setCheckingStays(false);
+          }
+          if (progress.step) setStep(progress.step);
+          if (progress.checkIn) setCheckIn(new Date(progress.checkIn));
+          if (progress.checkOut) setCheckOut(new Date(progress.checkOut));
+          if (progress.adults !== undefined) setAdults(progress.adults);
+          if (progress.children !== undefined) setChildren(progress.children);
+          if (progress.roomPreference)
+            setRoomPreference(progress.roomPreference);
+          if (progress.bedPreference) setBedPreference(progress.bedPreference);
+          if (progress.floorPreference)
+            setFloorPreference(progress.floorPreference);
+          if (progress.selectedMealPlanId)
+            setSelectedMealPlanId(progress.selectedMealPlanId);
+          if (progress.specialRequests)
+            setSpecialRequests(progress.specialRequests);
+          if (progress.selectedVibeIndices)
+            setSelectedVibeIndices(progress.selectedVibeIndices);
+          if (progress.dietaryRestrictions)
+            setDietaryRestrictions(progress.dietaryRestrictions);
+        }
+      } catch (error) {
+        console.error("Error loading onboarding progress:", error);
+      } finally {
+        setLoadingProgress(false);
+      }
+    };
+
+    loadProgress();
+  }, [propHotelId]);
+
+  // Save progress whenever it changes
+  useEffect(() => {
+    if (!loadingProgress) {
+      saveProgress();
+    }
+  }, [loadingProgress, saveProgress]);
 
   // Check if user already has stays on load (only if no hotelId provided)
   useEffect(() => {
@@ -107,10 +198,11 @@ export default function OnboardingScreen({
   ];
 
   const handleContinue = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     if (step === 4) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await handleSubmit();
     } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setStep((prev) => prev + 1);
     }
   };
@@ -196,6 +288,7 @@ export default function OnboardingScreen({
       );
 
       showToast("success", "Onboarding completed!");
+      await clearOnboardingProgress();
       router.replace("/(tabs)");
     } catch (error: any) {
       console.error("Onboarding error:", error);
@@ -208,8 +301,8 @@ export default function OnboardingScreen({
     }
   };
 
-  if (checkingStays) {
-    return <ContextualLoadingComponent text="Checking for your stays..." />;
+  if (checkingStays || loadingProgress) {
+    return <ContextualLoadingComponent text="Loading onboarding..." />;
   }
 
   // If no hotelId, show a prompt to select hotel
