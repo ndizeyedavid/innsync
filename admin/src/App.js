@@ -145,61 +145,23 @@ function AppContent() {
     </MDBox>
   );
 
-  if (loading) {
-    return (
-      <MDBox display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        Loading...
-      </MDBox>
-    );
-  }
+  const sidenavSection = layout === "dashboard" && user ? (
+    <>
+      <Sidenav
+        color={sidenavColor}
+        brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
+        brandName="InnSync Hotel"
+        routes={routes}
+        onMouseEnter={handleOnMouseEnter}
+        onMouseLeave={handleOnMouseLeave}
+      />
+      <Configurator />
+      {configsButton}
+    </>
+  ) : null;
 
-  return direction === "rtl" ? (
-    <CacheProvider value={rtlCache}>
-      <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
-        <CssBaseline />
-        {layout === "dashboard" && user && (
-          <>
-            <Sidenav
-              color={sidenavColor}
-              brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-              brandName="InnSync Hotel"
-              routes={routes}
-              onMouseEnter={handleOnMouseEnter}
-              onMouseLeave={handleOnMouseLeave}
-            />
-            <Configurator />
-            {configsButton}
-          </>
-        )}
-        {layout === "vr" && <Configurator />}
-        <Routes>
-          {getRoutes(routes)}
-          <Route
-            path="*"
-            element={
-              user ? <Navigate to="/dashboard" /> : <Navigate to="/authentication/sign-in" />
-            }
-          />
-        </Routes>
-      </ThemeProvider>
-    </CacheProvider>
-  ) : (
-    <ThemeProvider theme={darkMode ? themeDark : theme}>
-      <CssBaseline />
-      {layout === "dashboard" && user && (
-        <>
-          <Sidenav
-            color={sidenavColor}
-            brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-            brandName="InnSync Hotel"
-            routes={routes}
-            onMouseEnter={handleOnMouseEnter}
-            onMouseLeave={handleOnMouseLeave}
-          />
-          <Configurator />
-          {configsButton}
-        </>
-      )}
+  const routesSection = (
+    <>
       {layout === "vr" && <Configurator />}
       <Routes>
         {getRoutes(routes)}
@@ -208,6 +170,31 @@ function AppContent() {
           element={user ? <Navigate to="/dashboard" /> : <Navigate to="/authentication/sign-in" />}
         />
       </Routes>
+    </>
+  );
+
+  const content = loading ? (
+    <MDBox display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+      Loading...
+    </MDBox>
+  ) : (
+    <>
+      {sidenavSection}
+      {routesSection}
+    </>
+  );
+
+  return direction === "rtl" ? (
+    <CacheProvider value={rtlCache}>
+      <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
+        <CssBaseline />
+        {content}
+      </ThemeProvider>
+    </CacheProvider>
+  ) : (
+    <ThemeProvider theme={darkMode ? themeDark : theme}>
+      <CssBaseline />
+      {content}
     </ThemeProvider>
   );
 }

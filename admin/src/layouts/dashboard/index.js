@@ -113,7 +113,7 @@ function Dashboard() {
 
             <MDBox mt={6}>
               <MDTypography variant="h5" fontWeight="medium" mb={2}>
-                Today's Occupancy
+                Today&apos;s Occupancy
               </MDTypography>
               <MDBox p={3} bgColor="grey-100" borderRadius="lg" textAlign="center">
                 <MDTypography variant="h3" fontWeight="bold" color="primary">
