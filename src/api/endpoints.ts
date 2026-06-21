@@ -17,6 +17,8 @@ import {
   User,
   ApiResponse,
   AuthSession,
+  Hotel,
+  LinkReservationDto,
 } from "./types";
 
 // Auth Endpoints
@@ -45,24 +47,24 @@ export const authEndpoints = {
 };
 
 // Reservations Endpoints
-export const reservationEndpoints = {
-  list: () =>
-    apiClient
-      .get<ApiResponse<GuestStay[]>>("/reservations")
-      .then((r) => r.data.data),
+// export const reservationEndpoints = {
+//   list: () =>
+//     apiClient
+//       .get<ApiResponse<GuestStay[]>>("/reservations")
+//       .then((r) => r.data.data),
 
-  create: (dto: CreateStayDto) =>
-    apiClient
-      .post<ApiResponse<GuestStay>>("/reservations", dto)
-      .then((r) => r.data.data),
+//   create: (dto: CreateStayDto) =>
+//     apiClient
+//       .post<ApiResponse<GuestStay>>("/reservations", dto)
+//       .then((r) => r.data.data),
 
-  getOne: (id: string) =>
-    apiClient
-      .get<ApiResponse<GuestStay>>(`/reservations/${id}`)
-      .then((r) => r.data.data),
+//   getOne: (id: string) =>
+//     apiClient
+//       .get<ApiResponse<GuestStay>>(`/reservations/${id}`)
+//       .then((r) => r.data.data),
 
-  checkIn: (id: string) => apiClient.post(`/reservations/${id}/check-in`),
-};
+//   checkIn: (id: string) => apiClient.post(`/reservations/${id}/check-in`),
+// };
 
 // Orders Endpoints
 export const orderEndpoints = {
@@ -176,4 +178,42 @@ export const userEndpoints = {
     apiClient.delete(`/me/sessions/${sessionId}`),
 
   // TODO: Add change password, 2FA endpoints when backend supports them
+};
+
+// Hotel Endpoints
+export const hotelEndpoints = {
+  list: (search?: string, city?: string) =>
+    apiClient
+      .get<ApiResponse<Hotel[]>>("/hotels", { params: { search, city } })
+      .then((r) => r.data.data),
+
+  getOne: (hotelId: string) =>
+    apiClient
+      .get<ApiResponse<Hotel>>(`/hotels/${hotelId}`)
+      .then((r) => r.data.data),
+};
+
+// Extend reservation endpoints with link
+export const reservationEndpoints = {
+  list: () =>
+    apiClient
+      .get<ApiResponse<GuestStay[]>>("/reservations")
+      .then((r) => r.data.data),
+
+  create: (dto: CreateStayDto) =>
+    apiClient
+      .post<ApiResponse<GuestStay>>("/reservations", dto)
+      .then((r) => r.data.data),
+
+  getOne: (id: string) =>
+    apiClient
+      .get<ApiResponse<GuestStay>>(`/reservations/${id}`)
+      .then((r) => r.data.data),
+
+  checkIn: (id: string) => apiClient.post(`/reservations/${id}/check-in`),
+
+  linkReservation: (dto: LinkReservationDto) =>
+    apiClient
+      .post<ApiResponse<GuestStay>>("/reservations/link", dto)
+      .then((r) => r.data.data),
 };

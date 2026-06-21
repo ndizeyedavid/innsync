@@ -347,3 +347,22 @@ export interface NotificationEvent {
   message: string;
   type: string;
 }
+
+// Hotel Types
+export interface Hotel {
+  id: string;
+  name: string;
+  address: string;
+  description?: string;
+  imageUrl?: string;
+  rating?: number;
+  city?: string;
+  amenities?: string[];
+  availableRooms?: number;
+}
+
+export interface LinkReservationDto {
+  confirmationNumber: string;
+  email?: string;
+  phone?: string;
+}

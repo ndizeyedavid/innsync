@@ -19,7 +19,7 @@ import OnboardingHeader from "../components/OnboardingHeader";
 import VibeDetails from "../components/onboarding/VibeDetails";
 import ReviewAndConfirm from "../components/onboarding/ReviewAndConfirm";
 import PaymentSummary from "../components/PaymentSummary";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import apiClient from "../api/client";
 import { useToast } from "../contexts/ToastContext";
@@ -35,8 +35,17 @@ import { vibeCards } from "../constants/vibeCards";
 import reservationsService from "../services/reservations.service";
 import ContextualLoadingComponent from "../components/ContextualLoadingComponent";
 
-export default function OnboardingScreen() {
+interface OnboardingScreenProps {
+  hotelId?: string;
+  hotelName?: string;
+}
+
+export default function OnboardingScreen({
+  hotelId,
+  hotelName,
+}: OnboardingScreenProps) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
   const [adults, setAdults] = useState(1);
@@ -51,11 +60,17 @@ export default function OnboardingScreen() {
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [checkingStays, setCheckingStays] = useState(true);
+  const [checkingStays, setCheckingStays] = useState(!hotelId);
 
-  // Check if user already has stays on load
+  // Check if user already has stays on load (only if no hotelId provided)
   useEffect(() => {
     const checkExistingStays = async () => {
+      if (hotelId) {
+        // If we have a hotelId, no need to check stays
+        setCheckingStays(false);
+        return;
+      }
+
       try {
         const stays = await reservationsService.listMine();
         if (stays.length > 0) {
@@ -70,7 +85,7 @@ export default function OnboardingScreen() {
     };
 
     checkExistingStays();
-  }, []);
+  }, [hotelId, router]);
 
   const onBoardingHeaders = [
     {
@@ -111,6 +126,12 @@ export default function OnboardingScreen() {
     try {
       setIsLoading(true);
 
+      if (!hotelId) {
+        showToast("error", "Please select a hotel first");
+        router.replace("/hotel-search");
+        return;
+      }
+
       if (!checkIn || !checkOut) {
         showToast("error", "Please select check-in and check-out dates");
         return;
@@ -133,6 +154,7 @@ export default function OnboardingScreen() {
       const mealPlan: MealPlanDto = selectedMealPlanId as MealPlanDto;
 
       const createStayDto: CreateStayDto = {
+        hotelId,
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
         nights,
@@ -190,11 +212,59 @@ export default function OnboardingScreen() {
     return <ContextualLoadingComponent text="Checking for your stays..." />;
   }
 
+  // If no hotelId, show a prompt to select hotel
+  if (!hotelId) {
+    return (
+      <ScreenLayout>
+        <View className="flex-1 items-center justify-center px-6">
+          <Ionicons name="bed-outline" size={64} color="#E8E5DD" />
+          <Text className="text-2xl font-semibold text-navy text-center mt-6">
+            Select a Hotel First
+          </Text>
+          <Text className="text-gray-500 text-center mt-2">
+            You need to select a hotel before continuing with booking
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            className="mt-8 px-6 py-4 bg-[#283D5A] rounded-2xl flex-row items-center gap-2"
+            onPress={() => router.replace("/hotel-search")}
+          >
+            <Text className="text-white font-semibold">Select Hotel</Text>
+            <Ionicons name="arrow-forward" size={18} color="white" />
+          </TouchableOpacity>
+        </View>
+      </ScreenLayout>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-[#fafaf7] pt-[50px]"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      {/* Selected Hotel Header */}
+      <View className="px-5 pb-4">
+        <View className="flex-row items-center gap-3 bg-white p-4 rounded-2xl border border-gray-100">
+          <View className="w-10 h-10 rounded-xl bg-[#F5F4EF] items-center justify-center">
+            <Ionicons name="bed-outline" size={20} color="#283D5A" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-gray-500">
+              Selected Hotel
+            </Text>
+            <Text className="text-lg font-semibold text-navy">
+              {hotelName || "Hotel"}
+            </Text>
+          </View>
+          <TouchableOpacity
+            className="px-3 py-1 bg-[#F5F4EF] rounded-full"
+            onPress={() => router.replace("/hotel-search")}
+          >
+            <Text className="text-xs font-medium text-[#283D5A]">Change</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <OnboardingProgress step={step} setProgress={setStep} />
       <ScrollView
         className="flex-1 px-5"

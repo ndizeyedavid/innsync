@@ -12,14 +12,12 @@ export default function WelcomeScreen() {
 
   const handleBookNewStay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // For now, go to onboarding (we'll add hotel search later!)
-    router.replace("/onboarding");
+    router.push("/hotel-search");
   };
 
   const handleLinkExisting = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    showToast("info", "Link existing reservation feature coming soon!");
-    // We'll implement this later
+    router.push("/link-reservation");
   };
 
   const handleBrowseApp = () => {
