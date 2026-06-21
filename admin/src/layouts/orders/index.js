@@ -56,56 +56,59 @@ function Orders() {
     { Header: "Actions", accessor: "actions", width: "10%" },
   ];
 
-  const rows = orders?.map((order) => {
-    const getStatusColor = (status) => {
-      switch (status) {
-        case "PENDING_REMOTE": return "warning";
-        case "PREPARING": return "info";
-        case "ON_THE_WAY": return "primary";
-        case "DELIVERED": return "success";
-        case "CANCELLED": return "error";
-        case "FAILED": return "error";
-        default: return "default";
-      }
-    };
+  const rows =
+    orders?.map((order) => {
+      const getStatusColor = (status) => {
+        switch (status) {
+          case "PENDING_REMOTE":
+            return "warning";
+          case "PREPARING":
+            return "info";
+          case "ON_THE_WAY":
+            return "primary";
+          case "DELIVERED":
+            return "success";
+          case "CANCELLED":
+            return "error";
+          case "FAILED":
+            return "error";
+          default:
+            return "default";
+        }
+      };
 
-    return {
-      orderId: order.id.slice(0, 8),
-      guest: order.stay?.user?.name || "Unknown",
-      status: (
-        <Chip
-          label={order.status}
-          color={getStatusColor(order.status)}
-          size="small"
-        />
-      ),
-      items: order.items?.map(item => `${item.quantity}x ${item.nameSnapshot}`).join(", ") || "",
-      total: `$${(order.totalCents / 100).toFixed(2)}`,
-      actions: (
-        <MDBox display="flex" gap={1}>
-          {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
-            <FormControl size="small">
-              <Select
-                value={order.status}
-                onChange={(e) => {
-                  updateStatusMutation.mutate({
-                    orderId: order.id,
-                    status: e.target.value,
-                  });
-                }}
-                sx={{ minWidth: 140 }}
-              >
-                <MenuItem value="PREPARING">Preparing</MenuItem>
-                <MenuItem value="ON_THE_WAY">On the way</MenuItem>
-                <MenuItem value="DELIVERED">Delivered</MenuItem>
-                <MenuItem value="CANCELLED">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          )}
-        </MDBox>
-      ),
-    };
-  }) || [];
+      return {
+        orderId: order.id.slice(0, 8),
+        guest: order.stay?.user?.name || "Unknown",
+        status: <Chip label={order.status} color={getStatusColor(order.status)} size="small" />,
+        items:
+          order.items?.map((item) => `${item.quantity}x ${item.nameSnapshot}`).join(", ") || "",
+        total: `$${(order.totalCents / 100).toFixed(2)}`,
+        actions: (
+          <MDBox display="flex" gap={1}>
+            {order.status !== "DELIVERED" && order.status !== "CANCELLED" && (
+              <FormControl size="small">
+                <Select
+                  value={order.status}
+                  onChange={(e) => {
+                    updateStatusMutation.mutate({
+                      orderId: order.id,
+                      status: e.target.value,
+                    });
+                  }}
+                  sx={{ minWidth: 140 }}
+                >
+                  <MenuItem value="PREPARING">Preparing</MenuItem>
+                  <MenuItem value="ON_THE_WAY">On the way</MenuItem>
+                  <MenuItem value="DELIVERED">Delivered</MenuItem>
+                  <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+          </MDBox>
+        ),
+      };
+    }) || [];
 
   return (
     <DashboardLayout>

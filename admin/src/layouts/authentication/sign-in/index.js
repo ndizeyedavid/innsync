@@ -100,13 +100,7 @@ function Basic() {
               />
             </MDBox>
             <MDBox mt={4} mb={1}>
-              <MDButton
-                variant="gradient"
-                color="info"
-                fullWidth
-                type="submit"
-                disabled={loading}
-              >
+              <MDButton variant="gradient" color="info" fullWidth type="submit" disabled={loading}>
                 {loading ? "Signing in..." : "sign in"}
               </MDButton>
             </MDBox>

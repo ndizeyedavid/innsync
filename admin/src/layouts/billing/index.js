@@ -1,85 +1,104 @@
 /**
 =========================================================
-* Material Dashboard 2 React - v2.2.0
+* InnSync Hotel Dashboard
 =========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
 // @mui material components
 import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import Chip from "@mui/material/Chip";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
+import MDTypography from "components/MDTypography";
 
-// Material Dashboard 2 React examples
+// Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
-import MasterCard from "examples/Cards/MasterCard";
-import DefaultInfoCard from "examples/Cards/InfoCards/DefaultInfoCard";
-
-// Billing page components
-import PaymentMethod from "layouts/billing/components/PaymentMethod";
-import Invoices from "layouts/billing/components/Invoices";
-import BillingInformation from "layouts/billing/components/BillingInformation";
-import Transactions from "layouts/billing/components/Transactions";
 
 function Billing() {
+  // Mock data for now
+  const invoices = [
+    { id: "#INV-001", guest: "Avery Chen", amount: 450.0, status: "Paid", date: "2024-01-15" },
+    { id: "#INV-002", guest: "Jordan Lee", amount: 320.5, status: "Pending", date: "2024-01-14" },
+    { id: "#INV-003", guest: "Taylor Smith", amount: 680.0, status: "Paid", date: "2024-01-13" },
+    { id: "#INV-004", guest: "Casey Jones", amount: 510.25, status: "Overdue", date: "2024-01-10" },
+  ];
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Paid":
+        return "success";
+      case "Pending":
+        return "warning";
+      case "Overdue":
+        return "error";
+      default:
+        return "info";
+    }
+  };
+
   return (
     <DashboardLayout>
-      <DashboardNavbar absolute isMini />
-      <MDBox mt={8}>
-        <MDBox mb={3}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} lg={8}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} xl={6}>
-                  <MasterCard number={4562112245947852} holder="jack peterson" expires="11/22" />
-                </Grid>
-                <Grid item xs={12} md={6} xl={3}>
-                  <DefaultInfoCard
-                    icon="account_balance"
-                    title="salary"
-                    description="Belong Interactive"
-                    value="+$2000"
-                  />
-                </Grid>
-                <Grid item xs={12} md={6} xl={3}>
-                  <DefaultInfoCard
-                    icon="paypal"
-                    title="paypal"
-                    description="Freelance Payment"
-                    value="$455.00"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <PaymentMethod />
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item xs={12} lg={4}>
-              <Invoices />
-            </Grid>
+      <DashboardNavbar />
+      <MDBox pt={6} pb={3}>
+        <Grid container spacing={6}>
+          <Grid item xs={12}>
+            <Card>
+              <MDBox
+                mx={2}
+                mt={-3}
+                py={3}
+                px={2}
+                variant="gradient"
+                bgColor="success"
+                borderRadius="lg"
+                coloredShadow="success"
+              >
+                <MDTypography variant="h6" color="white">
+                  Billing & Invoices
+                </MDTypography>
+              </MDBox>
+              <MDBox pt={3} px={2}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Invoice ID</TableCell>
+                      <TableCell>Guest</TableCell>
+                      <TableCell>Amount</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Date</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {invoices.map((invoice) => (
+                      <TableRow key={invoice.id}>
+                        <TableCell>{invoice.id}</TableCell>
+                        <TableCell>{invoice.guest}</TableCell>
+                        <TableCell>${invoice.amount.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={invoice.status}
+                            color={getStatusColor(invoice.status)}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>{invoice.date}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </MDBox>
+            </Card>
           </Grid>
-        </MDBox>
-        <MDBox mb={3}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={7}>
-              <BillingInformation />
-            </Grid>
-            <Grid item xs={12} md={5}>
-              <Transactions />
-            </Grid>
-          </Grid>
-        </MDBox>
+        </Grid>
       </MDBox>
       <Footer />
     </DashboardLayout>
