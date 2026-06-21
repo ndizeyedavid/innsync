@@ -1,20 +1,111 @@
-# Expo Router and Uniwind 
+# InnSync Mobile App
 
-Use [Expo Router](https://docs.expo.dev/router/introduction/) with [Uniwind](https://docs.uniwind.dev/) styling.
+A modern hotel guest experience app built with React Native and Expo.
 
-## Launch your own
+## Tech Stack
 
-[![Launch with Expo](https://github.com/expo/examples/blob/master/.gh-assets/launch.svg?raw=true)](https://launch.expo.dev/?github=https://github.com/expo/examples/tree/master/with-router-uniwind)
+- **Framework**: Expo (React Native)
+- **Navigation**: Expo Router
+- **State Management**: Zustand
+- **Data Fetching**: React Query (TanStack Query)
+- **Styling**: Uniwind + Tailwind CSS
+- **API**: Axios with interceptors
+- **Real-time**: Socket.IO
+- **Storage**: Expo Secure Store
+- **Haptics**: Expo Haptics
 
-## 🚀 How to use
+## Features
 
-```sh
-npx create-expo-app -e with-router-uniwind
+### ✅ Implemented
+
+- **Authentication**: Sign in / Sign up, token refresh, secure storage
+- **Onboarding**: Guest info, preferences, meal plans
+- **Home Screen**: Digital key, quick actions, notifications
+- **Orders**: Menu browsing, order placement, order tracking
+- **Itinerary**: Daily agenda, activity booking
+- **Digital Key**: Press-and-hold unlock with haptic feedback
+- **View Folio**: Real-time billing and transactions
+- **Profile**: Personal info, settings
+- **Security**: Change password, 2FA setup, login history (UI complete)
+- **Privacy**: Data collection, sharing, deletion, export (UI complete)
+- **Legal**: Terms, privacy policy, cookies, open source
+- **Amenities**: Hotel amenities
+- **Map View**: POI markers
+- **Notifications**: In-app notifications
+
+### 📁 Project Structure
+
+```
+innsync-alpha/
+├── src/
+│   ├── api/
+│   │   ├── client.ts          # Axios client with interceptors
+│   │   ├── endpoints.ts       # API endpoint definitions
+│   │   └── types.ts           # TypeScript types
+│   ├── app/                   # Expo Router screens
+│   ├── components/            # Reusable components
+│   ├── constants/             # Config, constants
+│   ├── contexts/              # React contexts (Toast)
+│   ├── hooks/                 # Custom hooks
+│   ├── layout/                # Layout components
+│   ├── screens/               # Screen components
+│   ├── services/              # API service layer
+│   ├── store/                 # Zustand stores
+│   ├── types/                 # Additional types
+│   ├── utils/                 # Utilities
+│   └── global.css             # Global styles
+├── backend/                   # NestJS backend (separate repo)
+├── app.json
+├── package.json
+└── metro.config.js
 ```
 
-## Deploy
+## Getting Started
 
-Deploy on all platforms with Expo Application Services (EAS).
+### Prerequisites
 
-- Deploy the website: `npx eas-cli deploy` — [Learn more](https://docs.expo.dev/eas/hosting/get-started/)
-- Deploy on iOS and Android using: `npx eas-cli build` — [Learn more](https://expo.dev/eas)
+- Node.js
+- Expo CLI
+- iOS/Android simulator or physical device
+
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start Expo
+npm start
+```
+
+### Backend Setup
+
+The app requires the InnSync NestJS backend running on the same network. Update `src/constants/config.ts` with your backend IP.
+
+## Key Dependencies
+
+```json
+{
+  "expo": "~54.0.22",
+  "expo-router": "~6.0.23",
+  "zustand": "^5.0.0",
+  "@tanstack/react-query": "^5.0.0",
+  "axios": "^1.7.7",
+  "socket.io-client": "^4.7.5",
+  "react-hook-form": "^7.53.0",
+  "zod": "^3.23.0"
+}
+```
+
+## Development
+
+```bash
+# iOS
+npm run ios
+
+# Android
+npm run android
+
+# Web
+npm run web
+```
