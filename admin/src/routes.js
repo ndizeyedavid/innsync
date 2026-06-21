@@ -4,6 +4,7 @@
 
 // Material Dashboard 2 React layouts
 import Dashboard from "layouts/dashboard";
+import Orders from "layouts/orders";
 import SignIn from "layouts/authentication/sign-in";
 
 // @mui icons
@@ -43,7 +44,7 @@ const routes = [
     key: "orders",
     icon: <Icon fontSize="small">restaurant_menu</Icon>,
     route: "/orders",
-    component: <div>Orders Page (Coming Soon)</div>,
+    component: <Orders />,
     protected: true,
   },
   {
