@@ -1,16 +1,7 @@
 /**
 =========================================================
-* Material Dashboard 2 React - v2.2.0
+* InnSync Hotel Dashboard
 =========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
 import { useState, useEffect, useMemo } from "react";
@@ -43,6 +34,10 @@ import rtlPlugin from "stylis-plugin-rtl";
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 
+// InnSync providers
+import { AppProviders } from "providers/AppProviders";
+import { useAuth } from "contexts/AuthContext";
+
 // Material Dashboard 2 React routes
 import routes from "routes";
 
@@ -53,7 +48,7 @@ import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "co
 import brandWhite from "assets/images/logo-ct.png";
 import brandDark from "assets/images/logo-ct-dark.png";
 
-export default function App() {
+function AppContent() {
   const [controller, dispatch] = useMaterialUIController();
   const {
     miniSidenav,
@@ -68,6 +63,7 @@ export default function App() {
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
+  const { user, loading } = useAuth();
 
   // Cache for the rtl
   useMemo(() => {
@@ -116,6 +112,9 @@ export default function App() {
       }
 
       if (route.route) {
+        if (route.protected && !user) {
+          return null;
+        }
         return <Route exact path={route.route} element={route.component} key={route.key} />;
       }
 
@@ -146,16 +145,24 @@ export default function App() {
     </MDBox>
   );
 
+  if (loading) {
+    return (
+      <MDBox display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        Loading...
+      </MDBox>
+    );
+  }
+
   return direction === "rtl" ? (
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
         <CssBaseline />
-        {layout === "dashboard" && (
+        {layout === "dashboard" && user && (
           <>
             <Sidenav
               color={sidenavColor}
               brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-              brandName="Material Dashboard 2"
+              brandName="InnSync Hotel"
               routes={routes}
               onMouseEnter={handleOnMouseEnter}
               onMouseLeave={handleOnMouseLeave}
@@ -167,19 +174,24 @@ export default function App() {
         {layout === "vr" && <Configurator />}
         <Routes>
           {getRoutes(routes)}
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route
+            path="*"
+            element={
+              user ? <Navigate to="/dashboard" /> : <Navigate to="/authentication/sign-in" />
+            }
+          />
         </Routes>
       </ThemeProvider>
     </CacheProvider>
   ) : (
     <ThemeProvider theme={darkMode ? themeDark : theme}>
       <CssBaseline />
-      {layout === "dashboard" && (
+      {layout === "dashboard" && user && (
         <>
           <Sidenav
             color={sidenavColor}
             brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-            brandName="Material Dashboard 2"
+            brandName="InnSync Hotel"
             routes={routes}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
@@ -191,8 +203,19 @@ export default function App() {
       {layout === "vr" && <Configurator />}
       <Routes>
         {getRoutes(routes)}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route
+          path="*"
+          element={user ? <Navigate to="/dashboard" /> : <Navigate to="/authentication/sign-in" />}
+        />
       </Routes>
     </ThemeProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AppProviders>
+      <AppContent />
+    </AppProviders>
   );
 }
