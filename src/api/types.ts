@@ -359,6 +359,8 @@ export interface Hotel {
   city?: string;
   amenities?: string[];
   availableRooms?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface LinkReservationDto {

@@ -13,6 +13,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Haptics from "expo-haptics";
 import ScreenLayout from "../layout/ScreenLayout";
 import HotelCard from "../components/HotelCard";
+import HotelDetailsModal from "../components/HotelDetailsModal";
 import ContextualLoadingComponent from "../components/ContextualLoadingComponent";
 import hotelsService from "../services/hotels.service";
 import { Hotel } from "../api/types";
@@ -25,6 +26,7 @@ export default function HotelSearchScreen() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     loadHotels();
@@ -60,20 +62,16 @@ export default function HotelSearchScreen() {
   const handleSelectHotel = (hotel: Hotel) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedHotel(hotel);
+    setIsModalVisible(true);
   };
 
-  const handleContinue = () => {
-    if (!selectedHotel) {
-      showToast("error", "Please select a hotel");
-      return;
-    }
-
+  const handleConfirmHotel = (hotel: Hotel) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
+    setIsModalVisible(false);
     // Pass selected hotel to onboarding
     router.push({
       pathname: "/onboarding",
-      params: { hotelId: selectedHotel.id, hotelName: selectedHotel.name },
+      params: { hotelId: hotel.id, hotelName: hotel.name },
     });
   };
 
@@ -130,32 +128,20 @@ export default function HotelSearchScreen() {
             <HotelCard
               key={hotel.id}
               hotel={hotel}
-              selected={selectedHotel?.id === hotel.id}
+              selected={false}
               onPress={() => handleSelectHotel(hotel)}
             />
           ))
         )}
       </ScrollView>
 
-      {/* Continue Button */}
-      <View className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-4 bg-white border-t border-gray-100">
-        <TouchableOpacity
-          activeOpacity={0.7}
-          className={`w-full h-14 rounded-2xl flex-row items-center justify-center gap-2 ${
-            selectedHotel ? "bg-[#283D5A]" : "bg-gray-300"
-          }`}
-          onPress={handleContinue}
-          disabled={!selectedHotel}
-        >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white text-base font-semibold">
-              Continue with {selectedHotel?.name || "Selected Hotel"}
-            </Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      {/* Hotel Details Modal */}
+      <HotelDetailsModal
+        visible={isModalVisible}
+        hotel={selectedHotel}
+        onClose={() => setIsModalVisible(false)}
+        onConfirm={handleConfirmHotel}
+      />
     </ScreenLayout>
   );
 }

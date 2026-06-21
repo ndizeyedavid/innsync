@@ -62,7 +62,7 @@ export default function ReviewAndConfirm({
   if (roomPreference) tags.push(roomPreference);
   if (bedPreference) tags.push(bedPreference);
   if (floorPreference) tags.push(floorPreference);
-  tags.push(selectedMealPlan?.title || "");
+  if (selectedMealPlan?.title) tags.push(selectedMealPlan.title);
 
   if (selectedVibeIndices.length > 0) {
     tags.push(
@@ -93,7 +93,7 @@ export default function ReviewAndConfirm({
           <CheckoutDetail
             title={`Meal Plan: ${selectedMealPlan?.title}`}
             description={selectedMealPlan?.description}
-            price=""
+            price={undefined}
           />
           {selectedVibeIndices.length > 0 && (
             <CheckoutDetail
@@ -101,14 +101,14 @@ export default function ReviewAndConfirm({
               description={selectedVibeIndices
                 .map((i) => vibeCards[i].title)
                 .join(", ")}
-              price=""
+              price={undefined}
             />
           )}
           {dietaryRestrictions.length > 0 && (
             <CheckoutDetail
               title="Dietary Restrictions"
               description={dietaryRestrictions.join(", ")}
-              price=""
+              price={undefined}
             />
           )}
 
@@ -146,7 +146,7 @@ export default function ReviewAndConfirm({
 interface ICheckoutDetail {
   title: string;
   description?: string;
-  price: string;
+  price?: string;
 }
 
 function CheckoutDetail({ title, description, price }: ICheckoutDetail) {

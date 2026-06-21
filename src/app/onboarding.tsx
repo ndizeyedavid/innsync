@@ -21,8 +21,8 @@ export default function Onboarding() {
       }
 
       try {
-        // If we have hotelId, skip checking stays and go straight to onboarding
-        if (params.hotelId) {
+        // If we have hotelId OR it's a restart, skip checking stays and go straight to onboarding
+        if (params.hotelId || params.restart) {
           setCheckingStays(false);
           return;
         }
@@ -40,7 +40,7 @@ export default function Onboarding() {
     };
 
     checkStatus();
-  }, [isAuthenticated, authLoading, router, params.hotelId]);
+  }, [isAuthenticated, authLoading, router, params.hotelId, params.restart]);
 
   if (authLoading || checkingStays) {
     return <ContextualLoadingComponent text="Checking for your stays..." />;

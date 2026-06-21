@@ -110,31 +110,48 @@ export default function OnboardingScreen({
   useEffect(() => {
     const loadProgress = async () => {
       try {
+        // First try to load current stay to pre-fill data
+        const stays = await reservationsService.listMine();
+        const existingStay = stays.find((s) => s.status === "CHECKED_IN") || stays[0];
+        
+        if (existingStay) {
+          // Pre-fill with existing stay data
+          if (!propHotelId) {
+            setHotelId(existingStay.hotelId);
+            setHotelName(existingStay.hotelName);
+            setCheckingStays(false);
+          }
+          if (existingStay.checkIn) setCheckIn(new Date(existingStay.checkIn));
+          if (existingStay.checkOut) setCheckOut(new Date(existingStay.checkOut));
+          setAdults(existingStay.adults || 1);
+          setChildren(existingStay.children || 0);
+          if (existingStay.roomPreference) setRoomPreference(existingStay.roomPreference);
+          if (existingStay.bedPreference) setBedPreference(existingStay.bedPreference);
+          if (existingStay.floorPreference) setFloorPreference(existingStay.floorPreference);
+          if (existingStay.mealPlan) setSelectedMealPlanId(existingStay.mealPlan);
+          if (existingStay.specialRequests) setSpecialRequests(existingStay.specialRequests);
+          if (existingStay.dietaryRestrictions) setDietaryRestrictions(existingStay.dietaryRestrictions);
+        }
+        
+        // Then try to load saved progress (which overrides existing stay data)
         const progress = await getOnboardingProgress();
         if (progress) {
           if (!propHotelId && progress.hotelId) {
             setHotelId(progress.hotelId);
             setHotelName(progress.hotelName);
-            setCheckingStays(false);
           }
           if (progress.step) setStep(progress.step);
           if (progress.checkIn) setCheckIn(new Date(progress.checkIn));
           if (progress.checkOut) setCheckOut(new Date(progress.checkOut));
           if (progress.adults !== undefined) setAdults(progress.adults);
           if (progress.children !== undefined) setChildren(progress.children);
-          if (progress.roomPreference)
-            setRoomPreference(progress.roomPreference);
+          if (progress.roomPreference) setRoomPreference(progress.roomPreference);
           if (progress.bedPreference) setBedPreference(progress.bedPreference);
-          if (progress.floorPreference)
-            setFloorPreference(progress.floorPreference);
-          if (progress.selectedMealPlanId)
-            setSelectedMealPlanId(progress.selectedMealPlanId);
-          if (progress.specialRequests)
-            setSpecialRequests(progress.specialRequests);
-          if (progress.selectedVibeIndices)
-            setSelectedVibeIndices(progress.selectedVibeIndices);
-          if (progress.dietaryRestrictions)
-            setDietaryRestrictions(progress.dietaryRestrictions);
+          if (progress.floorPreference) setFloorPreference(progress.floorPreference);
+          if (progress.selectedMealPlanId) setSelectedMealPlanId(progress.selectedMealPlanId);
+          if (progress.specialRequests) setSpecialRequests(progress.specialRequests);
+          if (progress.selectedVibeIndices) setSelectedVibeIndices(progress.selectedVibeIndices);
+          if (progress.dietaryRestrictions) setDietaryRestrictions(progress.dietaryRestrictions);
         }
       } catch (error) {
         console.error("Error loading onboarding progress:", error);
