@@ -17,7 +17,7 @@ import TravelDetails from "../components/onboarding/TravelDetails";
 import Preference from "../components/onboarding/Preference";
 import OnboardingHeader from "../components/OnboardingHeader";
 import VibeDetails from "../components/onboarding/VibeDetails";
-import ReviewAndPay from "../components/onboarding/ReviewAndPay";
+import ReviewAndConfirm from "../components/onboarding/ReviewAndConfirm";
 import PaymentSummary from "../components/PaymentSummary";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -33,6 +33,7 @@ import {
 import { mealPlans } from "../constants/mealPlans";
 import { vibeCards } from "../constants/vibeCards";
 import reservationsService from "../services/reservations.service";
+import ContextualLoadingComponent from "../components/ContextualLoadingComponent";
 
 export default function OnboardingScreen() {
   const { showToast } = useToast();
@@ -85,7 +86,7 @@ export default function OnboardingScreen() {
       description: "Pick the experiences that excite you most.",
     },
     {
-      title: "Review & pay",
+      title: "Review & confirm",
       description: "Confirm your booking details before check-in.",
     },
   ];
@@ -186,13 +187,7 @@ export default function OnboardingScreen() {
   };
 
   if (checkingStays) {
-    return (
-      <ScreenLayout>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#000" />
-        </View>
-      </ScreenLayout>
-    );
+    return <ContextualLoadingComponent text="Checking for your stays..." />;
   }
 
   return (
@@ -249,7 +244,7 @@ export default function OnboardingScreen() {
         )}
 
         {step === 4 && (
-          <ReviewAndPay
+          <ReviewAndConfirm
             checkIn={checkIn}
             checkOut={checkOut}
             adults={adults}
@@ -279,7 +274,7 @@ export default function OnboardingScreen() {
           ) : (
             <>
               <Text className="text-white text-base font-semibold">
-                {step === 4 ? "Complete" : "Continue"}
+                {step === 4 ? "Confirm Booking" : "Continue"}
               </Text>
               <Ionicons name="arrow-forward" size={18} color="white" />
             </>

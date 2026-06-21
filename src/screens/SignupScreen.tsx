@@ -71,13 +71,8 @@ export default function SignupScreen() {
 
       showToast("success", "Account created successfully!", "top");
 
-      // Check if user already has stays
-      const stays = await reservationsService.listMine();
-      if (stays.length > 0) {
-        router.replace("/(tabs)");
-      } else {
-        router.replace("/onboarding");
-      }
+      // Navigate to welcome screen
+      router.replace("/welcome");
     } catch (error: any) {
       showToast(
         "error",

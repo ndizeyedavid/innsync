@@ -2,8 +2,8 @@ import OnboardingScreen from "../screens/OnboardingScreen";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { View, ActivityIndicator } from "react-native";
 import reservationsService from "../services/reservations.service";
+import ContextualLoadingComponent from "../components/ContextualLoadingComponent";
 
 export default function Onboarding() {
   const router = useRouter();
@@ -35,11 +35,7 @@ export default function Onboarding() {
   }, [isAuthenticated, authLoading, router]);
 
   if (authLoading || checkingStays) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#000" />
-      </View>
-    );
+    return <ContextualLoadingComponent text="Checking for your stays..." />;
   }
 
   return <OnboardingScreen />;
