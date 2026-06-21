@@ -40,6 +40,8 @@ import { useAuth } from "contexts/AuthContext";
 
 // Material Dashboard 2 React routes
 import routes from "routes";
+import GuestDetail from "layouts/guests/detail";
+import Onboarding from "layouts/onboarding";
 
 // Material Dashboard 2 React contexts
 import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "context";
@@ -165,6 +167,8 @@ function AppContent() {
       {layout === "vr" && <Configurator />}
       <Routes>
         {getRoutes(routes)}
+        {user && <Route exact path="/guests/:stayId" element={<GuestDetail />} />}
+        {user && <Route exact path="/onboarding" element={<Onboarding />} />}
         <Route
           path="*"
           element={user ? <Navigate to="/dashboard" /> : <Navigate to="/authentication/sign-in" />}

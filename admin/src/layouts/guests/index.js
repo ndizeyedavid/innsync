@@ -1,72 +1,82 @@
-/**
-=========================================================
-* InnSync Hotel Dashboard
-=========================================================
-*/
-
-// @mui material components
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
-
-// Material Dashboard 2 React components
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
-// Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
-
-// React Query
-import { useQuery } from "@tanstack/react-query";
-
-// API
 import { hotelManagerAPI } from "services/hotelManager";
 
+const STATUS_COLORS = {
+  PENDING: "warning", CONFIRMED: "info", CHECKED_IN: "success", CHECKED_OUT: "secondary", CANCELLED: "error",
+};
+
 function Guests() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const { data: stays, isLoading } = useQuery({
     queryKey: ["hotelStays"],
-    queryFn: hotelManagerAPI.getStays,
+    queryFn: () => hotelManagerAPI.getStays(),
+  });
+
+  const checkInMut = useMutation({
+    mutationFn: (stayId) => hotelManagerAPI.checkIn(stayId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }),
   });
 
   const columns = [
     { Header: "Guest Name", accessor: "guestName", width: "25%" },
-    { Header: "Check-in", accessor: "checkIn", width: "20%" },
-    { Header: "Check-out", accessor: "checkOut", width: "20%" },
-    { Header: "Status", accessor: "status", width: "15%" },
-    { Header: "Adults/Kids", accessor: "guests", width: "20%" },
+    { Header: "Check-in", accessor: "checkIn", width: "15%" },
+    { Header: "Check-out", accessor: "checkOut", width: "15%" },
+    { Header: "Status", accessor: "status", width: "12%" },
+    { Header: "Adults/Kids", accessor: "guests", width: "15%" },
+    { Header: "Actions", accessor: "actions", width: "18%" },
   ];
 
-  const rows =
-    stays?.map((stay) => {
-      const getStatusColor = (status) => {
-        switch (status) {
-          case "PENDING":
-            return "warning";
-          case "CONFIRMED":
-            return "info";
-          case "CHECKED_IN":
-            return "success";
-          case "CHECKED_OUT":
-            return "secondary";
-          default:
-            return "default";
-        }
-      };
-
-      return {
-        guestName: stay.user?.name || "Unknown Guest",
-        checkIn: new Date(stay.checkIn).toLocaleDateString(),
-        checkOut: new Date(stay.checkOut).toLocaleDateString(),
-        status: <Chip label={stay.status} color={getStatusColor(stay.status)} size="small" />,
-        guests: `${stay.adults} adult${stay.adults > 1 ? "s" : ""}${
-          stay.children > 0 ? `, ${stay.children} kid${stay.children > 1 ? "s" : ""}` : ""
-        }`,
-      };
-    }) || [];
+  const rows = (stays || []).map((stay) => ({
+    guestName: (
+      <MDTypography variant="body2" fontWeight="medium" sx={{ cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+        onClick={() => navigate(`/guests/${stay.id}`)}
+      >
+        {stay.user?.name || "Unknown Guest"}
+      </MDTypography>
+    ),
+    checkIn: new Date(stay.checkIn).toLocaleDateString(),
+    checkOut: new Date(stay.checkOut).toLocaleDateString(),
+    status: <Chip label={stay.status} color={STATUS_COLORS[stay.status] || "default"} size="small" />,
+    guests: `${stay.adults} adult${stay.adults > 1 ? "s" : ""}${stay.children > 0 ? `, ${stay.children} kid${stay.children > 1 ? "s" : ""}` : ""}`,
+    actions: (
+      <MDBox display="flex" gap={0.5}>
+        {stay.status === "CONFIRMED" && (
+          <Tooltip title="Check in">
+            <IconButton size="small" color="success" onClick={() => checkInMut.mutate(stay.id)}>
+              <span style={{ fontSize: 18 }}>⇥</span>
+            </IconButton>
+          </Tooltip>
+        )}
+        {stay.status === "CHECKED_IN" && (
+          <Tooltip title="Check out">
+            <IconButton size="small" color="warning" onClick={() => hotelManagerAPI.checkOut(stay.id).then(() => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }))}>
+              <span style={{ fontSize: 18 }}>⇤</span>
+            </IconButton>
+          </Tooltip>
+        )}
+        <Tooltip title="View details">
+          <IconButton size="small" color="info" onClick={() => navigate(`/guests/${stay.id}`)}>
+            <span style={{ fontSize: 18 }}>→</span>
+          </IconButton>
+        </Tooltip>
+      </MDBox>
+    ),
+  }));
 
   return (
     <DashboardLayout>
@@ -75,33 +85,14 @@ function Guests() {
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card>
-              <MDBox
-                mx={2}
-                mt={-3}
-                py={3}
-                px={2}
-                variant="gradient"
-                bgColor="success"
-                borderRadius="lg"
-                coloredShadow="success"
-              >
-                <MDTypography variant="h6" color="white">
-                  Guests & Stays
-                </MDTypography>
+              <MDBox mx={2} mt={-3} py={3} px={2} variant="gradient" bgColor="success" borderRadius="lg" coloredShadow="success">
+                <MDTypography variant="h6" color="white">Guests & Stays</MDTypography>
               </MDBox>
               <MDBox pt={3}>
                 {isLoading ? (
-                  <MDBox display="flex" justifyContent="center" py={6}>
-                    <CircularProgress />
-                  </MDBox>
+                  <MDBox display="flex" justifyContent="center" py={6}><CircularProgress /></MDBox>
                 ) : (
-                  <DataTable
-                    table={{ columns, rows }}
-                    isSorted={false}
-                    entriesPerPage={false}
-                    showTotalEntries={false}
-                    noEndBorder
-                  />
+                  <DataTable table={{ columns, rows }} isSorted={false} entriesPerPage={false} showTotalEntries={false} noEndBorder />
                 )}
               </MDBox>
             </Card>

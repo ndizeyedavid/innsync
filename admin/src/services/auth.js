@@ -12,6 +12,17 @@ export const authService = {
     return response.data.data;
   },
 
+  async signup(name, email, password) {
+    const response = await api.post("/admin/auth/signup", { name, email, password });
+    if (response.data?.data?.tokens?.accessToken) {
+      localStorage.setItem("adminToken", response.data.data.tokens.accessToken);
+      if (response.data.data.tokens.refreshToken) {
+        localStorage.setItem("adminRefreshToken", response.data.data.tokens.refreshToken);
+      }
+    }
+    return response.data.data;
+  },
+
   async logout() {
     try {
       await api.post("/auth/sign-out");

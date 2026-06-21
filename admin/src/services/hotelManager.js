@@ -1,11 +1,54 @@
 import api from "./api";
 
+const unwrap = (res) => res.data.data;
+
 export const hotelManagerAPI = {
-  getDashboard: () => api.get("/manager/dashboard").then((res) => res.data),
-  getStays: () => api.get("/manager/stays").then((res) => res.data),
-  getStay: (stayId) => api.get(`/manager/stays/${stayId}`).then((res) => res.data),
-  getOrders: () => api.get("/manager/orders").then((res) => res.data),
+  // Dashboard
+  getDashboard: () => api.get("/manager/dashboard").then(unwrap),
+
+  // Stays / Guests
+  getStays: (status) =>
+    api.get(`/manager/stays${status ? `?status=${status}` : ""}`).then(unwrap),
+  getStay: (stayId) => api.get(`/manager/stays/${stayId}`).then(unwrap),
+  checkIn: (stayId) => api.post(`/manager/stays/${stayId}/check-in`).then(unwrap),
+  checkOut: (stayId) => api.post(`/manager/stays/${stayId}/check-out`).then(unwrap),
+
+  // Orders
+  getOrders: (status) =>
+    api.get(`/manager/orders${status ? `?status=${status}` : ""}`).then(unwrap),
   updateOrderStatus: (orderId, status) =>
-    api.put(`/manager/orders/${orderId}/status`, { status }).then((res) => res.data),
-  getRooms: () => api.get("/manager/rooms").then((res) => res.data),
+    api.put(`/manager/orders/${orderId}/status`, { status }).then(unwrap),
+
+  // Rooms
+  getRooms: () => api.get("/manager/rooms").then(unwrap),
+  createRoom: (dto) => api.post("/manager/rooms", dto).then(unwrap),
+  updateRoom: (id, dto) => api.put(`/manager/rooms/${id}`, dto).then(unwrap),
+
+  // Housekeeping
+  getHousekeeping: (status) =>
+    api.get(`/manager/housekeeping${status ? `?status=${status}` : ""}`).then(unwrap),
+  updateHousekeepingStatus: (id, status, notes) =>
+    api.put(`/manager/housekeeping/${id}/status`, { status, notes }).then(unwrap),
+
+  // Folio / Billing
+  getFolio: (stayId) => api.get(`/manager/folio/${stayId}`).then(unwrap),
+  addCharge: (stayId, dto) =>
+    api.post(`/manager/folio/${stayId}/charge`, dto).then(unwrap),
+
+  // Itinerary
+  getItinerary: (stayId) =>
+    api.get(`/manager/itinerary?stayId=${stayId}`).then(unwrap),
+
+  // Digital Keys
+  getDigitalKeys: () => api.get("/manager/digital-keys").then(unwrap),
+  revokeDigitalKey: (id) => api.post(`/manager/digital-keys/${id}/revoke`).then(unwrap),
+
+  // Amenities
+  getAmenities: () => api.get("/manager/amenities").then(unwrap),
+  updateAmenity: (id, dto) =>
+    api.put(`/manager/amenities/${id}`, dto).then(unwrap),
+
+  // Hotel Settings
+  getHotelSettings: () => api.get("/manager/hotel").then(unwrap),
+  updateHotelSettings: (dto) => api.put("/manager/hotel", dto).then(unwrap),
 };

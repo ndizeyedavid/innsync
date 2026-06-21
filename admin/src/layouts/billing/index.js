@@ -1,10 +1,5 @@
-/**
-=========================================================
-* InnSync Hotel Dashboard
-=========================================================
-*/
-
-// @mui material components
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import Table from "@mui/material/Table";
@@ -13,37 +8,55 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Chip from "@mui/material/Chip";
-
-// Material Dashboard 2 React components
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-
-// Material Dashboard 2 React example components
+import MDButton from "components/MDButton";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
+import DataTable from "examples/Tables/DataTable";
+import { hotelManagerAPI } from "services/hotelManager";
 
 function Billing() {
-  // Mock data for now
-  const invoices = [
-    { id: "#INV-001", guest: "Avery Chen", amount: 450.0, status: "Paid", date: "2024-01-15" },
-    { id: "#INV-002", guest: "Jordan Lee", amount: 320.5, status: "Pending", date: "2024-01-14" },
-    { id: "#INV-003", guest: "Taylor Smith", amount: 680.0, status: "Paid", date: "2024-01-13" },
-    { id: "#INV-004", guest: "Casey Jones", amount: 510.25, status: "Overdue", date: "2024-01-10" },
+  const [selectedStay, setSelectedStay] = useState(null);
+  const [chargeOpen, setChargeOpen] = useState(false);
+  const [chargeAmount, setChargeAmount] = useState("");
+  const [chargeDesc, setChargeDesc] = useState("");
+
+  const { data: stays } = useQuery({
+    queryKey: ["hotelStays"],
+    queryFn: () => hotelManagerAPI.getStays("CHECKED_IN"),
+  });
+
+  const { data: folio, isLoading } = useQuery({
+    queryKey: ["hotelFolio", selectedStay],
+    queryFn: () => hotelManagerAPI.getFolio(selectedStay),
+    enabled: !!selectedStay,
+  });
+
+  const folioLines = folio?.lines || [];
+  const totalCents = folio?.totalCents || 0;
+
+  const columns = [
+    { Header: "Description", accessor: "description", width: "40%" },
+    { Header: "Amount", accessor: "amount", width: "20%" },
+    { Header: "Category", accessor: "category", width: "20%" },
+    { Header: "Date", accessor: "date", width: "20%" },
   ];
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Paid":
-        return "success";
-      case "Pending":
-        return "warning";
-      case "Overdue":
-        return "error";
-      default:
-        return "info";
-    }
-  };
+  const rows = folioLines.map((line, i) => ({
+    description: line.description || line.name || `Item ${i + 1}`,
+    amount: `$${((line.amountCents || line.amount || 0) / 100).toFixed(2)}`,
+    category: line.category || "N/A",
+    date: line.date ? new Date(line.date).toLocaleDateString() : "N/A",
+  }));
 
   return (
     <DashboardLayout>
@@ -52,55 +65,79 @@ function Billing() {
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card>
-              <MDBox
-                mx={2}
-                mt={-3}
-                py={3}
-                px={2}
-                variant="gradient"
-                bgColor="success"
-                borderRadius="lg"
-                coloredShadow="success"
+              <MDBox mx={2} mt={-3} py={3} px={2} variant="gradient" bgColor="success" borderRadius="lg" coloredShadow="success"
+                display="flex" justifyContent="space-between" alignItems="center"
               >
-                <MDTypography variant="h6" color="white">
-                  Billing & Invoices
-                </MDTypography>
+                <MDTypography variant="h6" color="white">Billing & Folio</MDTypography>
+                <MDBox display="flex" gap={1} alignItems="center">
+                  <MDTypography variant="body2" color="white" sx={{ mr: 1 }}>Guest:</MDTypography>
+                  <TextField
+                    select size="small" value={selectedStay || ""}
+                    onChange={(e) => setSelectedStay(e.target.value)}
+                    sx={{ bgcolor: "rgba(255,255,255,0.15)", borderRadius: 1, minWidth: 180 }}
+                    SelectProps={{ native: true }}
+                    inputProps={{ style: { color: "white" } }}
+                  >
+                    <option value="">Select guest...</option>
+                    {(stays || []).map((s) => (
+                      <option key={s.id} value={s.id} style={{ color: "black" }}>
+                        {s.user?.name || "Unknown"} - Room {s.selectedRoomId || "?"}
+                      </option>
+                    ))}
+                  </TextField>
+                </MDBox>
               </MDBox>
               <MDBox pt={3} px={2}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Invoice ID</TableCell>
-                      <TableCell>Guest</TableCell>
-                      <TableCell>Amount</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Date</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {invoices.map((invoice) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell>{invoice.id}</TableCell>
-                        <TableCell>{invoice.guest}</TableCell>
-                        <TableCell>${invoice.amount.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={invoice.status}
-                            color={getStatusColor(invoice.status)}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>{invoice.date}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                {!selectedStay ? (
+                  <Alert severity="info">Select a checked-in guest to view their folio</Alert>
+                ) : isLoading ? (
+                  <MDBox display="flex" justifyContent="center" py={6}><CircularProgress /></MDBox>
+                ) : rows.length === 0 ? (
+                  <Alert severity="info">No folio entries for this stay</Alert>
+                ) : (
+                  <>
+                    <DataTable table={{ columns, rows }} isSorted={false} entriesPerPage={false} showTotalEntries={false} noEndBorder />
+                    <MDBox display="flex" justifyContent="flex-end" mt={3} px={2}>
+                      <MDTypography variant="h6">Total: ${(totalCents / 100).toFixed(2)}</MDTypography>
+                    </MDBox>
+                  </>
+                )}
+                <MDBox display="flex" justifyContent="flex-end" mt={2} px={2} pb={2}>
+                  <MDButton variant="gradient" color="success" disabled={!selectedStay} onClick={() => setChargeOpen(true)}>
+                    Add Charge
+                  </MDButton>
+                </MDBox>
               </MDBox>
             </Card>
           </Grid>
         </Grid>
       </MDBox>
       <Footer />
+
+      <Dialog open={chargeOpen} onClose={() => setChargeOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Manual Charge</DialogTitle>
+        <DialogContent>
+          <MDBox display="flex" flexDirection="column" gap={2} mt={1}>
+            <TextField label="Description" fullWidth value={chargeDesc} onChange={(e) => setChargeDesc(e.target.value)} />
+            <TextField label="Amount (cents)" type="number" fullWidth value={chargeAmount} onChange={(e) => setChargeAmount(e.target.value)} />
+          </MDBox>
+        </DialogContent>
+        <DialogActions>
+          <MDButton onClick={() => setChargeOpen(false)} color="secondary">Cancel</MDButton>
+          <MDButton
+            variant="gradient" color="success"
+            onClick={async () => {
+              await hotelManagerAPI.addCharge(selectedStay, { amountCents: parseInt(chargeAmount), description: chargeDesc });
+              setChargeOpen(false);
+              setChargeAmount("");
+              setChargeDesc("");
+            }}
+            disabled={!chargeAmount || !chargeDesc}
+          >
+            Add
+          </MDButton>
+        </DialogActions>
+      </Dialog>
     </DashboardLayout>
   );
 }

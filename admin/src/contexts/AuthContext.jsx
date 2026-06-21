@@ -30,13 +30,19 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const signup = async (name, email, password) => {
+    const data = await authService.signup(name, email, password);
+    setUser(data.user);
+    return data;
+  };
+
   const logout = async () => {
     await authService.logout();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>{children}</AuthContext.Provider>
   );
 };
 

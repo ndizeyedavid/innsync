@@ -85,7 +85,7 @@ function Dashboard() {
                     color="success"
                     icon="attach_money"
                     title="Today's Revenue"
-                    count="$0"
+                    count={`$${((dashboardData?.todayRevenue || 0) / 100).toFixed(0)}`}
                     percentage={{
                       color: "success",
                       amount: "+22%",
