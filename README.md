@@ -19,19 +19,23 @@ A modern hotel guest experience app built with React Native and Expo.
 ### ✅ Implemented
 
 - **Authentication**: Sign in / Sign up, token refresh, secure storage
-- **Onboarding**: Guest info, preferences, meal plans
+- **Welcome Screen**: New post-signup screen with three distinct paths (Book, Link, Browse)
+- **Onboarding**: Guest info, preferences, meal plans, progress persistence, hotel selection
+- **Hotel Search**: Browse and select hotels with detailed views and map integration
+- **Link Reservation**: Link existing bookings using confirmation number
 - **Home Screen**: Digital key, quick actions, notifications
 - **Orders**: Menu browsing, order placement, order tracking
 - **Itinerary**: Daily agenda, activity booking
-- **Digital Key**: Press-and-hold unlock with haptic feedback
+- **Digital Key**: Press-and-hold unlock with haptic feedback, restart check-in
 - **View Folio**: Real-time billing and transactions
-- **Profile**: Personal info, settings
+- **Profile**: Personal info, settings (edit functionality working)
 - **Security**: Change password, 2FA setup, login history (UI complete)
 - **Privacy**: Data collection, sharing, deletion, export (UI complete)
 - **Legal**: Terms, privacy policy, cookies, open source
 - **Amenities**: Hotel amenities
-- **Map View**: POI markers
+- **Map View**: POI markers, hotel location maps
 - **Notifications**: In-app notifications
+- **Haptic Feedback**: Added haptic feedback at key interaction points
 
 ### 📁 Project Structure
 

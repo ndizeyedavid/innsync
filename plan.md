@@ -60,11 +60,14 @@
 ### ✅ Phase 4: Screen Integration
 
 - [x] Home Screen (guest stays, digital key)
+- [x] Welcome Screen (post-signup with three paths: Book, Link, Browse)
+- [x] Hotel Search Screen (hotel browsing, selection, detailed view with map)
+- [x] Link Reservation Screen
 - [x] Orders Screen (menu, ordering, tracking)
 - [x] Itinerary Screen
 - [x] Profile Screen
 - [x] Digital Key Screen
-- [x] Onboarding Screen
+- [x] Onboarding Screen (with hotel selection, progress persistence)
 - [x] View Folio Screen
 - [x] Amenities Screen
 - [x] Map Screen
@@ -75,6 +78,7 @@
 - [x] Security Screens (Change Password, 2FA, Login History - UI complete)
 - [x] Privacy Screens (Data Collection, Sharing, Delete, Export - UI complete)
 - [x] Legal Screens (Terms, Privacy, Cookies, Licenses - UI complete)
+- [x] Restart Check-in Screen
 
 ### 🟡 Phase 5: Real-time Features
 
@@ -98,13 +102,14 @@
 ### ✅ Implemented & Working
 
 - `/auth/*`: All auth endpoints
-- `/reservations`: List, create, get, check-in
+- `/reservations`: List, create, get, check-in, link reservation
 - `/orders`: List, place (with idempotency key)
 - `/menu`: List with categories
 - `/digital-key`: Unlock, verify PIN
 - `/reservations/:stayId/guest-info`: Submit guest info
 - `/itinerary`: List, book activity
 - `/billing/folio/:stayId`: Get folio
+- `/hotels`: List, get hotel (UI complete with mock fallback)
 
 ### 🟡 Partially Implemented (UI Ready)
 
@@ -121,12 +126,12 @@
 ### Backend Integration
 
 - [ ] Implement remaining backend endpoints for security/privacy features
+- [ ] Implement hotel endpoints
 - [ ] Connect socket events to UI updates
 - [ ] Push notifications integration
 
 ### UI/UX
 
-- [ ] Profile edit functionality
 - [ ] QR code scanner for 2FA
 - [ ] Offline handling
 - [ ] Performance optimization
