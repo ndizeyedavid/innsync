@@ -14,6 +14,8 @@ export const hotelManagerAPI = {
   checkIn: (stayId) => api.post(`/manager/stays/${stayId}/check-in`).then(unwrap),
   checkOut: (stayId) => api.post(`/manager/stays/${stayId}/check-out`).then(unwrap),
   cancelStay: (stayId) => api.post(`/manager/stays/${stayId}/cancel`).then(unwrap),
+  assignRoom: (stayId, roomId) =>
+    api.put(`/manager/stays/${stayId}/assign-room`, { roomId }).then(unwrap),
 
   // Orders
   getOrders: (status) =>

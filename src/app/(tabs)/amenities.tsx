@@ -1,5 +1,5 @@
-import GuestHomeScreen from "../../screens/GuestHomeScreen";
+import MyServicesScreen from "../../screens/MyServicesScreen";
 
 export default function amenities() {
-  return <GuestHomeScreen />;
+  return <MyServicesScreen />;
 }

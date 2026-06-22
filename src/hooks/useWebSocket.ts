@@ -2,64 +2,75 @@ import { useEffect, useRef } from 'react';
 import socketService from '../utils/socket';
 import { OrderUpdateEvent, NotificationEvent } from '../api/types';
 
-/**
- * Custom hook for WebSocket connections
- * Manages real-time subscriptions for orders, digital key events, and notifications
- */
-export function useWebSocket() {
-  const connectedRef = useRef(false);
+let hookInstanceCount = 0;
+let isRootConnected = false;
 
-  useEffect(() => {
-    // Connect to WebSocket on mount
+function ensureConnected() {
+  if (!isRootConnected) {
     socketService.connect();
-    connectedRef.current = socketService.isConnected();
+    isRootConnected = true;
+  }
+}
 
-    // Disconnect on unmount
+function disconnectIfNoConsumers() {
+  hookInstanceCount--;
+  if (hookInstanceCount <= 0) {
+    hookInstanceCount = 0;
+    socketService.disconnect();
+    isRootConnected = false;
+  }
+}
+
+export function useWebSocket() {
+  useEffect(() => {
+    hookInstanceCount++;
+    ensureConnected();
+
     return () => {
-      socketService.disconnect();
-      connectedRef.current = false;
+      disconnectIfNoConsumers();
     };
   }, []);
 
-  const isConnected = socketService.isConnected();
-
-  return {
-    isConnected,
-    connect: () => socketService.connect(),
-    disconnect: () => socketService.disconnect(),
-  };
+  return { isConnected: socketService.isConnected() };
 }
 
-/**
- * Hook for listening to order updates via WebSocket
- */
 export function useOrderUpdates(callback: (data: OrderUpdateEvent) => void) {
-  const { isConnected } = useWebSocket();
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
+
+  useWebSocket();
 
   useEffect(() => {
-    if (isConnected) {
-      socketService.onOrderUpdate(callback);
-      
-      return () => {
-        socketService.offOrderUpdate(callback);
-      };
-    }
-  }, [isConnected, callback]);
+    const handler = (data: OrderUpdateEvent) => {
+      callbackRef.current(data);
+    };
+
+    socketService.onOrderUpdate(handler);
+
+    return () => {
+      socketService.offOrderUpdate(handler);
+    };
+  }, []);
 }
 
 /**
  * Hook for listening to notifications via WebSocket
  */
 export function useNotifications(callback: (data: NotificationEvent) => void) {
-  const { isConnected } = useWebSocket();
+  const callbackRef = useRef(callback);
+  callbackRef.current = callback;
+
+  useWebSocket();
 
   useEffect(() => {
-    if (isConnected) {
-      socketService.onNotification(callback);
-      
-      return () => {
-        socketService.offNotification(callback);
-      };
-    }
-  }, [isConnected, callback]);
+    const handler = (data: NotificationEvent) => {
+      callbackRef.current(data);
+    };
+
+    socketService.onNotification(handler);
+
+    return () => {
+      socketService.offNotification(handler);
+    };
+  }, []);
 }

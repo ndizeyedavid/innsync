@@ -102,15 +102,19 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Handle other errors
+    // Handle other errors (backends sends RFC 7807: title/detail)
     const responseData = (error.response?.data || {}) as Record<string, any>;
     const apiError: ApiError = {
       statusCode: error.response?.status || 0,
       message:
-        responseData.message || error.message || "An error occurred",
-      error: responseData.error,
+        responseData.title ||
+        responseData.detail ||
+        responseData.message ||
+        error.message ||
+        "An error occurred",
+      error: responseData.error || responseData.code,
       timestamp: responseData.timestamp,
-      path: responseData.path,
+      path: responseData.path || responseData.instance,
     };
 
     return Promise.reject(apiError);

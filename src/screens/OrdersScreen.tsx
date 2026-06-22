@@ -4,8 +4,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
 import TabHeader from "../components/TabHeader";
 // @ts-ignore
@@ -35,6 +36,7 @@ export default function OrdersScreen() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [stays, setStays] = useState<GuestStay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(
     null,
@@ -45,7 +47,6 @@ export default function OrdersScreen() {
   // Real-time order updates
   useOrderUpdates((event: OrderUpdateEvent) => {
     console.log("Order update received:", event);
-    // Refresh orders list when update is received
     loadData();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   });
@@ -74,6 +75,24 @@ export default function OrdersScreen() {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const [ordersData, menuData, staysData] = await Promise.all([
+        ordersService.getActiveOrders(),
+        menuService.list(),
+        reservationsService.listMine(),
+      ]);
+      setActiveOrders(Array.isArray(ordersData) ? ordersData : []);
+      setMenuItems(Array.isArray(menuData) ? menuData : []);
+      setStays(Array.isArray(staysData) ? staysData : []);
+    } catch {
+      // silent
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   const loadData = async () => {
@@ -279,7 +298,7 @@ export default function OrdersScreen() {
   };
 
   return (
-    <ScreenLayout>
+    <ScreenLayout refreshing={refreshing} onRefresh={onRefresh}>
       <View className="flex-row justify-between">
         <TabHeader
           alt="CONCIERGE"

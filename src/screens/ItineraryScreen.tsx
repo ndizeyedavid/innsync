@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import TabHeader from "../components/TabHeader";
@@ -68,6 +68,7 @@ export default function ItineraryScreen() {
   const [itineraryItems, setItineraryItems] = useState<ItineraryItem[]>([]);
   const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { showToast } = useToast();
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -104,6 +105,26 @@ export default function ItineraryScreen() {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const stays = await reservationsService.listMine();
+      const activeStay =
+        stays.find((s) => s.status === "CHECKED_IN") || stays[0];
+      setCurrentStay(activeStay);
+      if (activeStay) {
+        const items = await itineraryService.getForStay(activeStay.id);
+        setItineraryItems(Array.isArray(items) ? items : []);
+      } else {
+        setItineraryItems([]);
+      }
+    } catch {
+      // silent
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   const loadData = async () => {
@@ -162,7 +183,7 @@ export default function ItineraryScreen() {
   };
 
   return (
-    <ScreenLayout>
+    <ScreenLayout refreshing={refreshing} onRefresh={onRefresh}>
       <View className="flex-row justify-between">
         <TabHeader
           alt={stayDisplay.hotelName}

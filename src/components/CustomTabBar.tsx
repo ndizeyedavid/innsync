@@ -29,7 +29,7 @@ export default function CustomTabBar() {
 
   const tabs = [
     { name: "Home", route: "/", icon: "home", type: "material" },
-    { name: "Amenities", route: "/amenities", icon: "bed", type: "ion" },
+    { name: "Services", route: "/amenities", icon: "grid", type: "ion" },
     {
       name: "Itinerary",
       route: "/itinerary",

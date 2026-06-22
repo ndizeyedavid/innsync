@@ -1,5 +1,10 @@
-import { Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import { useEffect, useState } from "react";
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
+import { useCallback, useEffect, useState } from "react";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ScreenLayout from "../layout/ScreenLayout";
@@ -24,6 +29,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const { showToast } = useToast();
   const router = useRouter();
 
@@ -62,6 +68,28 @@ export default function HomeScreen() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const [userData, staysData, notificationsData] = await Promise.all([
+        authService.getCurrentUser(),
+        reservationsService.listMine(),
+        notificationsService.listMine(),
+      ]);
+      setUser(userData);
+      setStays(staysData);
+      setNotifications(notificationsData);
+      const active =
+        staysData.find((s) => s.status === "CHECKED_IN") || staysData[0];
+      setCurrentStay(active);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      showToast("error", "Failed to refresh");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [showToast]);
 
   const loadData = async () => {
     try {
@@ -103,7 +131,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScreenLayout>
+    <ScreenLayout refreshing={refreshing} onRefresh={onRefresh}>
       <View className="flex-row justify-between">
         <TabHeader
           alt={
@@ -119,13 +147,11 @@ export default function HomeScreen() {
           <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" />
         </TouchableOpacity>
       </View>
-      {/* Notification */}
       <View className="mt-3">
         {notifications.length > 0 && (
           <Notification
             notification={notifications[0]}
             onClose={() => {
-              // TODO: Mark notification as read via API
               setNotifications((prev) => prev.slice(1));
             }}
           />

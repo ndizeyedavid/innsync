@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid";
@@ -11,6 +12,10 @@ import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import Button from "@mui/material/Button";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
@@ -29,10 +34,16 @@ function GuestDetail() {
   const { stayId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [selectedRoomId, setSelectedRoomId] = useState("");
 
   const { data: stay, isLoading, error } = useQuery({
     queryKey: ["hotelStay", stayId],
     queryFn: () => hotelManagerAPI.getStay(stayId),
+  });
+
+  const { data: rooms = [] } = useQuery({
+    queryKey: ["hotelRooms"],
+    queryFn: () => hotelManagerAPI.getRooms(),
   });
 
   const checkInMut = useMutation({
@@ -40,6 +51,7 @@ function GuestDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] });
       queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelDashboard"] });
     },
     onError: () => {},
   });
@@ -49,6 +61,7 @@ function GuestDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] });
       queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelDashboard"] });
     },
     onError: () => {},
   });
@@ -58,6 +71,16 @@ function GuestDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] });
       queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+    },
+    onError: () => {},
+  });
+
+  const assignRoomMut = useMutation({
+    mutationFn: (roomId) => hotelManagerAPI.assignRoom(stayId, roomId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] });
+      queryClient.invalidateQueries({ queryKey: ["hotelDashboard"] });
+      setSelectedRoomId("");
     },
     onError: () => {},
   });
@@ -89,9 +112,9 @@ function GuestDetail() {
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid item xs={12} >
             <Button onClick={() => navigate("/guests")} sx={{ mb: 1 }}>&larr; Back to Guests</Button>
-            <Card>
+            <Card style={{marginTop: 20}}>
               <MDBox mx={2} mt={-3} py={3} px={2} variant="gradient" bgColor="success" borderRadius="lg" coloredShadow="success"
                 display="flex" justifyContent="space-between" alignItems="center"
               >
@@ -111,7 +134,46 @@ function GuestDetail() {
                   <Grid item xs={12} md={6}>
                     <MDTypography variant="body2" color="text"><strong>Adults:</strong> {stay?.adults || 0}</MDTypography>
                     <MDTypography variant="body2" color="text" mt={1}><strong>Children:</strong> {stay?.children || 0}</MDTypography>
-                    <MDTypography variant="body2" color="text" mt={1}><strong>Room:</strong> {stay?.selectedRoomId ? "Assigned" : "Not assigned"}</MDTypography>
+                    <MDBox mt={1} display="flex" alignItems="center" gap={1}>
+                      <MDTypography variant="body2" color="text"><strong>Room:</strong></MDTypography>
+                      {stay?.status !== "CHECKED_OUT" && stay?.status !== "CANCELLED" ? (
+                        <>
+                          <FormControl size="small" sx={{ minWidth: 180 }}>
+                            <Select
+                              value={selectedRoomId || stay?.selectedRoomId || ""}
+                              displayEmpty
+                              onChange={(e) => setSelectedRoomId(e.target.value)}
+                            >
+                              <MenuItem value="" disabled>
+                                {stay?.selectedRoomId ? "Change room..." : "Assign a room..."}
+                              </MenuItem>
+                              {rooms.map((room) => (
+                                <MenuItem key={room.id} value={room.id}>
+                                  {room.number} — {room.type} {room.floor ? `(Floor ${room.floor})` : ""}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          {selectedRoomId && selectedRoomId !== stay?.selectedRoomId && (
+                            <MDButton
+                              variant="gradient"
+                              color="info"
+                              size="small"
+                              onClick={() => assignRoomMut.mutate(selectedRoomId)}
+                              disabled={assignRoomMut.isPending}
+                            >
+                              {assignRoomMut.isPending ? "..." : "Assign"}
+                            </MDButton>
+                          )}
+                        </>
+                      ) : (
+                        <MDTypography variant="body2" fontWeight="medium">
+                          {stay?.selectedRoomId
+                            ? (rooms.find((r) => r.id === stay.selectedRoomId)?.number || stay.selectedRoomId)
+                            : "N/A"}
+                        </MDTypography>
+                      )}
+                    </MDBox>
                   </Grid>
                 </Grid>
                 <MDBox mt={3} display="flex" gap={2} flexWrap="wrap">
@@ -141,7 +203,7 @@ function GuestDetail() {
           </Grid>
 
           {/* Guest Preferences & Loyalty */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6} style={{marginTop: 50, marginBottom: 50}}>
             <Card style={{ height: "100%" }}>
               <MDBox mx={2} mt={-3} py={2} px={2} variant="gradient" bgColor="dark" borderRadius="lg" coloredShadow="dark">
                 <MDTypography variant="h6" color="white">Guest Profile</MDTypography>

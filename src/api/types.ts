@@ -214,8 +214,8 @@ export interface OrderResponseDto {
   id: string;
   placedAt: string;
   etaMinutes?: number;
-  status: 'PENDING_REMOTE' | 'PREPARING' | 'ON_THE_WAY' | 'DELIVERED' | 'CANCELLED' | 'FAILED';
-  totalCents: number;
+  status: 'pending' | 'preparing' | 'on-the-way' | 'delivered' | 'cancelled' | 'failed';
+  total: number;
   currency: string;
   items: { name: string; quantity: number }[];
 }
@@ -340,6 +340,18 @@ export interface NotificationEvent {
 }
 
 // Hotel Types
+export interface Room {
+  id: string;
+  hotelId: string;
+  number: string;
+  type: string;
+  priceCents: number;
+  floor?: string;
+  imageUrl?: string;
+  amenities: string[];
+  status: string;
+}
+
 export interface Hotel {
   id: string;
   name: string;

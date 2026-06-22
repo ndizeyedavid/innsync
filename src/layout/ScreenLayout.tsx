@@ -1,37 +1,42 @@
-import { Stack } from "expo-router";
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  View,
-  SafeAreaView,
+  RefreshControl,
 } from "react-native";
 import { BlurView } from "expo-blur";
 
-export default function ScreenLayout({ children }: { children: any }) {
+interface ScreenLayoutProps {
+  children: any;
+  refreshing?: boolean;
+  onRefresh?: () => void;
+}
+
+export default function ScreenLayout({ children, refreshing, onRefresh }: ScreenLayoutProps) {
   return (
-    // <SafeAreaView style={{ flex: 1, backgroundColor: "#fafaf7" }}>
     <KeyboardAvoidingView
       className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      {/* Fixed Top Blur */}
       <BlurView intensity={50} tint="light" style={styles.blurContainer} />
 
-      {/* Scrollable Content */}
       <ScrollView
         className="flex-1 px-5"
         contentContainerStyle={{
           flexGrow: 1,
-          paddingTop: 50, // Match blur height
-          paddingBottom: 130, // Account for tab bar (87) + bottom offset (20) + extra space
+          paddingTop: 50,
+          paddingBottom: 130,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          refreshing !== undefined && onRefresh
+            ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            : undefined
+        }
       >
         {children}
       </ScrollView>
-      {/* </SafeAreaView> */}
     </KeyboardAvoidingView>
   );
 }

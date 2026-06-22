@@ -84,7 +84,7 @@ function Guests() {
     guests: `${stay.adults} adult${stay.adults > 1 ? "s" : ""}${stay.children > 0 ? `, ${stay.children} kid${stay.children > 1 ? "s" : ""}` : ""}`,
     actions: (
       <MDBox display="flex" gap={0.5}>
-        {stay.status === "CONFIRMED" && (
+        {(stay.status === "PENDING" || stay.status === "CONFIRMED") && (
           <Tooltip title="Check in">
             <IconButton aria-label="Check in guest" size="small" color="success" onClick={() => checkInMut.mutate(stay.id)}>
               <span style={{ fontSize: 18 }}>⇥</span>

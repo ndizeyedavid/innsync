@@ -4,6 +4,7 @@ import {
   View,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -11,7 +12,7 @@ import { useRouter } from "expo-router";
 import TabHeader from "../components/TabHeader";
 import ScreenLayout from "../layout/ScreenLayout";
 import * as Haptics from "expo-haptics";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import billingService from "../services/billing.service";
 import reservationsService from "../services/reservations.service";
@@ -23,11 +24,30 @@ export default function ViewFolioScreen() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [folio, setFolio] = useState<Folio | null>(null);
   const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const stays = await reservationsService.listMine();
+      const activeStay =
+        stays.find((s) => s.status === "CHECKED_IN") || stays[0];
+      setCurrentStay(activeStay || null);
+      if (activeStay) {
+        const folioData = await billingService.getFolio(activeStay.id);
+        setFolio(folioData);
+      }
+    } catch {
+      // silent
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   const loadData = async () => {
@@ -61,7 +81,7 @@ export default function ViewFolioScreen() {
   }
 
   return (
-    <ScreenLayout>
+    <ScreenLayout refreshing={refreshing} onRefresh={onRefresh}>
       <TouchableOpacity
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -133,7 +153,7 @@ export default function ViewFolioScreen() {
       {/* Transaction List */}
       <Text className="text-[18px] text-gray-500 mt-6 mb-3">TRANSACTIONS</Text>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <View className="flex-1">
         <View className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           {folio && folio.lines.length > 0 ? (
             folio.lines.map((item, index) => (
@@ -182,7 +202,7 @@ export default function ViewFolioScreen() {
             <Text className="text-white font-semibold">Download Folio</Text>
           </View>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </ScreenLayout>
   );
 }

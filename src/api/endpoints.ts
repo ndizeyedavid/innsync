@@ -171,6 +171,11 @@ export const hotelEndpoints = {
     apiClient
       .get<ApiResponse<Hotel>>(`/hotels/${hotelId}`)
       .then((r) => r.data.data),
+
+  getRooms: (hotelId: string) =>
+    apiClient
+      .get<ApiResponse<Room[]>>(`/hotels/${hotelId}/rooms`)
+      .then((r) => r.data.data),
 };
 
 // Extend reservation endpoints with link

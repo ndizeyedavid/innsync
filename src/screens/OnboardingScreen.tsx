@@ -22,6 +22,7 @@ import PaymentSummary from "../components/PaymentSummary";
 import { router, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import apiClient from "../api/client";
+import { hotelEndpoints } from "../api/endpoints";
 import { useToast } from "../contexts/ToastContext";
 import {
   CreateStayDto,
@@ -63,6 +64,7 @@ export default function OnboardingScreen({
   const [specialRequests, setSpecialRequests] = useState<string>();
   const [selectedVibeIndices, setSelectedVibeIndices] = useState<number[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
+  const [roomOptions, setRoomOptions] = useState<{ label: string; value: string }[]>([]);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [checkingStays, setCheckingStays] = useState(!propHotelId);
@@ -162,6 +164,21 @@ export default function OnboardingScreen({
 
     loadProgress();
   }, [propHotelId]);
+
+  // Fetch available room types from the backend
+  useEffect(() => {
+    const fetchRooms = async () => {
+      if (!hotelId) return;
+      try {
+        const rooms = await hotelEndpoints.getRooms(hotelId);
+        const types = [...new Set(rooms.map((r) => r.type))];
+        setRoomOptions(types.map((t) => ({ label: t, value: t })));
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+      }
+    };
+    fetchRooms();
+  }, [hotelId]);
 
   // Save progress whenever it changes
   useEffect(() => {
@@ -413,6 +430,7 @@ export default function OnboardingScreen({
             setSpecialRequests={setSpecialRequests}
             dietaryRestrictions={dietaryRestrictions}
             setDietaryRestrictions={setDietaryRestrictions}
+            roomOptions={roomOptions}
           />
         )}
 

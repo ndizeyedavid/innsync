@@ -11,18 +11,17 @@ class SocketService {
   /**
    * Connect to WebSocket servers (orders + notifications namespaces)
    */
-  async connect(): Promise<void> {
+  connect(): void {
     try {
-      const token = await getAccessToken();
-      
-      if (!token) {
-        console.warn('No auth token available for WebSocket connection');
-        return;
-      }
+      if (this.orderSocket || this.notifSocket) return;
 
       const baseUrl = CONFIG.WEBSOCKET.URL;
       const opts: any = {
-        auth: { token },
+        auth: (cb: any) => {
+          getAccessToken().then((token) => {
+            cb({ token });
+          });
+        },
         transports: ['websocket'],
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
@@ -35,7 +34,6 @@ class SocketService {
       this.setupEventListeners();
     } catch (error) {
       console.error('WebSocket connection error:', error);
-      this.handleReconnect();
     }
   }
 
@@ -55,35 +53,18 @@ class SocketService {
    */
   private setupEventListeners(): void {
     const onConnect = () => { this.reconnectAttempts = 0; };
-    const onDisconnect = () => { this.handleReconnect(); };
-    const onError = () => { this.handleReconnect(); };
 
     [this.orderSocket, this.notifSocket].forEach((s) => {
       if (!s) return;
       s.on('connect', onConnect);
-      s.on('disconnect', onDisconnect);
-      s.on('connect_error', onError);
-      s.on('error', onError);
     });
   }
 
   /**
-   * Handle reconnection logic
-   */
-  private handleReconnect(): void {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      setTimeout(() => {
-        this.connect();
-      }, CONFIG.WEBSOCKET.RECONNECT_DELAY);
-    }
-  }
-
-  /**
-   * Subscribe to order status updates (backend event: order.status_changed)
+   * Subscribe to order status updates (backend gateway emits: order.statusChanged)
    */
   onOrderUpdate(callback: (data: any) => void): void {
-    this.orderSocket?.on('order.status_changed', callback);
+    this.orderSocket?.on('order.statusChanged', callback);
   }
 
   /**
@@ -97,7 +78,7 @@ class SocketService {
    * Unsubscribe from order updates
    */
   offOrderUpdate(callback: (data: any) => void): void {
-    this.orderSocket?.off('order.status_changed', callback);
+    this.orderSocket?.off('order.statusChanged', callback);
   }
 
   /**
