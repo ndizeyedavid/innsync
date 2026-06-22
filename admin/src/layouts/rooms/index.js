@@ -140,32 +140,33 @@ function Rooms() {
                 </MDButton>
               </MDBox>
               <MDBox pt={2} px={3}>
-                <Card variant="outlined" sx={{ p: 1, display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
-                  <MDTypography variant="caption" color="text" sx={{ ml: 0.5 }}>Filter:</MDTypography>
-                  <TextField select size="small" value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    sx={{ minWidth: 120 }}
-                    SelectProps={{ native: true }}>
-                    <option value="">All Types</option>
-                    {ROOM_TYPES.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
+                <MDBox display="flex" alignItems="center" gap={2} flexWrap="wrap">
+                  <MDTypography variant="button" fontWeight="medium" color="text" sx={{ whiteSpace: "nowrap", letterSpacing: 0.5 }}>
+                    Filters
+                  </MDTypography>
+                  <TextField select value={filterType} onChange={(e) => setFilterType(e.target.value)}
+                    sx={{ minWidth: 130, "& .MuiOutlinedInput-root": { height: 36 } }}
+                    SelectProps={{ displayEmpty: true, renderValue: (v) => v || "All Types" }}>
+                    <MenuItem value="">All Types</MenuItem>
+                    {ROOM_TYPES.map((t) => (<MenuItem key={t.value} value={t.value}>{t.icon} {t.label}</MenuItem>))}
                   </TextField>
-                  <TextField select size="small" value={filterFloor}
-                    onChange={(e) => setFilterFloor(e.target.value)}
-                    sx={{ minWidth: 120 }}
-                    SelectProps={{ native: true }}>
-                    <option value="">All Floors</option>
-                    {FLOORS.map((f) => (<option key={f.value} value={f.value}>{f.label}</option>))}
+                  <TextField select value={filterFloor} onChange={(e) => setFilterFloor(e.target.value)}
+                    sx={{ minWidth: 130, "& .MuiOutlinedInput-root": { height: 36 } }}
+                    SelectProps={{ displayEmpty: true, renderValue: (v) => v ? `Floor ${v}` : "All Floors" }}>
+                    <MenuItem value="">All Floors</MenuItem>
+                    {FLOORS.map((f) => (<MenuItem key={f.value} value={f.value}>{f.label}</MenuItem>))}
                   </TextField>
                   {(filterType || filterFloor) && (
-                    <MDButton size="small" variant="text" color="secondary"
-                      onClick={() => { setFilterType(""); setFilterFloor(""); }}>
-                      Clear
+                    <MDButton size="small" variant="outlined" color="secondary"
+                      onClick={() => { setFilterType(""); setFilterFloor(""); }}
+                      sx={{ height: 36, minWidth: 80, whiteSpace: "nowrap", fontSize: 12 }}>
+                      Clear Filters
                     </MDButton>
                   )}
-                  <MDTypography variant="caption" color="text" sx={{ ml: "auto" }}>
-                    {filteredRooms.length} of {rooms?.length || 0}
+                  <MDTypography variant="caption" color="text" sx={{ ml: "auto", whiteSpace: "nowrap" }}>
+                    <strong>{filteredRooms.length}</strong> / {rooms?.length || 0} rooms
                   </MDTypography>
-                </Card>
+                </MDBox>
               </MDBox>
               <MDBox pt={2} px={3} pb={3}>
                 {isLoading ? (

@@ -3,9 +3,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import TextField from "@mui/material/TextField";
+import MenuItem from "@mui/material/MenuItem";
 import InputAdornment from "@mui/material/InputAdornment";
 import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
@@ -19,16 +24,42 @@ import { hotelManagerAPI } from "services/hotelManager";
 function DigitalKeys() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [issueOpen, setIssueOpen] = useState(false);
+  const [issueForm, setIssueForm] = useState({ stayId: "", externalRoomId: "" });
 
   const { data: keys, isLoading, error } = useQuery({
     queryKey: ["hotelDigitalKeys"],
     queryFn: () => hotelManagerAPI.getDigitalKeys(),
   });
 
+  const { data: stays } = useQuery({
+    queryKey: ["hotelStays"],
+    queryFn: () => hotelManagerAPI.getStays(),
+  });
+
+  const { data: rooms } = useQuery({
+    queryKey: ["hotelRooms"],
+    queryFn: () => hotelManagerAPI.getRooms(),
+  });
+
+  const checkedInStays = (stays || []).filter((s) => s.status === "CHECKED_IN");
+  const roomOptions = (rooms || []).filter((r) => r.number);
+
+  const issueKey = useMutation({
+    mutationFn: () => {
+      const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
+      return hotelManagerAPI.issueDigitalKey({ ...issueForm, expiresAt });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelDigitalKeys"] });
+      setIssueOpen(false);
+      setIssueForm({ stayId: "", externalRoomId: "" });
+    },
+  });
+
   const revokeKey = useMutation({
     mutationFn: (id) => hotelManagerAPI.revokeDigitalKey(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelDigitalKeys"] }),
-    onError: () => {},
   });
 
   const isActive = (key) => !key.revokedAt && new Date(key.expiresAt) > new Date();
@@ -52,8 +83,11 @@ function DigitalKeys() {
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card>
-              <MDBox mx={2} mt={-3} py={3} px={2} variant="gradient" bgColor="info" borderRadius="lg" coloredShadow="info">
+              <MDBox mx={2} mt={-3} py={3} px={2} variant="gradient" bgColor="info" borderRadius="lg" coloredShadow="info" display="flex" justifyContent="space-between" alignItems="center">
                 <MDTypography variant="h6" color="white">Digital Keys</MDTypography>
+                <MDButton variant="contained" color="light" size="small" onClick={() => setIssueOpen(true)}>
+                  <Icon fontSize="small" sx={{ mr: 0.5 }}>add</Icon>Issue New Key
+                </MDButton>
               </MDBox>
               <MDBox pt={3} px={3}>
                 <TextField fullWidth size="small" placeholder="Search by guest name or room number..."
@@ -122,6 +156,36 @@ function DigitalKeys() {
           </Grid>
         </Grid>
       </MDBox>
+
+      <Dialog open={issueOpen} onClose={() => setIssueOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Issue Digital Key</DialogTitle>
+        <DialogContent>
+          <MDBox display="flex" flexDirection="column" gap={2} pt={1}>
+            <TextField select label="Checked-in Guest" fullWidth value={issueForm.stayId}
+              onChange={(e) => setIssueForm({ ...issueForm, stayId: e.target.value })}>
+              {checkedInStays.map((s) => (
+                <MenuItem key={s.id} value={s.id}>
+                  {s.user?.name || "Guest"} — Room {s.roomPreference || "?"} ({s.adults} adult{s.adults > 1 ? "s" : ""})
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField select label="Room Number" fullWidth value={issueForm.externalRoomId}
+              onChange={(e) => setIssueForm({ ...issueForm, externalRoomId: e.target.value })}>
+              {roomOptions.map((r) => (
+                <MenuItem key={r.id} value={r.number}>Room {r.number}{r.floor ? ` - Floor ${r.floor}` : ""}{r.type ? ` (${r.type})` : ""}</MenuItem>
+              ))}
+            </TextField>
+          </MDBox>
+        </DialogContent>
+        <DialogActions>
+          <MDButton onClick={() => setIssueOpen(false)} color="dark" variant="text">Cancel</MDButton>
+          <MDButton onClick={() => issueKey.mutate()} variant="contained" color="info"
+            disabled={!issueForm.stayId || !issueForm.externalRoomId || issueKey.isPending}>
+            {issueKey.isPending ? "Issuing..." : "Issue Key"}
+          </MDButton>
+        </DialogActions>
+      </Dialog>
+
       <Footer />
     </DashboardLayout>
   );

@@ -92,7 +92,8 @@ function Staff() {
     email: <MDTypography variant="caption">{s.email}</MDTypography>,
     role: (
       <FormControl size="small" sx={{ minWidth: 130 }}>
-        <Select value={s.role} onChange={(e) => roleMut.mutate({ id: s.id, role: e.target.value })} disabled={roleMut.isPending}>
+        <Select value={s.role} onChange={(e) => roleMut.mutate({ id: s.id, role: e.target.value })} disabled={roleMut.isPending}
+          sx={{ minHeight: 40, "& .MuiSelect-select": { py: 1 } }}>
           {ROLES.map((r) => <MenuItem key={r} value={r}>{r}</MenuItem>)}
         </Select>
       </FormControl>

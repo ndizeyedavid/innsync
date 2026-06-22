@@ -92,57 +92,57 @@ function HotelSettings() {
 
                 <MDBox component="form" role="form">
                   <MDBox mb={3}>
-                    <TextField label="Hotel Name" variant="standard" fullWidth value={form.name || ""} onChange={update("name")}
+                    <TextField label="Hotel Name" variant="outlined" fullWidth value={form.name || ""} onChange={update("name")}
                       error={!!errors.name} helperText={errors.name} />
                   </MDBox>
                   <MDBox mb={3}>
-                    <TextField label="Address" variant="standard" fullWidth value={form.address || ""} onChange={update("address")} />
+                    <TextField label="Address" variant="outlined" fullWidth value={form.address || ""} onChange={update("address")} />
                   </MDBox>
                   <MDBox mb={3}>
-                    <TextField label="Description" variant="standard" fullWidth multiline rows={2} value={form.description || ""} onChange={update("description")} />
+                    <TextField label="Description" variant="outlined" fullWidth multiline rows={2} value={form.description || ""} onChange={update("description")} />
                   </MDBox>
                   <Grid container spacing={3}>
                     <Grid item xs={12} sm={6}>
                       <MDBox mb={3}>
-                        <TextField type="time" label="Check-in Time" variant="standard" fullWidth value={form.checkInTime || "14:00"} onChange={update("checkInTime")} InputLabelProps={{ shrink: true }} />
+                        <TextField type="time" label="Check-in Time" variant="outlined" fullWidth value={form.checkInTime || "14:00"} onChange={update("checkInTime")} InputLabelProps={{ shrink: true }} />
                       </MDBox>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <MDBox mb={3}>
-                        <TextField type="time" label="Check-out Time" variant="standard" fullWidth value={form.checkOutTime || "11:00"} onChange={update("checkOutTime")} InputLabelProps={{ shrink: true }} />
+                        <TextField type="time" label="Check-out Time" variant="outlined" fullWidth value={form.checkOutTime || "11:00"} onChange={update("checkOutTime")} InputLabelProps={{ shrink: true }} />
                       </MDBox>
                     </Grid>
                   </Grid>
                   <Grid container spacing={3}>
                     <Grid item xs={12} sm={6}>
                       <MDBox mb={3}>
-                        <TextField label="Phone Number" variant="standard" fullWidth value={form.phone || ""} onChange={update("phone")}
+                        <TextField label="Phone Number" variant="outlined" fullWidth value={form.phone || ""} onChange={update("phone")}
                           error={!!errors.phone} helperText={errors.phone} />
                       </MDBox>
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <MDBox mb={3}>
-                        <TextField label="Email" variant="standard" fullWidth value={form.email || ""} onChange={update("email")}
+                        <TextField label="Email" variant="outlined" fullWidth value={form.email || ""} onChange={update("email")}
                           error={!!errors.email} helperText={errors.email} />
                       </MDBox>
                     </Grid>
                   </Grid>
                   <MDBox mb={3}>
-                    <TextField label="Currency" select variant="standard" fullWidth value={form.currency || "USD"} onChange={update("currency")}>
+                    <TextField label="Currency" select variant="outlined" fullWidth value={form.currency || "USD"} onChange={update("currency")}>
                       {CURRENCIES.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
                     </TextField>
                   </MDBox>
                   <MDBox mb={3}>
-                    <TextField label="Timezone" select variant="standard" fullWidth value={form.timezone || "UTC"} onChange={update("timezone")}>
+                    <TextField label="Timezone" select variant="outlined" fullWidth value={form.timezone || "UTC"} onChange={update("timezone")}>
                       {TIMEZONES.map((tz) => <MenuItem key={tz} value={tz}>{tz}</MenuItem>)}
                     </TextField>
                   </MDBox>
                   <MDBox mb={3}>
-                    <TextField label="Cancellation Policy" variant="standard" fullWidth multiline rows={3} value={form.cancellationPolicy || ""} onChange={update("cancellationPolicy")}
+                    <TextField label="Cancellation Policy" variant="outlined" fullWidth multiline rows={3} value={form.cancellationPolicy || ""} onChange={update("cancellationPolicy")}
                       placeholder="e.g. Free cancellation up to 24 hours before check-in" />
                   </MDBox>
                   <MDBox mb={3}>
-                    <TextField label="Social Links (comma-separated URL:label)" variant="standard" fullWidth value={
+                    <TextField label="Social Links (comma-separated URL:label)" variant="outlined" fullWidth value={
                       form.socialLinks ? Object.entries(form.socialLinks).map(([k, v]) => `${v}:${k}`).join(", ") : ""
                     } onChange={(e) => {
                       const links = {};

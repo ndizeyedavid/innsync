@@ -53,6 +53,7 @@ export const hotelManagerAPI = {
 
   // Digital Keys
   getDigitalKeys: () => api.get("/manager/digital-keys").then(unwrap),
+  issueDigitalKey: (dto) => api.post("/manager/digital-keys/issue", dto).then(unwrap),
   revokeDigitalKey: (id) => api.post(`/manager/digital-keys/${id}/revoke`).then(unwrap),
 
   // Amenities
@@ -95,6 +96,9 @@ export const hotelManagerAPI = {
   // Menu (admin view)
   getMenuItems: (category) =>
     api.get(`/manager/menu${category ? `?category=${category}` : ""}`).then(unwrap),
+  createMenuItem: (dto) => api.post("/manager/menu", dto).then(unwrap),
+  updateMenuItem: (id, dto) => api.put(`/manager/menu/${id}`, dto).then(unwrap),
+  deleteMenuItem: (id) => api.delete(`/manager/menu/${id}`).then(unwrap),
 
   // Bulk Housekeeping
   bulkHousekeepingStatus: (ids, status, assignedTo) =>
