@@ -13,6 +13,7 @@ import Amenities from "layouts/amenities";
 import DigitalKeys from "layouts/digital-keys";
 import HotelSettings from "layouts/hotel-settings";
 import Staff from "layouts/staff";
+import Disputes from "layouts/disputes";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import ResetPassword from "layouts/authentication/reset-password/cover";
@@ -113,6 +114,15 @@ const routes = [
   },
   {
     type: "collapse",
+    name: "Disputes",
+    key: "disputes",
+    icon: <Icon fontSize="small">gavel</Icon>,
+    route: "/disputes",
+    component: <Disputes />,
+    protected: true,
+  },
+  {
+    type: "collapse",
     name: "Sign In",
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
@@ -126,6 +136,14 @@ const routes = [
     icon: <Icon fontSize="small">person_add</Icon>,
     route: "/authentication/sign-up",
     component: <SignUp />,
+  },
+  {
+    type: "collapse",
+    name: "Reset Password",
+    key: "reset-password",
+    icon: <Icon fontSize="small">lock_reset</Icon>,
+    route: "/authentication/reset-password",
+    component: <ResetPassword />,
   },
 ];
 

@@ -7,6 +7,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+import Icon from "@mui/material/Icon";
 import Alert from "@mui/material/Alert";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -40,6 +41,11 @@ function Guests() {
 
   const checkOutMut = useMutation({
     mutationFn: (stayId) => hotelManagerAPI.checkOut(stayId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }),
+  });
+
+  const cancelMut = useMutation({
+    mutationFn: (stayId) => hotelManagerAPI.cancelStay(stayId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }),
   });
 
@@ -77,6 +83,13 @@ function Guests() {
           <Tooltip title="Check out">
             <IconButton size="small" color="warning" onClick={() => checkOutMut.mutate(stay.id)}>
               <span style={{ fontSize: 18 }}>⇤</span>
+            </IconButton>
+          </Tooltip>
+        )}
+        {(stay.status === "CONFIRMED" || stay.status === "CHECKED_IN") && (
+          <Tooltip title="Cancel stay">
+            <IconButton size="small" color="error" onClick={() => { if (window.confirm("Cancel this stay?")) cancelMut.mutate(stay.id); }}>
+              <Icon fontSize="small">cancel</Icon>
             </IconButton>
           </Tooltip>
         )}
@@ -118,7 +131,7 @@ function Guests() {
                 ) : error ? (
                   <MDBox px={3} pb={3}><Alert severity="error">Failed to load stays: {error.message}</Alert></MDBox>
                 ) : (
-                  <DataTable table={{ columns, rows }} isSorted={false} entriesPerPage={false} showTotalEntries={false} noEndBorder />
+                  <DataTable table={{ columns, rows }} isSorted={true} entriesPerPage={{ defaultValue: 10, entries: ["5", "10", "15", "20", "25"] }} showTotalEntries={true} canSearch={true} noEndBorder />
                 )}
               </MDBox>
             </Card>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
@@ -12,6 +12,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 import Icon from "@mui/material/Icon";
 
 import MDBox from "components/MDBox";
@@ -27,6 +28,7 @@ import PlatformSettings from "layouts/profile/components/PlatformSettings";
 import { authService } from "services/auth";
 
 function Overview() {
+  const queryClient = useQueryClient();
   const { data: user, isLoading, error } = useQuery({
     queryKey: ["currentUser"],
     queryFn: authService.getMe,
@@ -37,13 +39,31 @@ function Overview() {
   const [pwOpen, setPwOpen] = useState(false);
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
   const [pwError, setPwError] = useState("");
+  const [snack, setSnack] = useState("");
+
+  const editMut = useMutation({
+    mutationFn: (data) => authService.updateProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      setEditOpen(false);
+      setSnack("Profile updated");
+    },
+    onError: (err) => setSnack(err.response?.data?.message || err.message),
+  });
+
+  const pwMut = useMutation({
+    mutationFn: ({ current, newPw }) => authService.changePassword(current, newPw),
+    onSuccess: () => {
+      setPwOpen(false);
+      setPwForm({ current: "", newPw: "", confirm: "" });
+      setPwError("");
+      setSnack("Password updated");
+    },
+    onError: (err) => setPwError(err.response?.data?.message || err.message),
+  });
 
   const openEdit = () => {
-    setEditForm({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-    });
+    setEditForm({ name: user?.name || "", email: user?.email || "", phone: user?.phone || "" });
     setEditOpen(true);
   };
 
@@ -79,15 +99,13 @@ function Overview() {
               <Divider orientation="vertical" sx={{ ml: -2, mr: 1 }} />
               <ProfileInfoCard
                 title="profile information"
-                description={`Staff member at InnSync hotel management.`}
+                description="Staff member at InnSync hotel management."
                 info={{
                   fullName: user.name || "—",
                   email: user.email || "—",
                   phone: user.phone || "—",
                   role: user.role || "—",
-                  memberSince: user.createdAt
-                    ? new Date(user.createdAt).toLocaleDateString()
-                    : "—",
+                  memberSince: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—",
                 }}
                 social={[]}
                 action={{ route: "#", tooltip: "Edit Profile" }}
@@ -97,16 +115,10 @@ function Overview() {
             </Grid>
             <Grid item xs={12} xl={4}>
               <Card sx={{ height: "100%", boxShadow: "none", p: 2 }}>
-                <MDTypography variant="h6" fontWeight="medium" mb={2}>
-                  Account Actions
-                </MDTypography>
+                <MDTypography variant="h6" fontWeight="medium" mb={2}>Account Actions</MDTypography>
                 <MDBox display="flex" flexDirection="column" gap={1.5}>
-                  <Button variant="outlined" color="info" startIcon={<Icon>edit</Icon>} onClick={openEdit}>
-                    Edit Profile
-                  </Button>
-                  <Button variant="outlined" color="warning" startIcon={<Icon>lock</Icon>} onClick={() => { setPwError(""); setPwOpen(true); }}>
-                    Change Password
-                  </Button>
+                  <Button variant="outlined" color="info" startIcon={<Icon>edit</Icon>} onClick={openEdit}>Edit Profile</Button>
+                  <Button variant="outlined" color="warning" startIcon={<Icon>lock</Icon>} onClick={() => { setPwError(""); setPwOpen(true); }}>Change Password</Button>
                 </MDBox>
               </Card>
             </Grid>
@@ -119,13 +131,16 @@ function Overview() {
         <DialogContent>
           <MDBox display="flex" flexDirection="column" gap={2} pt={1}>
             <TextField label="Name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
-            <TextField label="Email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+            <TextField label="Email" value={editForm.email} disabled helperText="Email cannot be changed" />
             <TextField label="Phone" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
           </MDBox>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>
-          <Button variant="contained" color="info" onClick={() => setEditOpen(false)}>Save</Button>
+          <Button variant="contained" color="info" onClick={() => editMut.mutate({ name: editForm.name, phone: editForm.phone })}
+            disabled={editMut.isPending}>
+            {editMut.isPending ? "Saving..." : "Save"}
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -134,9 +149,12 @@ function Overview() {
         <DialogContent>
           <MDBox display="flex" flexDirection="column" gap={2} pt={1}>
             {pwError && <Alert severity="error">{pwError}</Alert>}
-            <TextField label="Current Password" type="password" value={pwForm.current} onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })} />
-            <TextField label="New Password" type="password" value={pwForm.newPw} onChange={(e) => setPwForm({ ...pwForm, newPw: e.target.value })} />
-            <TextField label="Confirm New Password" type="password" value={pwForm.confirm} onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })} />
+            <TextField label="Current Password" type="password" value={pwForm.current}
+              onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })} />
+            <TextField label="New Password" type="password" value={pwForm.newPw}
+              onChange={(e) => setPwForm({ ...pwForm, newPw: e.target.value })} />
+            <TextField label="Confirm New Password" type="password" value={pwForm.confirm}
+              onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })} />
           </MDBox>
         </DialogContent>
         <DialogActions>
@@ -144,10 +162,14 @@ function Overview() {
           <Button variant="contained" color="warning" onClick={() => {
             if (pwForm.newPw !== pwForm.confirm) { setPwError("Passwords do not match"); return; }
             if (pwForm.newPw.length < 8) { setPwError("Password must be at least 8 characters"); return; }
-            setPwOpen(false);
-          }}>Update</Button>
+            pwMut.mutate({ current: pwForm.current, newPw: pwForm.newPw });
+          }} disabled={pwMut.isPending}>
+            {pwMut.isPending ? "Updating..." : "Update"}
+          </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack("")} message={snack} />
 
       <Footer />
     </DashboardLayout>

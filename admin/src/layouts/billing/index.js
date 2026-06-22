@@ -11,6 +11,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Snackbar from "@mui/material/Snackbar";
+import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
@@ -18,6 +19,8 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
+import Transaction from "layouts/billing/components/Transaction";
+import Invoice from "layouts/billing/components/Invoice";
 import { hotelManagerAPI } from "services/hotelManager";
 
 function Billing() {
@@ -37,6 +40,16 @@ function Billing() {
     queryKey: ["hotelFolio", selectedStay],
     queryFn: () => hotelManagerAPI.getFolio(selectedStay),
     enabled: !!selectedStay,
+  });
+
+  const { data: hotel } = useQuery({
+    queryKey: ["hotelSettings"],
+    queryFn: hotelManagerAPI.getHotelSettings,
+  });
+
+  const { data: invoices } = useQuery({
+    queryKey: ["hotelInvoices"],
+    queryFn: hotelManagerAPI.getInvoices,
   });
 
   const chargeMutation = useMutation({
@@ -74,8 +87,9 @@ function Billing() {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox pt={6} pb={3}>
-        <Grid container spacing={6}>
-          <Grid item xs={12}>
+        <Grid container spacing={3}>
+          {/* Guest selector + folio */}
+          <Grid item xs={12} lg={8}>
             <Card>
               <MDBox mx={2} mt={-3} py={3} px={2} variant="gradient" bgColor="success" borderRadius="lg" coloredShadow="success"
                 display="flex" justifyContent="space-between" alignItems="center"
@@ -106,7 +120,7 @@ function Billing() {
                   <Alert severity="info">No folio entries for this stay</Alert>
                 ) : (
                   <>
-                    <DataTable table={{ columns, rows }} isSorted={false} entriesPerPage={false} showTotalEntries={false} noEndBorder />
+                    <DataTable table={{ columns, rows }} isSorted={true} entriesPerPage={{ defaultValue: 10, entries: ["5", "10", "15", "20", "25"] }} showTotalEntries={true} canSearch={true} noEndBorder />
                     <MDBox display="flex" justifyContent="flex-end" mt={3} px={2}>
                       <MDTypography variant="h6">Total: ${(totalCents / 100).toFixed(2)}</MDTypography>
                     </MDBox>
@@ -117,6 +131,98 @@ function Billing() {
                     Add Charge
                   </MDButton>
                 </MDBox>
+              </MDBox>
+            </Card>
+          </Grid>
+
+          {/* Transactions sidebar */}
+          <Grid item xs={12} lg={4}>
+            {selectedStay && folioLines.length > 0 ? (
+              <Card sx={{ height: "100%" }}>
+                <MDBox pt={3} px={2}>
+                  <MDTypography variant="h6" fontWeight="medium">Transactions</MDTypography>
+                </MDBox>
+                <MDBox pt={1} pb={2} px={2}>
+                  <MDBox component="ul" display="flex" flexDirection="column" p={0} m={0} sx={{ listStyle: "none" }}>
+                    {folioLines.slice(0, 6).map((line, i) => (
+                      <Transaction key={i}
+                        color={line.amountCents > 0 ? "success" : "error"}
+                        icon={line.amountCents > 0 ? "add" : "remove"}
+                        name={line.description || line.category || "Charge"}
+                        description={line.date ? new Date(line.date).toLocaleDateString() : ""}
+                        value={`$${((line.amountCents || 0) / 100).toFixed(2)}`}
+                      />
+                    ))}
+                  </MDBox>
+                </MDBox>
+              </Card>
+            ) : !selectedStay ? (
+              <Card sx={{ height: "100%" }}>
+                <MDBox pt={3} px={2}>
+                  <MDTypography variant="h6" fontWeight="medium">Transactions</MDTypography>
+                </MDBox>
+                <MDBox p={2}>
+                  <MDTypography variant="body2" color="text">Select a guest to view transactions</MDTypography>
+                </MDBox>
+              </Card>
+            ) : null}
+          </Grid>
+
+          {/* Invoices */}
+          <Grid item xs={12} lg={6}>
+            <Card sx={{ height: "100%" }}>
+              <MDBox pt={2} px={2} display="flex" justifyContent="space-between" alignItems="center">
+                <MDTypography variant="h6" fontWeight="medium">Invoices</MDTypography>
+              </MDBox>
+              <MDBox p={2}>
+                <MDBox component="ul" display="flex" flexDirection="column" p={0} m={0}>
+                  {!invoices || invoices.length === 0 ? (
+                    <MDTypography variant="body2" color="text">No invoices yet</MDTypography>
+                  ) : (
+                    invoices.slice(0, 5).map((inv) => (
+                      <Invoice key={inv.id}
+                        date={inv.checkOut ? new Date(inv.checkOut).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" }) : "N/A"}
+                        id={`#${inv.id.slice(-6).toUpperCase()}`}
+                        price={`$${(inv.totalCents / 100).toFixed(2)}`}
+                      />
+                    ))
+                  )}
+                </MDBox>
+              </MDBox>
+            </Card>
+          </Grid>
+
+          {/* Payment Method */}
+          <Grid item xs={12} lg={6}>
+            <Card id="delete-account">
+              <MDBox pt={2} px={2} display="flex" justifyContent="space-between" alignItems="center">
+                <MDTypography variant="h6" fontWeight="medium">Payment Method</MDTypography>
+              </MDBox>
+              <MDBox p={2}>
+                {hotel ? (
+                  <MDBox display="flex" flexDirection="column" gap={1.5}>
+                    <MDBox display="flex" justifyContent="space-between" alignItems="center" p={2}
+                      sx={{ border: 1, borderColor: "divider", borderRadius: 1 }}>
+                      <Icon sx={{ mr: 1, color: "success.main" }}>account_balance</Icon>
+                      <MDBox flex={1}>
+                        <MDTypography variant="button" fontWeight="medium">Hotel Account</MDTypography>
+                        <MDTypography variant="caption" display="block" color="text">{hotel.name}</MDTypography>
+                      </MDBox>
+                      <MDTypography variant="button" color="success">Active</MDTypography>
+                    </MDBox>
+                    <MDBox display="flex" justifyContent="space-between" alignItems="center" p={2}
+                      sx={{ border: 1, borderColor: "divider", borderRadius: 1 }}>
+                      <Icon sx={{ mr: 1, color: "info.main" }}>payments</Icon>
+                      <MDBox flex={1}>
+                        <MDTypography variant="button" fontWeight="medium">Bank Transfer</MDTypography>
+                        <MDTypography variant="caption" display="block" color="text">{hotel.email || "—"}</MDTypography>
+                      </MDBox>
+                      <MDTypography variant="button" color="info">Default</MDTypography>
+                    </MDBox>
+                  </MDBox>
+                ) : (
+                  <MDTypography variant="body2" color="text">Loading...</MDTypography>
+                )}
               </MDBox>
             </Card>
           </Grid>

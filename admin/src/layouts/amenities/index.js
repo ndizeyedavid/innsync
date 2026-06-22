@@ -43,6 +43,7 @@ function Amenities() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saved, setSaved] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: amenities, isLoading, error } = useQuery({
     queryKey: ["hotelAmenities"],
@@ -70,6 +71,15 @@ function Amenities() {
       setDialogOpen(false);
       setEditing(null);
       setForm(emptyForm);
+      setSaved(true);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => hotelManagerAPI.deleteAmenity(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelAmenities"] });
+      setDeleteTarget(null);
       setSaved(true);
     },
   });
@@ -163,6 +173,11 @@ function Amenities() {
                                   <span style={{ fontSize: 16 }}>✎</span>
                                 </IconButton>
                               </Tooltip>
+                              <Tooltip title="Delete amenity">
+                                <IconButton size="small" color="error" onClick={() => setDeleteTarget(amenity)}>
+                                  <span style={{ fontSize: 16 }}>🗑</span>
+                                </IconButton>
+                              </Tooltip>
                             </MDBox>
                           </Card>
                         </Grid>
@@ -208,6 +223,20 @@ function Amenities() {
             onClick={() => saveMutation.mutate(editing ? { ...form, id: editing.id } : form)}
             disabled={!form.name || saveMutation.isPending}>
             {saveMutation.isPending ? "Saving..." : editing ? "Update Amenity" : "Create Amenity"}
+          </MDButton>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Delete {deleteTarget?.name}?</DialogTitle>
+        <DialogContent>
+          <MDTypography variant="body2" color="text">This action cannot be undone.</MDTypography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <MDButton onClick={() => setDeleteTarget(null)} color="secondary" variant="outlined">Cancel</MDButton>
+          <MDButton variant="gradient" color="error" onClick={() => deleteMutation.mutate(deleteTarget.id)}
+            disabled={deleteMutation.isPending}>
+            {deleteMutation.isPending ? "Deleting..." : "Delete"}
           </MDButton>
         </DialogActions>
       </Dialog>

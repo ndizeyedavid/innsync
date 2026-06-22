@@ -10,11 +10,10 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
 import Chip from "@mui/material/Chip";
 import Snackbar from "@mui/material/Snackbar";
 import Box from "@mui/material/Box";
+import Autocomplete from "@mui/material/Autocomplete";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
@@ -33,9 +32,16 @@ const ROOM_TYPES = [
   { value: "Family", label: "Family", icon: "👨‍👩‍👧‍👦" },
 ];
 
+const STATUSES = [
+  { value: "available", label: "Available", color: "success" },
+  { value: "occupied", label: "Occupied", color: "error" },
+  { value: "maintenance", label: "Maintenance", color: "warning" },
+  { value: "cleaning", label: "Cleaning", color: "info" },
+];
+
 const FLOORS = Array.from({ length: 20 }, (_, i) => ({ value: String(i + 1), label: `Floor ${i + 1}` }));
 
-const emptyForm = { number: "", type: "Standard", price: "", floor: "1", imageUrl: "" };
+const emptyForm = { number: "", type: "Standard", price: "", floor: "1", imageUrl: "", status: "available", amenities: [] };
 const selectSx = { "& .MuiSelect-select": { minHeight: "48px", display: "flex", alignItems: "center" } };
 
 function Rooms() {
@@ -44,10 +50,16 @@ function Rooms() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saved, setSaved] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: rooms, isLoading } = useQuery({
     queryKey: ["hotelRooms"],
     queryFn: () => hotelManagerAPI.getRooms(),
+  });
+
+  const { data: allAmenities } = useQuery({
+    queryKey: ["hotelAmenities"],
+    queryFn: hotelManagerAPI.getAmenities,
   });
 
   const saveMutation = useMutation({
@@ -58,6 +70,8 @@ function Rooms() {
         priceCents: Math.round(parseFloat(data.price) * 100),
         floor: data.floor,
         imageUrl: data.imageUrl || undefined,
+        status: data.status || "available",
+        amenities: data.amenities || [],
       };
       return data.id ? hotelManagerAPI.updateRoom(data.id, dto) : hotelManagerAPI.createRoom(dto);
     },
@@ -66,6 +80,15 @@ function Rooms() {
       setDialogOpen(false);
       setEditing(null);
       setForm(emptyForm);
+      setSaved(true);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => hotelManagerAPI.deleteRoom(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelRooms"] });
+      setDeleteTarget(null);
       setSaved(true);
     },
   });
@@ -80,6 +103,8 @@ function Rooms() {
       price: String(((room.priceCents ?? 0) / 100).toFixed(2)),
       floor: String(room.floor || 1),
       imageUrl: room.imageUrl || "",
+      status: room.status || "available",
+      amenities: room.amenities || [],
     });
     setDialogOpen(true);
   };
@@ -114,6 +139,7 @@ function Rooms() {
                       const price = room.priceCents ?? 0;
                       const flr = room.floor || "—";
                       const typeInfo = ROOM_TYPES.find((t) => t.value === typ) || ROOM_TYPES[0];
+                      const statusInfo = STATUSES.find((s) => s.value === room.status) || STATUSES[0];
                       return (
                         <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
                           <Card sx={{
@@ -129,14 +155,13 @@ function Rooms() {
                                   <span>{typeInfo.icon}</span> {typ}
                                 </MDTypography>
                               </MDBox>
-                              {room.imageUrl && (
-                                <Box
-                                  component="img"
-                                  src={room.imageUrl}
-                                  alt={num}
-                                  sx={{ width: 60, height: 40, borderRadius: 1, objectFit: "cover", ml: 1 }}
-                                />
-                              )}
+                              <MDBox display="flex" flexDirection="column" alignItems="flex-end" gap={0.5}>
+                                <Chip label={statusInfo.label} color={statusInfo.color} size="small" sx={{ height: 20, fontSize: 10 }} />
+                                {room.imageUrl && (
+                                  <Box component="img" src={room.imageUrl} alt={num}
+                                    sx={{ width: 60, height: 40, borderRadius: 1, objectFit: "cover" }} />
+                                )}
+                              </MDBox>
                             </MDBox>
                             <MDBox display="flex" justifyContent="space-between" alignItems="center" mt={2}>
                               <MDTypography variant="body2" color="text" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -147,10 +172,24 @@ function Rooms() {
                                 <span style={{ fontSize: 11, fontWeight: 400, color: "#888" }}>/night</span>
                               </MDTypography>
                             </MDBox>
+                            {room.amenities && room.amenities.length > 0 && (
+                              <MDBox mt={1.5} display="flex" flexWrap="wrap" gap={0.5}>
+                                {room.amenities.slice(0, 4).map((a, i) => (
+                                  <Chip key={i} label={a} size="small" variant="outlined" sx={{ height: 18, fontSize: 9 }} />
+                                ))}
+                                {room.amenities.length > 4 && (
+                                  <Chip label={`+${room.amenities.length - 4}`} size="small" variant="outlined" sx={{ height: 18, fontSize: 9 }} />
+                                )}
+                              </MDBox>
+                            )}
                             <MDBox mt={2} display="flex" gap={1}>
                               <MDButton variant="outlined" color="info" size="small" sx={{ flex: 1 }}
                                 onClick={() => openEdit(room)}>
                                 Edit
+                              </MDButton>
+                              <MDButton variant="outlined" color="error" size="small"
+                                onClick={() => setDeleteTarget(room)}>
+                                <Icon>delete</Icon>
                               </MDButton>
                             </MDBox>
                           </Card>
@@ -167,7 +206,7 @@ function Rooms() {
       <Footer />
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>{editing ? "✎ Edit Room" : "➕ Add Room"}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{editing ? "Edit Room" : "Add Room"}</DialogTitle>
         <DialogContent>
           <MDBox display="flex" flexDirection="column" gap={2.5} mt={1}>
             <TextField label="Room Number" fullWidth value={form.number}
@@ -178,6 +217,15 @@ function Rooms() {
               sx={selectSx}>
               {ROOM_TYPES.map((t) => (
                 <MenuItem key={t.value} value={t.value} sx={{ minHeight: 48 }}>{t.icon} {t.label}</MenuItem>
+              ))}
+            </TextField>
+            <TextField label="Status" select fullWidth value={form.status}
+              onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+              sx={selectSx}>
+              {STATUSES.map((s) => (
+                <MenuItem key={s.value} value={s.value} sx={{ minHeight: 48 }}>
+                  <Chip label={s.label} color={s.color} size="small" sx={{ mr: 1, height: 20, fontSize: 10 }} /> {s.label}
+                </MenuItem>
               ))}
             </TextField>
             <TextField label="Price per Night ($)" type="number" fullWidth value={form.price}
@@ -191,6 +239,22 @@ function Rooms() {
                 <MenuItem key={f.value} value={f.value} sx={{ minHeight: 48 }}>{f.label}</MenuItem>
               ))}
             </TextField>
+            {allAmenities && (
+              <Autocomplete
+                multiple
+                options={allAmenities.map((a) => a.name)}
+                value={form.amenities}
+                onChange={(_, v) => setForm((f) => ({ ...f, amenities: v }))}
+                renderInput={(params) => (
+                  <TextField {...params} label="Amenities" placeholder="Select amenities" size="small" />
+                )}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip label={option} size="small" {...getTagProps({ index })} key={option} />
+                  ))
+                }
+              />
+            )}
             <ImageUpload label="Room Photo" value={form.imageUrl}
               onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))} />
           </MDBox>
@@ -204,7 +268,21 @@ function Rooms() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={saved} autoHideDuration={3000} onClose={() => setSaved(false)} message="Room saved successfully" />
+      <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Delete Room {deleteTarget?.number}?</DialogTitle>
+        <DialogContent>
+          <MDTypography variant="body2" color="text">This action cannot be undone.</MDTypography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <MDButton onClick={() => setDeleteTarget(null)} color="secondary" variant="outlined">Cancel</MDButton>
+          <MDButton variant="gradient" color="error" onClick={() => deleteMutation.mutate(deleteTarget.id)}
+            disabled={deleteMutation.isPending}>
+            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+          </MDButton>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={saved} autoHideDuration={3000} onClose={() => setSaved(false)} message="Room saved" />
     </DashboardLayout>
   );
 }

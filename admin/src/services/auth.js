@@ -37,6 +37,26 @@ export const authService = {
     return response.data.data;
   },
 
+  async updateProfile(data) {
+    const response = await api.put("/auth/me", data);
+    return response.data.data;
+  },
+
+  async changePassword(currentPassword, newPassword) {
+    const response = await api.post("/auth/change-password", { currentPassword, newPassword });
+    return response.data;
+  },
+
+  async forgotPassword(email) {
+    const response = await api.post("/auth/forgot-password", { email });
+    return response.data;
+  },
+
+  async resetPassword(token, password) {
+    const response = await api.post("/auth/reset-password", { token, password });
+    return response.data;
+  },
+
   getToken() {
     return localStorage.getItem("adminToken");
   },

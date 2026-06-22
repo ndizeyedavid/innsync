@@ -12,6 +12,7 @@ export const hotelManagerAPI = {
   getStay: (stayId) => api.get(`/manager/stays/${stayId}`).then(unwrap),
   checkIn: (stayId) => api.post(`/manager/stays/${stayId}/check-in`).then(unwrap),
   checkOut: (stayId) => api.post(`/manager/stays/${stayId}/check-out`).then(unwrap),
+  cancelStay: (stayId) => api.post(`/manager/stays/${stayId}/cancel`).then(unwrap),
 
   // Orders
   getOrders: (status) =>
@@ -23,6 +24,7 @@ export const hotelManagerAPI = {
   getRooms: () => api.get("/manager/rooms").then(unwrap),
   createRoom: (dto) => api.post("/manager/rooms", dto).then(unwrap),
   updateRoom: (id, dto) => api.put(`/manager/rooms/${id}`, dto).then(unwrap),
+  deleteRoom: (id) => api.delete(`/manager/rooms/${id}`).then(unwrap),
 
   // Housekeeping
   getHousekeeping: (status) =>
@@ -34,6 +36,7 @@ export const hotelManagerAPI = {
   getFolio: (stayId) => api.get(`/manager/folio/${stayId}`).then(unwrap),
   addCharge: (stayId, dto) =>
     api.post(`/manager/folio/${stayId}/charge`, dto).then(unwrap),
+  getInvoices: () => api.get("/manager/invoices").then(unwrap),
 
   // Itinerary
   getItinerary: (stayId) =>
@@ -48,6 +51,7 @@ export const hotelManagerAPI = {
   createAmenity: (dto) => api.post("/manager/amenities", dto).then(unwrap),
   updateAmenity: (id, dto) =>
     api.put(`/manager/amenities/${id}`, dto).then(unwrap),
+  deleteAmenity: (id) => api.delete(`/manager/amenities/${id}`).then(unwrap),
 
   // Upload
   uploadImage: (file) => {
@@ -65,6 +69,11 @@ export const hotelManagerAPI = {
   inviteStaff: (dto) => api.post("/manager/staff/invite", dto).then(unwrap),
   updateStaffRole: (id, role) => api.patch(`/manager/staff/${id}/role`, { role }).then(unwrap),
   removeStaff: (id) => api.delete(`/manager/staff/${id}`).then(unwrap),
+
+  // Disputes
+  getDisputes: () => api.get("/manager/disputes").then(unwrap),
+  resolveDispute: (id, resolution) => api.patch(`/manager/disputes/${id}/resolve`, { resolution }).then(unwrap),
+  rejectDispute: (id, resolution) => api.patch(`/manager/disputes/${id}/reject`, { resolution }).then(unwrap),
 
   // Notifications
   getNotifications: (limit) =>

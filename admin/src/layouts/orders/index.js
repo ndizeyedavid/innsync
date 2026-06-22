@@ -4,7 +4,6 @@
 =========================================================
 */
 
-// @mui material components
 import { useState } from "react";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
@@ -14,22 +13,28 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Chip from "@mui/material/Chip";
 import Alert from "@mui/material/Alert";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import IconButton from "@mui/material/IconButton";
+import Icon from "@mui/material/Icon";
+import Tooltip from "@mui/material/Tooltip";
 
-// Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
-
-// Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
-
-// React Query
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// API
 import { hotelManagerAPI } from "services/hotelManager";
 
 const ORDER_STATUSES = ["", "PENDING_REMOTE", "PREPARING", "ON_THE_WAY", "DELIVERED", "CANCELLED"];
@@ -37,6 +42,7 @@ const ORDER_STATUSES = ["", "PENDING_REMOTE", "PREPARING", "ON_THE_WAY", "DELIVE
 function Orders() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("");
+  const [detailOrder, setDetailOrder] = useState(null);
 
   const { data: orders, isLoading, error } = useQuery({
     queryKey: ["hotelOrders", statusFilter],
@@ -82,7 +88,19 @@ function Orders() {
       };
 
       return {
-        orderId: order.id.slice(0, 8),
+        orderId: (
+          <MDBox display="flex" alignItems="center" gap={0.5}>
+            <MDTypography variant="caption" fontWeight="medium" sx={{ cursor: "pointer", textDecoration: "underline", color: "info.main" }}
+              onClick={() => setDetailOrder(order)}>
+              {order.id.slice(0, 8)}
+            </MDTypography>
+            <Tooltip title="View details">
+              <IconButton size="small" onClick={() => setDetailOrder(order)} sx={{ p: 0.3 }}>
+                <Icon fontSize="small" color="info">info</Icon>
+              </IconButton>
+            </Tooltip>
+          </MDBox>
+        ),
         guest: order.stay?.user?.name || "Unknown",
         status: <Chip label={order.status} color={getStatusColor(order.status)} size="small" />,
         items:
@@ -158,9 +176,10 @@ function Orders() {
                 ) : (
                   <DataTable
                     table={{ columns, rows }}
-                    isSorted={false}
-                    entriesPerPage={false}
-                    showTotalEntries={false}
+                    isSorted={true}
+                    entriesPerPage={{ defaultValue: 10, entries: ["5", "10", "15", "20", "25"] }}
+                    showTotalEntries={true}
+                    canSearch={true}
                     noEndBorder
                   />
                 )}
@@ -170,6 +189,74 @@ function Orders() {
         </Grid>
       </MDBox>
       <Footer />
+
+      <Dialog open={!!detailOrder} onClose={() => setDetailOrder(null)} maxWidth="sm" fullWidth>
+        {detailOrder && (
+          <>
+            <DialogTitle sx={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 1 }}>
+              <Icon color="primary">receipt_long</Icon> Order #{detailOrder.id.slice(0, 8)}
+              <Chip label={detailOrder.status} color={
+                detailOrder.status === "DELIVERED" ? "success" :
+                detailOrder.status === "CANCELLED" ? "error" :
+                detailOrder.status === "PREPARING" ? "info" :
+                detailOrder.status === "ON_THE_WAY" ? "primary" : "warning"
+              } size="small" sx={{ ml: "auto" }} />
+            </DialogTitle>
+            <DialogContent dividers>
+              <MDBox display="flex" flexDirection="column" gap={2}>
+                <MDBox display="flex" justifyContent="space-between">
+                  <MDTypography variant="body2" color="text">Guest</MDTypography>
+                  <MDTypography variant="body2" fontWeight="medium">{detailOrder.stay?.user?.name || "Unknown"}</MDTypography>
+                </MDBox>
+                {detailOrder.placedAt && (
+                  <MDBox display="flex" justifyContent="space-between">
+                    <MDTypography variant="body2" color="text">Placed at</MDTypography>
+                    <MDTypography variant="body2" fontWeight="medium">{new Date(detailOrder.placedAt).toLocaleString()}</MDTypography>
+                  </MDBox>
+                )}
+                <MDBox display="flex" justifyContent="space-between">
+                  <MDTypography variant="body2" color="text">Room</MDTypography>
+                  <MDTypography variant="body2" fontWeight="medium">{detailOrder.stay?.selectedRoomId || "—"}</MDTypography>
+                </MDBox>
+                <MDBox>
+                  <MDTypography variant="body2" color="text" mb={1}>Items</MDTypography>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Item</TableCell>
+                        <TableCell align="center">Qty</TableCell>
+                        <TableCell align="right">Price</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {detailOrder.items?.map((item, i) => (
+                        <TableRow key={i}>
+                          <TableCell>{item.nameSnapshot || item.name || "—"}</TableCell>
+                          <TableCell align="center">{item.quantity}</TableCell>
+                          <TableCell align="right">${((item.unitPriceCents || 0) / 100).toFixed(2)}</TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow>
+                        <TableCell colSpan={2}><MDTypography variant="button" fontWeight="bold">Total</MDTypography></TableCell>
+                        <TableCell align="right"><MDTypography variant="button" fontWeight="bold">${(detailOrder.totalCents / 100).toFixed(2)}</MDTypography></TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </MDBox>
+                {detailOrder.note && (
+                  <MDBox display="flex" justifyContent="space-between">
+                    <MDTypography variant="body2" color="text">Note</MDTypography>
+                    <MDTypography variant="body2" fontWeight="medium">{detailOrder.note}</MDTypography>
+                  </MDBox>
+                )}
+              </MDBox>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDetailOrder(null)} color="inherit">Close</Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </DashboardLayout>
   );
 }
