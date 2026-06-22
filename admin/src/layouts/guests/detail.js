@@ -163,6 +163,19 @@ function GuestDetail() {
                     </MDBox>
                   </MDBox>
                 )}
+                <MDBox mt={2} pt={2} sx={{ borderTop: 1, borderColor: "divider" }}>
+                  <MDTypography variant="body2" color="text" mb={1} fontWeight="medium">Onboarding Status</MDTypography>
+                  <MDBox display="flex" flexWrap="wrap" gap={0.5}>
+                    <Chip label={`Onboarding ${stay?.onboardingCompleted ? "✓" : "—"}`} size="small"
+                      color={stay?.onboardingCompleted ? "success" : "default"} variant={stay?.onboardingCompleted ? "filled" : "outlined"} sx={{ height: 20, fontSize: 10 }} />
+                    <Chip label={`ID ${stay?.idUploaded ? "✓" : "—"}`} size="small"
+                      color={stay?.idUploaded ? "success" : "default"} variant={stay?.idUploaded ? "filled" : "outlined"} sx={{ height: 20, fontSize: 10 }} />
+                    <Chip label={`Payment ${stay?.paymentAuthorized ? "✓" : "—"}`} size="small"
+                      color={stay?.paymentAuthorized ? "success" : "default"} variant={stay?.paymentAuthorized ? "filled" : "outlined"} sx={{ height: 20, fontSize: 10 }} />
+                    <Chip label={`Carbon Offset ${stay?.carbonOffset ? "✓" : "—"}`} size="small"
+                      color={stay?.carbonOffset ? "success" : "default"} variant={stay?.carbonOffset ? "filled" : "outlined"} sx={{ height: 20, fontSize: 10 }} />
+                  </MDBox>
+                </MDBox>
               </MDBox>
             </Card>
           </Grid>

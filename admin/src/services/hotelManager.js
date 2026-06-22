@@ -4,7 +4,8 @@ const unwrap = (res) => res.data.data;
 
 export const hotelManagerAPI = {
   // Dashboard
-  getDashboard: () => api.get("/manager/dashboard").then(unwrap),
+  getDashboard: (days) =>
+    api.get(`/manager/dashboard${days ? `?days=${days}` : ""}`).then(unwrap),
 
   // Stays / Guests
   getStays: (status) =>
@@ -36,7 +37,15 @@ export const hotelManagerAPI = {
   getFolio: (stayId) => api.get(`/manager/folio/${stayId}`).then(unwrap),
   addCharge: (stayId, dto) =>
     api.post(`/manager/folio/${stayId}/charge`, dto).then(unwrap),
+  voidCharge: (stayId, chargeId) =>
+    api.post(`/manager/folio/${stayId}/void-charge/${chargeId}`).then(unwrap),
   getInvoices: () => api.get("/manager/invoices").then(unwrap),
+  generateInvoice: (stayId) =>
+    api.post(`/manager/folio/${stayId}/generate-invoice`).then(unwrap),
+  updateInvoiceStatus: (invoiceId, status) =>
+    api.patch(`/manager/invoices/${invoiceId}/status`, { status }).then(unwrap),
+  recordPayment: (stayId, dto) =>
+    api.post(`/manager/folio/${stayId}/record-payment`, dto).then(unwrap),
 
   // Itinerary
   getItinerary: (stayId) =>
@@ -52,6 +61,10 @@ export const hotelManagerAPI = {
   updateAmenity: (id, dto) =>
     api.put(`/manager/amenities/${id}`, dto).then(unwrap),
   deleteAmenity: (id) => api.delete(`/manager/amenities/${id}`).then(unwrap),
+
+  // Audit Logs
+  getAuditLogs: (limit) =>
+    api.get(`/manager/audit-logs${limit ? `?limit=${limit}` : ""}`).then(unwrap),
 
   // Upload
   uploadImage: (file) => {
@@ -74,6 +87,18 @@ export const hotelManagerAPI = {
   getDisputes: () => api.get("/manager/disputes").then(unwrap),
   resolveDispute: (id, resolution) => api.patch(`/manager/disputes/${id}/resolve`, { resolution }).then(unwrap),
   rejectDispute: (id, resolution) => api.patch(`/manager/disputes/${id}/reject`, { resolution }).then(unwrap),
+
+  // Feature Flags
+  getFeatureFlags: () => api.get("/manager/feature-flags").then(unwrap),
+  updateFeatureFlag: (key, data) => api.patch(`/manager/feature-flags/${key}`, data).then(unwrap),
+
+  // Menu (admin view)
+  getMenuItems: (category) =>
+    api.get(`/manager/menu${category ? `?category=${category}` : ""}`).then(unwrap),
+
+  // Bulk Housekeeping
+  bulkHousekeepingStatus: (ids, status, assignedTo) =>
+    api.post("/manager/housekeeping/bulk-status", { ids, status, assignedTo }).then(unwrap),
 
   // Notifications
   getNotifications: (limit) =>

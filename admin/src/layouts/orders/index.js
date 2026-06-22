@@ -218,31 +218,43 @@ function Orders() {
                   <MDTypography variant="body2" color="text">Room</MDTypography>
                   <MDTypography variant="body2" fontWeight="medium">{detailOrder.stay?.selectedRoomId || "—"}</MDTypography>
                 </MDBox>
-                <MDBox>
-                  <MDTypography variant="body2" color="text" mb={1}>Items</MDTypography>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Item</TableCell>
-                        <TableCell align="center">Qty</TableCell>
-                        <TableCell align="right">Price</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {detailOrder.items?.map((item, i) => (
-                        <TableRow key={i}>
-                          <TableCell>{item.nameSnapshot || item.name || "—"}</TableCell>
-                          <TableCell align="center">{item.quantity}</TableCell>
-                          <TableCell align="right">${((item.unitPriceCents || 0) / 100).toFixed(2)}</TableCell>
-                        </TableRow>
-                      ))}
-                      <TableRow>
-                        <TableCell colSpan={2}><MDTypography variant="button" fontWeight="bold">Total</MDTypography></TableCell>
-                        <TableCell align="right"><MDTypography variant="button" fontWeight="bold">${(detailOrder.totalCents / 100).toFixed(2)}</MDTypography></TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                <MDBox display="flex" justifyContent="space-between">
+                  <MDTypography variant="body2" color="text">Category</MDTypography>
+                  <MDTypography variant="body2" fontWeight="medium">{detailOrder.category || "—"}</MDTypography>
                 </MDBox>
+                  {detailOrder.externalTicketId && (
+                    <MDBox display="flex" justifyContent="space-between">
+                      <MDTypography variant="body2" color="text">External Ticket ID</MDTypography>
+                      <MDTypography variant="body2" fontWeight="medium">{detailOrder.externalTicketId}</MDTypography>
+                    </MDBox>
+                  )}
+                  <MDBox>
+                    <MDTypography variant="body2" color="text" mb={1}>Items</MDTypography>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Item</TableCell>
+                          <TableCell align="center">Qty</TableCell>
+                          <TableCell align="right">Price</TableCell>
+                          <TableCell align="right">Prep (min)</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {detailOrder.items?.map((item, i) => (
+                          <TableRow key={i}>
+                            <TableCell>{item.nameSnapshot || item.name || "—"}</TableCell>
+                            <TableCell align="center">{item.quantity}</TableCell>
+                            <TableCell align="right">${((item.unitPriceCents || 0) / 100).toFixed(2)}</TableCell>
+                            <TableCell align="right">{item.prepMinutes ?? "—"}</TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow>
+                          <TableCell colSpan={3}><MDTypography variant="button" fontWeight="bold">Total</MDTypography></TableCell>
+                          <TableCell align="right"><MDTypography variant="button" fontWeight="bold">${(detailOrder.totalCents / 100).toFixed(2)}</MDTypography></TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </MDBox>
                 {detailOrder.note && (
                   <MDBox display="flex" justifyContent="space-between">
                     <MDTypography variant="body2" color="text">Note</MDTypography>

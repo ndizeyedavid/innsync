@@ -3,13 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TablePagination from "@mui/material/TablePagination";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -18,7 +11,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
@@ -33,6 +25,7 @@ import MDButton from "components/MDButton";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
+import DataTable from "examples/Tables/DataTable";
 
 import { hotelManagerAPI } from "services/hotelManager";
 
@@ -41,12 +34,9 @@ const ROLES = ["STAFF", "CONCIERGE", "ADMIN"];
 function Staff() {
   const queryClient = useQueryClient();
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState({ name: "", email: "", password: "" });
   const [inviteError, setInviteError] = useState("");
-  const [roleTarget, setRoleTarget] = useState(null);
 
   const { data: staffList, isLoading, error } = useQuery({
     queryKey: ["hotelStaff"],
@@ -66,10 +56,7 @@ function Staff() {
 
   const roleMut = useMutation({
     mutationFn: ({ id, role }) => hotelManagerAPI.updateStaffRole(id, role),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["hotelStaff"] });
-      setRoleTarget(null);
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStaff"] }),
   });
 
   const removeMut = useMutation({
@@ -82,6 +69,35 @@ function Staff() {
     setInviteError("");
     inviteMut.mutate(inviteForm);
   };
+
+  const columns = [
+    { Header: "Name", accessor: "name", width: "25%" },
+    { Header: "Email", accessor: "email", width: "30%" },
+    { Header: "Role", accessor: "role", width: "20%" },
+    { Header: "Joined", accessor: "joined", width: "15%" },
+    { Header: "Actions", accessor: "actions", width: "10%" },
+  ];
+
+  const rows = (staffList || []).map((s) => ({
+    name: <MDTypography variant="button" fontWeight="medium">{s.name}</MDTypography>,
+    email: <MDTypography variant="caption">{s.email}</MDTypography>,
+    role: (
+      <FormControl size="small" sx={{ minWidth: 130 }}>
+        <Select value={s.role} onChange={(e) => roleMut.mutate({ id: s.id, role: e.target.value })} disabled={roleMut.isPending}>
+          {ROLES.map((r) => <MenuItem key={r} value={r}>{r}</MenuItem>)}
+        </Select>
+      </FormControl>
+    ),
+    joined: <MDTypography variant="caption">{new Date(s.createdAt).toLocaleDateString()}</MDTypography>,
+    actions: (
+      <Tooltip title="Remove staff">
+        <IconButton size="small" color="error" disabled={removeMut.isPending}
+          onClick={() => { if (window.confirm("Remove this staff member?")) removeMut.mutate(s.id); }}>
+          <Icon fontSize="small">delete</Icon>
+        </IconButton>
+      </Tooltip>
+    ),
+  }));
 
   return (
     <DashboardLayout>
@@ -96,69 +112,22 @@ function Staff() {
                   <Icon fontSize="small" sx={{ mr: 0.5 }}>person_add</Icon> Invite
                 </MDButton>
               </MDBox>
-              <MDBox pt={3}>
+              <MDBox pt={3} px={3} pb={3}>
                 {isLoading ? (
                   <MDBox display="flex" justifyContent="center" py={6}><CircularProgress /></MDBox>
                 ) : error ? (
-                  <MDBox px={3} pb={3}><Alert severity="error">Failed to load staff: {error.message}</Alert></MDBox>
+                  <Alert severity="error">Failed to load staff: {error.message}</Alert>
                 ) : !staffList || staffList.length === 0 ? (
-                  <MDBox px={3} pb={3}><MDTypography variant="body2" color="text">No staff members yet.</MDTypography></MDBox>
+                  <MDTypography variant="body2" color="text">No staff members yet.</MDTypography>
                 ) : (
-                  <>
-                    <TableContainer sx={{ minWidth: 600 }}>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Email</TableCell>
-                            <TableCell>Role</TableCell>
-                            <TableCell>Joined</TableCell>
-                            <TableCell align="right">Actions</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {staffList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((s) => (
-                            <TableRow key={s.id}>
-                              <TableCell><MDTypography variant="button" fontWeight="medium">{s.name}</MDTypography></TableCell>
-                              <TableCell><MDTypography variant="caption">{s.email}</MDTypography></TableCell>
-                              <TableCell>
-                                <FormControl size="small" sx={{ minWidth: 130 }}>
-                                  <Select
-                                    value={s.role}
-                                    onChange={(e) => roleMut.mutate({ id: s.id, role: e.target.value })}
-                                    disabled={roleMut.isPending}
-                                  >
-                                    {ROLES.map((r) => <MenuItem key={r} value={r}>{r}</MenuItem>)}
-                                  </Select>
-                                </FormControl>
-                              </TableCell>
-                              <TableCell><MDTypography variant="caption">{new Date(s.createdAt).toLocaleDateString()}</MDTypography></TableCell>
-                              <TableCell align="right">
-                                <Tooltip title="Remove staff">
-                                  <IconButton
-                                    size="small"
-                                    color="error"
-                                    disabled={removeMut.isPending}
-                                    onClick={() => { if (window.confirm("Remove this staff member?")) removeMut.mutate(s.id); }}
-                                  >
-                                    <Icon fontSize="small">delete</Icon>
-                                  </IconButton>
-                                </Tooltip>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                    <TablePagination
-                      component="div"
-                      count={staffList.length}
-                      page={page}
-                      onPageChange={(_, p) => setPage(p)}
-                      rowsPerPage={rowsPerPage}
-                      onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-                    />
-                  </>
+                  <DataTable
+                    table={{ columns, rows }}
+                    isSorted={true}
+                    entriesPerPage={{ defaultValue: 10, entries: ["5", "10", "15", "20", "25"] }}
+                    showTotalEntries={true}
+                    canSearch={true}
+                    noEndBorder
+                  />
                 )}
               </MDBox>
             </Card>
@@ -166,24 +135,17 @@ function Staff() {
         </Grid>
       </MDBox>
 
-      {/* Invite Dialog */}
       <Dialog open={inviteOpen} onClose={() => setInviteOpen(false)} maxWidth="xs" fullWidth>
         <form onSubmit={handleInvite}>
           <DialogTitle>Invite Staff Member</DialogTitle>
           <DialogContent>
             <MDBox display="flex" flexDirection="column" gap={2} pt={1}>
-              <TextField label="Name" size="small" required fullWidth
-                value={inviteForm.name}
-                onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })}
-              />
-              <TextField label="Email" type="email" size="small" required fullWidth
-                value={inviteForm.email}
-                onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
-              />
-              <TextField label="Temporary password" type="password" size="small" required fullWidth
-                value={inviteForm.password}
-                onChange={(e) => setInviteForm({ ...inviteForm, password: e.target.value })}
-              />
+              <TextField label="Name" size="small" required fullWidth value={inviteForm.name}
+                onChange={(e) => setInviteForm({ ...inviteForm, name: e.target.value })} />
+              <TextField label="Email" type="email" size="small" required fullWidth value={inviteForm.email}
+                onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })} />
+              <TextField label="Temporary password" type="password" size="small" required fullWidth value={inviteForm.password}
+                onChange={(e) => setInviteForm({ ...inviteForm, password: e.target.value })} />
               {inviteError && <Alert severity="error" sx={{ py: 0 }}>{inviteError}</Alert>}
             </MDBox>
           </DialogContent>

@@ -12,6 +12,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Snackbar from "@mui/material/Snackbar";
 import Icon from "@mui/material/Icon";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
@@ -30,6 +35,13 @@ function Billing() {
   const [chargeAmount, setChargeAmount] = useState("");
   const [chargeDesc, setChargeDesc] = useState("");
   const [saved, setSaved] = useState(false);
+  const [snackMsg, setSnackMsg] = useState("");
+  const [invMenu, setInvMenu] = useState(null);
+  const [invTarget, setInvTarget] = useState(null);
+  const [payOpen, setPayOpen] = useState(false);
+  const [payAmount, setPayAmount] = useState("");
+  const [payMethod, setPayMethod] = useState("cash");
+  const [payNotes, setPayNotes] = useState("");
 
   const { data: stays } = useQuery({
     queryKey: ["hotelStays"],
@@ -62,6 +74,51 @@ function Billing() {
       setChargeOpen(false);
       setChargeAmount("");
       setChargeDesc("");
+      setSnackMsg("Charge added");
+      setSaved(true);
+    },
+  });
+
+  const voidMut = useMutation({
+    mutationFn: (chargeId) => hotelManagerAPI.voidCharge(selectedStay, chargeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelFolio", selectedStay] });
+      setSnackMsg("Charge voided");
+      setSaved(true);
+    },
+  });
+
+  const generateInvMut = useMutation({
+    mutationFn: () => hotelManagerAPI.generateInvoice(selectedStay),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelInvoices"] });
+      setSnackMsg("Invoice generated");
+      setSaved(true);
+    },
+  });
+
+  const updateInvStatusMut = useMutation({
+    mutationFn: ({ id, status }) => hotelManagerAPI.updateInvoiceStatus(id, status),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["hotelInvoices"] });
+      setSnackMsg(`Invoice ${vars.status.toLowerCase()}`);
+      setSaved(true);
+    },
+  });
+
+  const recordPayMut = useMutation({
+    mutationFn: () => hotelManagerAPI.recordPayment(selectedStay, {
+      amountCents: Math.round(parseFloat(payAmount) * 100),
+      method: payMethod,
+      notes: payNotes || undefined,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelFolio", selectedStay] });
+      queryClient.invalidateQueries({ queryKey: ["hotelInvoices"] });
+      setPayOpen(false);
+      setPayAmount("");
+      setPayNotes("");
+      setSnackMsg("Payment recorded");
       setSaved(true);
     },
   });
@@ -70,10 +127,11 @@ function Billing() {
   const totalCents = folio?.totalCents || 0;
 
   const columns = [
-    { Header: "Description", accessor: "description", width: "40%" },
-    { Header: "Amount", accessor: "amount", width: "20%" },
-    { Header: "Category", accessor: "category", width: "20%" },
+    { Header: "Description", accessor: "description", width: "35%" },
+    { Header: "Amount", accessor: "amount", width: "15%" },
+    { Header: "Category", accessor: "category", width: "15%" },
     { Header: "Date", accessor: "date", width: "20%" },
+    { Header: "", accessor: "actions", width: "15%" },
   ];
 
   const rows = folioLines.map((line, i) => ({
@@ -81,6 +139,15 @@ function Billing() {
     amount: `$${((line.amountCents || line.amount || 0) / 100).toFixed(2)}`,
     category: line.category || "N/A",
     date: line.date ? new Date(line.date).toLocaleDateString() : "N/A",
+    actions: line.id?.startsWith("manual-") ? (
+      <MDButton variant="text" color="error" size="small"
+        onClick={() => voidMut.mutate(line.id)}
+        disabled={voidMut.isPending}
+        title="Void charge"
+      >
+        <Icon fontSize="small">delete</Icon>
+      </MDButton>
+    ) : null,
   }));
 
   return (
@@ -126,7 +193,18 @@ function Billing() {
                     </MDBox>
                   </>
                 )}
-                <MDBox display="flex" justifyContent="flex-end" mt={2} px={2} pb={2}>
+                <MDBox display="flex" justifyContent="flex-end" gap={1} mt={2} px={2} pb={2}>
+                  {selectedStay && folioLines.length > 0 && (
+                    <MDButton variant="gradient" color="info"
+                      onClick={() => generateInvMut.mutate()}
+                      disabled={generateInvMut.isPending}>
+                      {generateInvMut.isPending ? "Generating..." : "Generate Invoice"}
+                    </MDButton>
+                  )}
+                  <MDButton variant="gradient" color="warning" disabled={!selectedStay}
+                    onClick={() => setPayOpen(true)}>
+                    Record Payment
+                  </MDButton>
                   <MDButton variant="gradient" color="success" disabled={!selectedStay} onClick={() => setChargeOpen(true)}>
                     Add Charge
                   </MDButton>
@@ -179,18 +257,55 @@ function Billing() {
                   {!invoices || invoices.length === 0 ? (
                     <MDTypography variant="body2" color="text">No invoices yet</MDTypography>
                   ) : (
-                    invoices.slice(0, 5).map((inv) => (
-                      <Invoice key={inv.id}
-                        date={inv.checkOut ? new Date(inv.checkOut).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" }) : "N/A"}
-                        id={`#${inv.id.slice(-6).toUpperCase()}`}
-                        price={`$${(inv.totalCents / 100).toFixed(2)}`}
-                      />
+                    invoices.slice(0, 8).map((inv) => (
+                      <MDBox key={inv.id} component="li" display="flex" justifyContent="space-between" alignItems="center" py={1} pr={1} mb={1}>
+                        <MDBox lineHeight={1.125}>
+                          <MDTypography display="block" variant="button" fontWeight="medium">
+                            {inv.invoiceNumber || "—"}
+                          </MDTypography>
+                          <MDTypography variant="caption" fontWeight="regular" color="text">
+                            {inv.guestName} — {inv.checkOut ? new Date(inv.checkOut).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" }) : "N/A"}
+                          </MDTypography>
+                        </MDBox>
+                        <MDBox display="flex" alignItems="center" gap={1}>
+                          <Chip size="small" label={inv.status}
+                            color={inv.status === "PAID" ? "success" : inv.status === "ISSUED" ? "info" : inv.status === "DRAFT" ? "default" : inv.status === "VOID" ? "error" : inv.status === "UNINVOICED" ? "warning" : "default"}
+                          />
+                          <MDTypography variant="button" fontWeight="regular" color="text">
+                            ${(inv.totalCents / 100).toFixed(2)}
+                          </MDTypography>
+                          {inv.status === "DRAFT" && (
+                            <MDButton size="small" variant="text" color="info"
+                              onClick={(e) => { setInvMenu(e.currentTarget); setInvTarget(inv); }}>
+                              <Icon fontSize="small">more_vert</Icon>
+                            </MDButton>
+                          )}
+                          {inv.status === "ISSUED" && (
+                            <MDButton size="small" variant="text" color="success"
+                              onClick={() => updateInvStatusMut.mutate({ id: inv.id, status: "PAID" })}>
+                              <Icon fontSize="small">check_circle</Icon>
+                            </MDButton>
+                          )}
+                        </MDBox>
+                      </MDBox>
                     ))
                   )}
                 </MDBox>
               </MDBox>
             </Card>
           </Grid>
+
+          <Menu anchorEl={invMenu} open={!!invMenu} onClose={() => setInvMenu(null)}>
+            <MenuItem onClick={() => { setInvMenu(null); updateInvStatusMut.mutate({ id: invTarget.id, status: "ISSUED" }); }}>
+              <Icon fontSize="small" sx={{ mr: 1 }}>send</Icon> Issue
+            </MenuItem>
+            <MenuItem onClick={() => { setInvMenu(null); updateInvStatusMut.mutate({ id: invTarget.id, status: "PAID" }); }}>
+              <Icon fontSize="small" sx={{ mr: 1 }}>check_circle</Icon> Mark Paid
+            </MenuItem>
+            <MenuItem onClick={() => { setInvMenu(null); updateInvStatusMut.mutate({ id: invTarget.id, status: "VOID" }); }}>
+              <Icon fontSize="small" sx={{ mr: 1 }}>cancel</Icon> Void
+            </MenuItem>
+          </Menu>
 
           {/* Payment Method */}
           <Grid item xs={12} lg={6}>
@@ -249,7 +364,38 @@ function Billing() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={saved} autoHideDuration={3000} onClose={() => setSaved(false)} message="Charge added" />
+      <Dialog open={payOpen} onClose={() => setPayOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Record Payment</DialogTitle>
+        <DialogContent>
+          <MDBox display="flex" flexDirection="column" gap={2} mt={1}>
+            <TextField label="Amount ($)" type="number" fullWidth value={payAmount}
+              onChange={(e) => setPayAmount(e.target.value)}
+              helperText="e.g. 250.00 = $250.00" />
+            <FormControl fullWidth>
+              <InputLabel>Method</InputLabel>
+              <Select native value={payMethod} label="Method"
+                onChange={(e) => setPayMethod(e.target.value)}>
+                <option value="cash">Cash</option>
+                <option value="card_swiped">Card (Swiped)</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="other">Other</option>
+              </Select>
+            </FormControl>
+            <TextField label="Notes (optional)" fullWidth multiline rows={2} value={payNotes}
+              onChange={(e) => setPayNotes(e.target.value)}
+              placeholder="e.g. Collected at front desk by Maria" />
+          </MDBox>
+        </DialogContent>
+        <DialogActions>
+          <MDButton onClick={() => setPayOpen(false)} color="secondary">Cancel</MDButton>
+          <MDButton variant="gradient" color="warning" onClick={() => recordPayMut.mutate()}
+            disabled={!payAmount || recordPayMut.isPending}>
+            {recordPayMut.isPending ? "Recording..." : "Record Payment"}
+          </MDButton>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={saved} autoHideDuration={3000} onClose={() => setSaved(false)} message={snackMsg} />
     </DashboardLayout>
   );
 }

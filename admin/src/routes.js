@@ -14,6 +14,11 @@ import DigitalKeys from "layouts/digital-keys";
 import HotelSettings from "layouts/hotel-settings";
 import Staff from "layouts/staff";
 import Disputes from "layouts/disputes";
+import Profile from "layouts/profile";
+import Notifications from "layouts/notifications";
+import AuditLogs from "layouts/audit-logs";
+import FeatureFlags from "layouts/feature-flags";
+import Menu from "layouts/menu";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import ResetPassword from "layouts/authentication/reset-password/cover";
@@ -119,6 +124,51 @@ const routes = [
     icon: <Icon fontSize="small">gavel</Icon>,
     route: "/disputes",
     component: <Disputes />,
+    protected: true,
+  },
+  {
+    type: "collapse",
+    name: "Audit Logs",
+    key: "audit-logs",
+    icon: <Icon fontSize="small">history</Icon>,
+    route: "/audit-logs",
+    component: <AuditLogs />,
+    protected: true,
+  },
+  {
+    type: "collapse",
+    name: "Feature Flags",
+    key: "feature-flags",
+    icon: <Icon fontSize="small">flag</Icon>,
+    route: "/feature-flags",
+    component: <FeatureFlags />,
+    protected: true,
+  },
+  {
+    type: "collapse",
+    name: "Menu",
+    key: "menu",
+    icon: <Icon fontSize="small">restaurant</Icon>,
+    route: "/menu",
+    component: <Menu />,
+    protected: true,
+  },
+  {
+    type: "collapse",
+    name: "Profile",
+    key: "profile",
+    icon: <Icon fontSize="small">person</Icon>,
+    route: "/profile",
+    component: <Profile />,
+    protected: true,
+  },
+  {
+    type: "collapse",
+    name: "Notifications",
+    key: "notifications",
+    icon: <Icon fontSize="small">notifications</Icon>,
+    route: "/notifications",
+    component: <Notifications />,
     protected: true,
   },
   {

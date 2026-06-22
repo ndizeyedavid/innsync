@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import Stepper from "@mui/material/Stepper";
@@ -20,6 +20,17 @@ function Onboarding() {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [error, setError] = useState("");
+
+  const { data: existingSettings } = useQuery({
+    queryKey: ["hotelSettings"],
+    queryFn: hotelManagerAPI.getHotelSettings,
+  });
+
+  useEffect(() => {
+    if (existingSettings?.name && existingSettings.name !== "Demo Hotel") {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [existingSettings, navigate]);
   const [form, setForm] = useState({
     name: "", address: "", description: "",
     phone: "", email: "",

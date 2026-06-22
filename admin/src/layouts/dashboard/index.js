@@ -1,8 +1,11 @@
+import { useState } from "react";
 import Grid from "@mui/material/Grid";
 import CircularProgress from "@mui/material/CircularProgress";
 import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
 import Alert from "@mui/material/Alert";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
@@ -20,9 +23,10 @@ import { hotelManagerAPI } from "services/hotelManager";
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler);
 
 function Dashboard() {
+  const [days, setDays] = useState(7);
   const { data: d, isLoading, error } = useQuery({
-    queryKey: ["hotelDashboard"],
-    queryFn: hotelManagerAPI.getDashboard,
+    queryKey: ["hotelDashboard", days],
+    queryFn: () => hotelManagerAPI.getDashboard(days),
   });
 
   const revChart = d?.revenue7d ? {
@@ -60,6 +64,13 @@ function Dashboard() {
           <MDTypography variant="body2" color="text">Overview of your hotel operations</MDTypography>
         </MDBox>
 
+        <MDBox display="flex" justifyContent="flex-end" mb={2}>
+          <ToggleButtonGroup size="small" value={days} exclusive onChange={(_, v) => v && setDays(v)}>
+            <ToggleButton value={7}>7d</ToggleButton>
+            <ToggleButton value={14}>14d</ToggleButton>
+            <ToggleButton value={30}>30d</ToggleButton>
+          </ToggleButtonGroup>
+        </MDBox>
         {isLoading ? (
           <MDBox display="flex" justifyContent="center" py={6}><CircularProgress /></MDBox>
         ) : error ? (
@@ -69,26 +80,26 @@ function Dashboard() {
             <Grid container spacing={3}>
               <Grid item xs={12} md={6} lg={3}>
                 <ComplexStatisticsCard color="dark" icon="door_back" title="Check-ins Today" count={d?.checkInsToday || 0}
-                  percentage={{ color: "success", amount: "+15%", label: "than yesterday" }} />
+                  percentage={{ color: d?.checkInsChange?.startsWith("-") ? "error" : "success", amount: d?.checkInsChange || "+0%", label: "than yesterday" }} />
               </Grid>
               <Grid item xs={12} md={6} lg={3}>
                 <ComplexStatisticsCard icon="check_circle" title="Check-outs Today" count={d?.checkOutsToday || 0}
-                  percentage={{ color: "info", amount: "-5%", label: "than yesterday" }} />
+                  percentage={{ color: d?.checkOutsChange?.startsWith("-") ? "error" : "success", amount: d?.checkOutsChange || "+0%", label: "than yesterday" }} />
               </Grid>
               <Grid item xs={12} md={6} lg={3}>
                 <ComplexStatisticsCard color="success" icon="attach_money" title="Today's Revenue" count={`$${((d?.todayRevenue || 0) / 100).toFixed(0)}`}
-                  percentage={{ color: "success", amount: "+22%", label: "than yesterday" }} />
+                  percentage={{ color: d?.revenueChange?.startsWith("-") ? "error" : "success", amount: d?.revenueChange || "+0%", label: "than yesterday" }} />
               </Grid>
               <Grid item xs={12} md={6} lg={3}>
                 <ComplexStatisticsCard color="primary" icon="restaurant" title="Active Orders" count={d?.activeOrders || 0}
-                  percentage={{ color: "success", amount: "+2", label: "new orders" }} />
+                  percentage={{ color: d?.activeOrdersChange?.startsWith("-") ? "error" : "success", amount: d?.activeOrdersChange || "+0%", label: "new orders" }} />
               </Grid>
             </Grid>
 
             <Grid container spacing={3} mt={3}>
               <Grid item xs={12} md={6}>
                 <Card sx={{ p: 3 }}>
-                  <MDTypography variant="h6" fontWeight="medium" mb={2}>Revenue — Last 7 Days</MDTypography>
+                  <MDTypography variant="h6" fontWeight="medium" mb={2}>Revenue — Last {days} Days</MDTypography>
                   {revChart ? (
                     <Bar data={revChart} options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: (v) => `$${v}` } } } }} />
                   ) : (
@@ -98,7 +109,7 @@ function Dashboard() {
               </Grid>
               <Grid item xs={12} md={6}>
                 <Card sx={{ p: 3 }}>
-                  <MDTypography variant="h6" fontWeight="medium" mb={2}>Occupancy — Last 7 Days</MDTypography>
+                  <MDTypography variant="h6" fontWeight="medium" mb={2}>Occupancy — Last {days} Days</MDTypography>
                   {occChart ? (
                     <Line data={occChart} options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v) => `${v}%` } } } }} />
                   ) : (

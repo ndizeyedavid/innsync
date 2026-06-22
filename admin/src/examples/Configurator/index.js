@@ -18,7 +18,6 @@ import {
   setSidenavColor,
   setDarkMode,
   setFixedNavbar,
-  setDirection,
 } from "context";
 
 function Configurator() {
@@ -30,7 +29,6 @@ function Configurator() {
     fixedNavbar,
     darkMode,
     sidenavColor,
-    direction,
   } = controller;
   const [disabled, setDisabled] = useState(false);
 
@@ -47,12 +45,11 @@ function Configurator() {
   };
   const handleDarkMode = () => setDarkMode(dispatch, !darkMode);
   const handleFixedNavbar = () => setFixedNavbar(dispatch, !fixedNavbar);
-  const handleDirection = () => setDirection(dispatch, direction === "rtl" ? "ltr" : "rtl");
 
   return (
     <Drawer
       variant="temporary"
-      anchor={direction === "rtl" ? "left" : "right"}
+      anchor="right"
       open={openConfigurator}
       onClose={handleOpenConfigurator}
       ModalProps={{ keepMounted: true }}
@@ -133,17 +130,7 @@ function Configurator() {
           </MDBox>
           <Switch checked={fixedNavbar} onChange={handleFixedNavbar} />
         </MDBox>
-        <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <MDBox>
-            <MDTypography variant="h6" fontWeight="medium">
-              RTL
-            </MDTypography>
-            <MDTypography variant="button" color="text">
-              Toggle right-to-left layout direction.
-            </MDTypography>
-          </MDBox>
-          <Switch checked={direction === "rtl"} onChange={handleDirection} />
-        </MDBox>
+
       </MDBox>
     </Drawer>
   );

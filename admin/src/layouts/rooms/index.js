@@ -13,6 +13,7 @@ import DialogActions from "@mui/material/DialogActions";
 import Chip from "@mui/material/Chip";
 import Snackbar from "@mui/material/Snackbar";
 import Box from "@mui/material/Box";
+import Icon from "@mui/material/Icon";
 import Autocomplete from "@mui/material/Autocomplete";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -51,6 +52,8 @@ function Rooms() {
   const [form, setForm] = useState(emptyForm);
   const [saved, setSaved] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [filterType, setFilterType] = useState("");
+  const [filterFloor, setFilterFloor] = useState("");
 
   const { data: rooms, isLoading } = useQuery({
     queryKey: ["hotelRooms"],
@@ -93,6 +96,12 @@ function Rooms() {
     },
   });
 
+  const filteredRooms = (rooms || []).filter((r) => {
+    if (filterType && r.type !== filterType) return false;
+    if (filterFloor && String(r.floor) !== filterFloor) return false;
+    return true;
+  });
+
   const openAdd = () => { setEditing(null); setForm(emptyForm); setDialogOpen(true); };
 
   const openEdit = (room) => {
@@ -126,14 +135,44 @@ function Rooms() {
                   + Add Room
                 </MDButton>
               </MDBox>
-              <MDBox pt={3} px={3} pb={3}>
+              <MDBox pt={2} px={3}>
+                <Card variant="outlined" sx={{ p: 1, display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
+                  <MDTypography variant="caption" color="text" sx={{ ml: 0.5 }}>Filter:</MDTypography>
+                  <TextField select size="small" value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    sx={{ minWidth: 120 }}
+                    SelectProps={{ native: true }}>
+                    <option value="">All Types</option>
+                    {ROOM_TYPES.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
+                  </TextField>
+                  <TextField select size="small" value={filterFloor}
+                    onChange={(e) => setFilterFloor(e.target.value)}
+                    sx={{ minWidth: 120 }}
+                    SelectProps={{ native: true }}>
+                    <option value="">All Floors</option>
+                    {FLOORS.map((f) => (<option key={f.value} value={f.value}>{f.label}</option>))}
+                  </TextField>
+                  {(filterType || filterFloor) && (
+                    <MDButton size="small" variant="text" color="secondary"
+                      onClick={() => { setFilterType(""); setFilterFloor(""); }}>
+                      Clear
+                    </MDButton>
+                  )}
+                  <MDTypography variant="caption" color="text" sx={{ ml: "auto" }}>
+                    {filteredRooms.length} of {rooms?.length || 0}
+                  </MDTypography>
+                </Card>
+              </MDBox>
+              <MDBox pt={2} px={3} pb={3}>
                 {isLoading ? (
                   <MDBox display="flex" justifyContent="center" py={6}><CircularProgress /></MDBox>
                 ) : !rooms || rooms.length === 0 ? (
                   <Alert severity="info" sx={{ mt: 2 }}>No rooms yet. Click &apos;+ Add Room&apos; to create one.</Alert>
+                ) : filteredRooms.length === 0 ? (
+                  <Alert severity="info" sx={{ mt: 2 }}>No rooms match the selected filters</Alert>
                 ) : (
                   <Grid container spacing={2}>
-                    {rooms.map((room) => {
+                    {filteredRooms.map((room) => {
                       const num = room.number || "?";
                       const typ = room.type || "Standard";
                       const price = room.priceCents ?? 0;
