@@ -5,14 +5,15 @@
 */
 
 // @mui material components
+import { useState } from "react";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CircularProgress from "@mui/material/CircularProgress";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
 import Chip from "@mui/material/Chip";
+import Alert from "@mui/material/Alert";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -31,12 +32,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 // API
 import { hotelManagerAPI } from "services/hotelManager";
 
+const ORDER_STATUSES = ["", "PENDING_REMOTE", "PREPARING", "ON_THE_WAY", "DELIVERED", "CANCELLED"];
+
 function Orders() {
   const queryClient = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState("");
 
-  const { data: orders, isLoading } = useQuery({
-    queryKey: ["hotelOrders"],
-    queryFn: () => hotelManagerAPI.getOrders(),
+  const { data: orders, isLoading, error } = useQuery({
+    queryKey: ["hotelOrders", statusFilter],
+    queryFn: () => hotelManagerAPI.getOrders(statusFilter || undefined),
   });
 
   const updateStatusMutation = useMutation({
@@ -131,11 +135,26 @@ function Orders() {
                   Orders
                 </MDTypography>
               </MDBox>
+              <MDBox pt={2} px={3} display="flex" gap={1} flexWrap="wrap">
+                {ORDER_STATUSES.map((s) => (
+                  <MDButton
+                    key={s}
+                    color="primary"
+                    variant={statusFilter === s ? "contained" : "outlined"}
+                    size="small"
+                    onClick={() => setStatusFilter(s)}
+                  >
+                    {s ? s.replace(/_/g, " ") : "All"}
+                  </MDButton>
+                ))}
+              </MDBox>
               <MDBox pt={3}>
                 {isLoading ? (
                   <MDBox display="flex" justifyContent="center" py={6}>
                     <CircularProgress />
                   </MDBox>
+                ) : error ? (
+                  <MDBox px={3} pb={3}><Alert severity="error">Failed to load orders: {error.message}</Alert></MDBox>
                 ) : (
                   <DataTable
                     table={{ columns, rows }}

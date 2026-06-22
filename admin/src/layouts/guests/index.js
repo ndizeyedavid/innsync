@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Grid from "@mui/material/Grid";
@@ -6,8 +7,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+import Alert from "@mui/material/Alert";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import MDButton from "components/MDButton";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
@@ -18,17 +21,25 @@ const STATUS_COLORS = {
   PENDING: "warning", CONFIRMED: "info", CHECKED_IN: "success", CHECKED_OUT: "secondary", CANCELLED: "error",
 };
 
+const STAY_STATUSES = ["", "PENDING", "CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED"];
+
 function Guests() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState("");
 
-  const { data: stays, isLoading } = useQuery({
-    queryKey: ["hotelStays"],
-    queryFn: () => hotelManagerAPI.getStays(),
+  const { data: stays, isLoading, error } = useQuery({
+    queryKey: ["hotelStays", statusFilter],
+    queryFn: () => hotelManagerAPI.getStays(statusFilter || undefined),
   });
 
   const checkInMut = useMutation({
     mutationFn: (stayId) => hotelManagerAPI.checkIn(stayId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }),
+  });
+
+  const checkOutMut = useMutation({
+    mutationFn: (stayId) => hotelManagerAPI.checkOut(stayId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }),
   });
 
@@ -64,7 +75,7 @@ function Guests() {
         )}
         {stay.status === "CHECKED_IN" && (
           <Tooltip title="Check out">
-            <IconButton size="small" color="warning" onClick={() => hotelManagerAPI.checkOut(stay.id).then(() => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }))}>
+            <IconButton size="small" color="warning" onClick={() => checkOutMut.mutate(stay.id)}>
               <span style={{ fontSize: 18 }}>⇤</span>
             </IconButton>
           </Tooltip>
@@ -88,9 +99,24 @@ function Guests() {
               <MDBox mx={2} mt={-3} py={3} px={2} variant="gradient" bgColor="success" borderRadius="lg" coloredShadow="success">
                 <MDTypography variant="h6" color="white">Guests & Stays</MDTypography>
               </MDBox>
+              <MDBox pt={2} px={3} display="flex" gap={1} flexWrap="wrap">
+                {STAY_STATUSES.map((s) => (
+                  <MDButton
+                    key={s}
+                    color="success"
+                    variant={statusFilter === s ? "contained" : "outlined"}
+                    size="small"
+                    onClick={() => setStatusFilter(s)}
+                  >
+                    {s || "All"}
+                  </MDButton>
+                ))}
+              </MDBox>
               <MDBox pt={3}>
                 {isLoading ? (
                   <MDBox display="flex" justifyContent="center" py={6}><CircularProgress /></MDBox>
+                ) : error ? (
+                  <MDBox px={3} pb={3}><Alert severity="error">Failed to load stays: {error.message}</Alert></MDBox>
                 ) : (
                   <DataTable table={{ columns, rows }} isSorted={false} entriesPerPage={false} showTotalEntries={false} noEndBorder />
                 )}

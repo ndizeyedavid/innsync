@@ -7,6 +7,9 @@
 // @mui material components
 import Grid from "@mui/material/Grid";
 import CircularProgress from "@mui/material/CircularProgress";
+import Card from "@mui/material/Card";
+import Chip from "@mui/material/Chip";
+import Alert from "@mui/material/Alert";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -25,7 +28,7 @@ import { useQuery } from "@tanstack/react-query";
 import { hotelManagerAPI } from "services/hotelManager";
 
 function Dashboard() {
-  const { data: dashboardData, isLoading } = useQuery({
+  const { data: dashboardData, isLoading, error } = useQuery({
     queryKey: ["hotelDashboard"],
     queryFn: hotelManagerAPI.getDashboard,
   });
@@ -47,6 +50,8 @@ function Dashboard() {
           <MDBox display="flex" justifyContent="center" py={6}>
             <CircularProgress />
           </MDBox>
+        ) : error ? (
+          <MDBox px={3}><Alert severity="error">Failed to load dashboard: {error.message}</Alert></MDBox>
         ) : (
           <>
             <Grid container spacing={3}>
@@ -124,6 +129,42 @@ function Dashboard() {
                   occupied
                 </MDTypography>
               </MDBox>
+            </MDBox>
+
+            <MDBox mt={6}>
+              <MDTypography variant="h5" fontWeight="medium" mb={2}>
+                Recent Orders
+              </MDTypography>
+              <Card>
+                <MDBox p={2}>
+                  {(dashboardData?.recentOrders || []).length === 0 ? (
+                    <MDTypography variant="body2" color="text">No recent orders.</MDTypography>
+                  ) : (
+                    <Grid container spacing={1}>
+                      {dashboardData.recentOrders.slice(0, 5).map((order) => (
+                        <Grid item xs={12} key={order.id}>
+                          <MDBox display="flex" justifyContent="space-between" alignItems="center" py={1} sx={{ borderBottom: "1px solid #eee" }}>
+                            <MDBox>
+                              <MDTypography variant="body2" fontWeight="medium">
+                                {order.stay?.user?.name || "Unknown"}
+                              </MDTypography>
+                              <MDTypography variant="caption" color="text">
+                                {order.items?.map((i) => `${i.quantity}x ${i.nameSnapshot}`).join(", ") || "—"}
+                              </MDTypography>
+                            </MDBox>
+                            <MDBox display="flex" alignItems="center" gap={1}>
+                              <Chip label={order.status} size="small" color={order.status === "DELIVERED" ? "success" : order.status === "CANCELLED" ? "error" : "info"} />
+                              <MDTypography variant="body2" fontWeight="medium">
+                                ${(order.totalCents / 100).toFixed(2)}
+                              </MDTypography>
+                            </MDBox>
+                          </MDBox>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
+                </MDBox>
+              </Card>
             </MDBox>
           </>
         )}

@@ -12,6 +12,7 @@ import Billing from "layouts/billing";
 import Amenities from "layouts/amenities";
 import DigitalKeys from "layouts/digital-keys";
 import HotelSettings from "layouts/hotel-settings";
+import Staff from "layouts/staff";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import ResetPassword from "layouts/authentication/reset-password/cover";
@@ -99,6 +100,15 @@ const routes = [
     icon: <Icon fontSize="small">settings</Icon>,
     route: "/hotel-settings",
     component: <HotelSettings />,
+    protected: true,
+  },
+  {
+    type: "collapse",
+    name: "Staff",
+    key: "staff",
+    icon: <Icon fontSize="small">badge</Icon>,
+    route: "/staff",
+    component: <Staff />,
     protected: true,
   },
   {

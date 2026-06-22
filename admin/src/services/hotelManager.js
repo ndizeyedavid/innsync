@@ -59,4 +59,16 @@ export const hotelManagerAPI = {
   // Hotel Settings
   getHotelSettings: () => api.get("/manager/hotel").then(unwrap),
   updateHotelSettings: (dto) => api.put("/manager/hotel", dto).then(unwrap),
+
+  // Staff
+  getStaff: () => api.get("/manager/staff").then(unwrap),
+  inviteStaff: (dto) => api.post("/manager/staff/invite", dto).then(unwrap),
+  updateStaffRole: (id, role) => api.patch(`/manager/staff/${id}/role`, { role }).then(unwrap),
+  removeStaff: (id) => api.delete(`/manager/staff/${id}`).then(unwrap),
+
+  // Notifications
+  getNotifications: (limit) =>
+    api.get(`/manager/notifications${limit ? `?limit=${limit}` : ""}`).then(unwrap),
+  markNotificationRead: (id) =>
+    api.patch(`/manager/notifications/${id}/read`).then(unwrap),
 };
