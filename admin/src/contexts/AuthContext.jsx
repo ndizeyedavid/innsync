@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { authService } from "../services/auth";
+import { queryClient } from "../services/queryClient";
 
 const AuthContext = createContext();
 
@@ -26,17 +27,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const data = await authService.login(email, password);
+    queryClient.clear();
     setUser(data.user);
     return data;
   };
 
   const signup = async (name, email, password) => {
     const data = await authService.signup(name, email, password);
+    queryClient.clear();
     setUser(data.user);
     return data;
   };
 
   const logout = async () => {
+    queryClient.clear();
     await authService.logout();
     setUser(null);
   };

@@ -49,6 +49,13 @@ export const hotelManagerAPI = {
   updateAmenity: (id, dto) =>
     api.put(`/manager/amenities/${id}`, dto).then(unwrap),
 
+  // Upload
+  uploadImage: (file) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return api.post("/manager/upload", fd).then(unwrap);
+  },
+
   // Hotel Settings
   getHotelSettings: () => api.get("/manager/hotel").then(unwrap),
   updateHotelSettings: (dto) => api.put("/manager/hotel", dto).then(unwrap),

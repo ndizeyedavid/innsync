@@ -36,7 +36,7 @@ function Orders() {
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["hotelOrders"],
-    queryFn: hotelManagerAPI.getOrders,
+    queryFn: () => hotelManagerAPI.getOrders(),
   });
 
   const updateStatusMutation = useMutation({

@@ -22,6 +22,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import { hotelManagerAPI } from "services/hotelManager";
+import ImageUpload from "components/ImageUpload";
 
 const ROOM_TYPES = [
   { value: "Standard", label: "Standard", icon: "🛏️" },
@@ -190,10 +191,8 @@ function Rooms() {
                 <MenuItem key={f.value} value={f.value} sx={{ minHeight: 48 }}>{f.label}</MenuItem>
               ))}
             </TextField>
-            <TextField label="Room Photo URL" fullWidth value={form.imageUrl}
-              onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-              placeholder="https://example.com/room-photo.jpg"
-              helperText="Optional — paste an image URL to show on the room card" />
+            <ImageUpload label="Room Photo" value={form.imageUrl}
+              onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))} />
           </MDBox>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

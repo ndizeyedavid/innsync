@@ -23,6 +23,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import { hotelManagerAPI } from "services/hotelManager";
+import ImageUpload from "components/ImageUpload";
 
 const CATEGORIES = [
   { value: "Room Service", label: "Room Service", icon: "🍽️", color: "#e91e63" },
@@ -197,10 +198,8 @@ function Amenities() {
                 <MenuItem key={c.value} value={c.value} sx={{ minHeight: 48 }}>{c.icon} {c.label}</MenuItem>
               ))}
             </TextField>
-            <TextField label="Image URL" fullWidth value={form.imageUrl}
-              onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-              placeholder="https://example.com/amenity-photo.jpg"
-              helperText="Optional — paste an image URL to show on the amenity card" />
+            <ImageUpload label="Amenity Photo" value={form.imageUrl}
+              onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))} />
           </MDBox>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
