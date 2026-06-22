@@ -8,8 +8,7 @@ import ScreenLayout from "../layout/ScreenLayout";
 import * as Haptics from "expo-haptics";
 import digitalKeyService from "../services/digital-key.service";
 import reservationsService from "../services/reservations.service";
-import { Reservation, DigitalKey } from "../api/types";
-import { useDigitalKeyEvents } from "../hooks/useWebSocket";
+import { GuestStay as Reservation, DigitalKey } from "../api/types";
 
 export default function DigitalKeyScreen() {
   const router = useRouter();
@@ -25,14 +24,6 @@ export default function DigitalKeyScreen() {
   useEffect(() => {
     loadCurrentReservation();
   }, []);
-
-  // Listen to real-time digital key events
-  useDigitalKeyEvents((data) => {
-    console.log("Digital key event:", data);
-    if (data.event === "KEY_REVOKED") {
-      setDigitalKeyStatus("REVOKED");
-    }
-  });
 
   const loadCurrentReservation = async () => {
     try {
@@ -98,7 +89,7 @@ export default function DigitalKeyScreen() {
           </View>
         </View>
         <Text className="text-gray-400 text-xs">
-          Connected to {currentReservation?.roomNumber || "Suite 1207"}
+          Connected to {currentReservation?.roomPreference || "Suite 1207"}
         </Text>
         {lastUnlockTime && (
           <Text className="text-gray-400 text-xs mt-1">

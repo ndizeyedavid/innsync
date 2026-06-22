@@ -25,7 +25,6 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 import Transaction from "layouts/billing/components/Transaction";
-import Invoice from "layouts/billing/components/Invoice";
 import { hotelManagerAPI } from "services/hotelManager";
 
 function Billing() {
@@ -77,6 +76,7 @@ function Billing() {
       setSnackMsg("Charge added");
       setSaved(true);
     },
+    onError: (err) => setSnackMsg(err?.response?.data?.message || "Operation failed"),
   });
 
   const voidMut = useMutation({
@@ -86,6 +86,7 @@ function Billing() {
       setSnackMsg("Charge voided");
       setSaved(true);
     },
+    onError: (err) => setSnackMsg(err?.response?.data?.message || "Operation failed"),
   });
 
   const generateInvMut = useMutation({
@@ -95,6 +96,7 @@ function Billing() {
       setSnackMsg("Invoice generated");
       setSaved(true);
     },
+    onError: (err) => setSnackMsg(err?.response?.data?.message || "Operation failed"),
   });
 
   const updateInvStatusMut = useMutation({
@@ -104,6 +106,7 @@ function Billing() {
       setSnackMsg(`Invoice ${vars.status.toLowerCase()}`);
       setSaved(true);
     },
+    onError: (err) => setSnackMsg(err?.response?.data?.message || "Operation failed"),
   });
 
   const recordPayMut = useMutation({
@@ -121,6 +124,7 @@ function Billing() {
       setSnackMsg("Payment recorded");
       setSaved(true);
     },
+    onError: (err) => setSnackMsg(err?.response?.data?.message || "Operation failed"),
   });
 
   const folioLines = folio?.lines || [];
@@ -141,7 +145,11 @@ function Billing() {
     date: line.date ? new Date(line.date).toLocaleDateString() : "N/A",
     actions: line.id?.startsWith("manual-") ? (
       <MDButton variant="text" color="error" size="small"
-        onClick={() => voidMut.mutate(line.id)}
+        onClick={() => {
+          if (window.confirm("Void this charge? This cannot be undone.")) {
+            voidMut.mutate(line.id);
+          }
+        }}
         disabled={voidMut.isPending}
         title="Void charge"
       >
@@ -282,7 +290,11 @@ function Billing() {
                           )}
                           {inv.status === "ISSUED" && (
                             <MDButton size="small" variant="text" color="success"
-                              onClick={() => updateInvStatusMut.mutate({ id: inv.id, status: "PAID" })}>
+                              onClick={() => {
+                                if (window.confirm("Mark this invoice as PAID?")) {
+                                  updateInvStatusMut.mutate({ id: inv.id, status: "PAID" });
+                                }
+                              }}>
                               <Icon fontSize="small">check_circle</Icon>
                             </MDButton>
                           )}
@@ -302,7 +314,12 @@ function Billing() {
             <MenuItem onClick={() => { setInvMenu(null); updateInvStatusMut.mutate({ id: invTarget.id, status: "PAID" }); }}>
               <Icon fontSize="small" sx={{ mr: 1 }}>check_circle</Icon> Mark Paid
             </MenuItem>
-            <MenuItem onClick={() => { setInvMenu(null); updateInvStatusMut.mutate({ id: invTarget.id, status: "VOID" }); }}>
+            <MenuItem onClick={() => {
+              setInvMenu(null);
+              if (window.confirm("Void this invoice? This cannot be undone.")) {
+                updateInvStatusMut.mutate({ id: invTarget.id, status: "VOID" });
+              }
+            }}>
               <Icon fontSize="small" sx={{ mr: 1 }}>cancel</Icon> Void
             </MenuItem>
           </Menu>
@@ -358,7 +375,7 @@ function Billing() {
         <DialogActions>
           <MDButton onClick={() => setChargeOpen(false)} color="secondary">Cancel</MDButton>
           <MDButton variant="gradient" color="success" onClick={() => chargeMutation.mutate()}
-            disabled={!chargeAmount || !chargeDesc || chargeMutation.isPending}>
+            disabled={!chargeAmount || parseFloat(chargeAmount) <= 0 || !chargeDesc || chargeMutation.isPending}>
             {chargeMutation.isPending ? "Adding..." : "Add Charge"}
           </MDButton>
         </DialogActions>
@@ -389,7 +406,7 @@ function Billing() {
         <DialogActions>
           <MDButton onClick={() => setPayOpen(false)} color="secondary">Cancel</MDButton>
           <MDButton variant="gradient" color="warning" onClick={() => recordPayMut.mutate()}
-            disabled={!payAmount || recordPayMut.isPending}>
+            disabled={!payAmount || parseFloat(payAmount) <= 0 || recordPayMut.isPending}>
             {recordPayMut.isPending ? "Recording..." : "Record Payment"}
           </MDButton>
         </DialogActions>

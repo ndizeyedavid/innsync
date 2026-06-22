@@ -22,6 +22,7 @@ function FeatureFlags() {
   const toggleMut = useMutation({
     mutationFn: ({ key, enabled }) => hotelManagerAPI.updateFeatureFlag(key, { enabled }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["featureFlags"] }),
+    onError: () => {},
   });
 
   return (
@@ -60,7 +61,11 @@ function FeatureFlags() {
                           )}
                           <Tooltip title={flag.enabled ? "Enabled" : "Disabled"}>
                             <Switch checked={flag.enabled}
-                              onChange={() => toggleMut.mutate({ key: flag.key, enabled: !flag.enabled })}
+                              onChange={() => {
+  if (window.confirm("Toggle this feature flag? This may affect production behavior.")) {
+    toggleMut.mutate({ key: flag.key, enabled: !flag.enabled });
+  }
+}}
                               disabled={toggleMut.isPending} />
                           </Tooltip>
                         </MDBox>

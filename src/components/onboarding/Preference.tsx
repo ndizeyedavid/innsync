@@ -3,7 +3,7 @@ import { Text, TextInput, View, TouchableOpacity } from "react-native";
 import SelectField from "../SelectField";
 import { roomOptions } from "../../constants/roomOptions";
 import { bedTypes } from "../../constants/bedTypes";
-import { floorPreference } from "../../constants/floorPreference";
+import { floorPreference as floorPreferenceOptions } from "../../constants/floorPreference";
 import MealPlanButton from "../MealPlanButton";
 import { mealPlans } from "../../constants/mealPlans";
 import { dietaryRestrictionOptions } from "../../constants/dietaryRestrictions";
@@ -85,7 +85,7 @@ export default function Preference({
               label="Floor Preference"
               placeholder="Choose your floor preference"
               iconName="layers-outline"
-              items={floorPreference}
+              items={floorPreferenceOptions}
               selectedValue={floorPreference}
               onValueChange={setFloorPreference}
             />

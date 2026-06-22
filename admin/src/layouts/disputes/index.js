@@ -41,11 +41,13 @@ function Disputes() {
   const resolveMut = useMutation({
     mutationFn: ({ id, resolution }) => hotelManagerAPI.resolveDispute(id, resolution),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["hotelDisputes"] }); setActionTarget(null); setResolution(""); },
+    onError: () => {},
   });
 
   const rejectMut = useMutation({
     mutationFn: ({ id, resolution }) => hotelManagerAPI.rejectDispute(id, resolution),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["hotelDisputes"] }); setActionTarget(null); setResolution(""); },
+    onError: () => {},
   });
 
   const openFirst = (disputes || []).filter((d) => d.status === "OPEN");

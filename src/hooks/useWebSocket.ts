@@ -1,6 +1,6 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import socketService from '../utils/socket';
-import { OrderUpdateEvent, DigitalKeyEvent, NotificationEvent } from '../api/types';
+import { OrderUpdateEvent, NotificationEvent } from '../api/types';
 
 /**
  * Custom hook for WebSocket connections
@@ -42,23 +42,6 @@ export function useOrderUpdates(callback: (data: OrderUpdateEvent) => void) {
       
       return () => {
         socketService.offOrderUpdate(callback);
-      };
-    }
-  }, [isConnected, callback]);
-}
-
-/**
- * Hook for listening to digital key events via WebSocket
- */
-export function useDigitalKeyEvents(callback: (data: DigitalKeyEvent) => void) {
-  const { isConnected } = useWebSocket();
-
-  useEffect(() => {
-    if (isConnected) {
-      socketService.onDigitalKeyEvent(callback);
-      
-      return () => {
-        socketService.offDigitalKeyEvent(callback);
       };
     }
   }, [isConnected, callback]);

@@ -80,20 +80,24 @@ function Rooms() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hotelRooms"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelHousekeeping"] });
       setDialogOpen(false);
       setEditing(null);
       setForm(emptyForm);
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => hotelManagerAPI.deleteRoom(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hotelRooms"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelHousekeeping"] });
       setDeleteTarget(null);
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const filteredRooms = (rooms || []).filter((r) => {
@@ -222,11 +226,11 @@ function Rooms() {
                               </MDBox>
                             )}
                             <MDBox mt={2} display="flex" gap={1}>
-                              <MDButton variant="outlined" color="info" size="small" sx={{ flex: 1 }}
+                              <MDButton aria-label="Edit room" variant="outlined" color="info" size="small" sx={{ flex: 1 }}
                                 onClick={() => openEdit(room)}>
                                 Edit
                               </MDButton>
-                              <MDButton variant="outlined" color="error" size="small"
+                              <MDButton aria-label="Delete room" variant="outlined" color="error" size="small"
                                 onClick={() => setDeleteTarget(room)}>
                                 <Icon>delete</Icon>
                               </MDButton>
@@ -301,7 +305,7 @@ function Rooms() {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <MDButton onClick={() => setDialogOpen(false)} color="secondary" variant="outlined">Cancel</MDButton>
           <MDButton variant="gradient" color="secondary" onClick={() => saveMutation.mutate(editing ? { ...form, id: editing.id } : form)}
-            disabled={!form.number || !form.price || saveMutation.isPending}>
+            disabled={!form.number || !form.price || parseFloat(form.price) <= 0 || saveMutation.isPending}>
             {saveMutation.isPending ? "Saving..." : editing ? "Update Room" : "Create Room"}
           </MDButton>
         </DialogActions>

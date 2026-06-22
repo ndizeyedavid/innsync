@@ -37,17 +37,29 @@ function GuestDetail() {
 
   const checkInMut = useMutation({
     mutationFn: () => hotelManagerAPI.checkIn(stayId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] });
+      queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+    },
+    onError: () => {},
   });
 
   const checkOutMut = useMutation({
     mutationFn: () => hotelManagerAPI.checkOut(stayId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] });
+      queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+    },
+    onError: () => {},
   });
 
   const cancelMut = useMutation({
     mutationFn: () => hotelManagerAPI.cancelStay(stayId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStay", stayId] });
+      queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+    },
+    onError: () => {},
   });
 
   if (isLoading) return (
@@ -99,7 +111,7 @@ function GuestDetail() {
                   <Grid item xs={12} md={6}>
                     <MDTypography variant="body2" color="text"><strong>Adults:</strong> {stay?.adults || 0}</MDTypography>
                     <MDTypography variant="body2" color="text" mt={1}><strong>Children:</strong> {stay?.children || 0}</MDTypography>
-                    <MDTypography variant="body2" color="text" mt={1}><strong>Room:</strong> {stay?.selectedRoomId || "Not assigned"}</MDTypography>
+                    <MDTypography variant="body2" color="text" mt={1}><strong>Room:</strong> {stay?.selectedRoomId ? "Assigned" : "Not assigned"}</MDTypography>
                   </Grid>
                 </Grid>
                 <MDBox mt={3} display="flex" gap={2} flexWrap="wrap">

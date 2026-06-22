@@ -57,7 +57,7 @@ function Configurator() {
     >
       <MDBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
         <MDTypography variant="h5">Configurator</MDTypography>
-        <IconButton color="inherit" onClick={handleOpenConfigurator} sx={{ "&:hover": { color: "dark" } }}>
+        <IconButton color="inherit" aria-label="Close settings" onClick={handleOpenConfigurator} sx={{ "&:hover": { color: "dark" } }}>
           <Icon fontSize="medium">close</Icon>
         </IconButton>
       </MDBox>

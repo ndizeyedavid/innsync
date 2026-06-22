@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from "react-native";
 import { ToastType } from "../contexts/ToastContext";
+// @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface ToastProps {

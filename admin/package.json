@@ -27,14 +27,14 @@
     "react-scripts": "5.0.1",
     "react-table": "7.8.0",
     "socket.io-client": "^4.8.1",
-    "stylis": "4.1.4",
-    "yup": "1.1.1"
+    "stylis": "4.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "lint": "eslint src --ext .js,.jsx",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start"
   },
   "eslintConfig": {

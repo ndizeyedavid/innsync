@@ -58,11 +58,13 @@ function Housekeeping() {
   const markClean = useMutation({
     mutationFn: (id) => hotelManagerAPI.updateHousekeepingStatus(id, "clean"),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelHousekeeping"] }),
+    onError: () => setSaved(true),
   });
 
   const markDirty = useMutation({
     mutationFn: (id) => hotelManagerAPI.updateHousekeepingStatus(id, "dirty"),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelHousekeeping"] }),
+    onError: () => setSaved(true),
   });
 
   const { data: staffList } = useQuery({
@@ -76,6 +78,7 @@ function Housekeeping() {
       queryClient.invalidateQueries({ queryKey: ["hotelHousekeeping"] });
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const assignTask = useMutation({
@@ -88,6 +91,7 @@ function Housekeeping() {
       setTaskStaff("");
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const bulkCleanMut = useMutation({
@@ -97,6 +101,7 @@ function Housekeeping() {
       setSelected([]);
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const bulkAssignMut = useMutation({
@@ -108,6 +113,7 @@ function Housekeeping() {
       setBulkStaff("");
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const bulkMaintMut = useMutation({
@@ -117,6 +123,7 @@ function Housekeeping() {
       setSelected([]);
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const rooms = (tasks || []).map((t) => {

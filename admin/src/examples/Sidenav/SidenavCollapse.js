@@ -44,6 +44,7 @@ function SidenavCollapse({ icon, name, active, ...rest }) {
     <ListItem component="li">
       <MDBox
         {...rest}
+        aria-current={active ? "page" : undefined}
         sx={(theme) =>
           collapseItem(theme, {
             active,

@@ -13,23 +13,22 @@ export function useWebSocketNotifications() {
   }, [queryClient]);
 
   useEffect(() => {
-    if (!user?.accessToken) return;
+    const token = localStorage.getItem("adminToken");
+    if (!user || !token) return;
 
-    const socket = io(`${process.env.REACT_APP_API_URL || "http://localhost:3000"}/api/v1/realtime/notifications`, {
-      auth: { token: user.accessToken },
+    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:3000";
+    const wsUrl = `${baseUrl.replace(/\/api\/v1\/?$/, "")}/realtime/notifications`;
+
+    const socket = io(wsUrl, {
+      auth: { token },
       transports: ["websocket", "polling"],
-    });
-
-    socket.on("connect", () => {
-      console.log("[WS] Notifications connected");
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
     });
 
     socket.on("notification.new", () => {
       onNewNotification();
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log("[WS] Notifications disconnected:", reason);
     });
 
     socketRef.current = socket;
@@ -38,5 +37,5 @@ export function useWebSocketNotifications() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [user?.accessToken, onNewNotification]);
+  }, [user, onNewNotification]);
 }

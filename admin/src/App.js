@@ -97,6 +97,9 @@ function AppContent() {
         if (route.protected && !user) {
           return null;
         }
+        if (route.roles && user && !route.roles.includes(user.role)) {
+          return null;
+        }
         return <Route exact path={route.route} element={route.component} key={route.key} />;
       }
 

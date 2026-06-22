@@ -47,6 +47,7 @@ function Staff() {
     mutationFn: (dto) => hotelManagerAPI.inviteStaff(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hotelStaff"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelHousekeeping"] });
       setInviteOpen(false);
       setInviteForm({ name: "", email: "", password: "" });
       setInviteError("");
@@ -56,12 +57,20 @@ function Staff() {
 
   const roleMut = useMutation({
     mutationFn: ({ id, role }) => hotelManagerAPI.updateStaffRole(id, role),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStaff"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStaff"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelHousekeeping"] });
+    },
+    onError: () => {},
   });
 
   const removeMut = useMutation({
     mutationFn: (id) => hotelManagerAPI.removeStaff(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStaff"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStaff"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelHousekeeping"] });
+    },
+    onError: () => {},
   });
 
   const handleInvite = (e) => {
@@ -91,7 +100,7 @@ function Staff() {
     joined: <MDTypography variant="caption">{new Date(s.createdAt).toLocaleDateString()}</MDTypography>,
     actions: (
       <Tooltip title="Remove staff">
-        <IconButton size="small" color="error" disabled={removeMut.isPending}
+        <IconButton aria-label="Remove staff member" size="small" color="error" disabled={removeMut.isPending}
           onClick={() => { if (window.confirm("Remove this staff member?")) removeMut.mutate(s.id); }}>
           <Icon fontSize="small">delete</Icon>
         </IconButton>

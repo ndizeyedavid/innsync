@@ -55,6 +55,7 @@ function Orders() {
       queryClient.invalidateQueries({ queryKey: ["hotelOrders"] });
       queryClient.invalidateQueries({ queryKey: ["hotelDashboard"] });
     },
+    onError: () => {},
   });
 
   const columns = [

@@ -56,7 +56,7 @@ export default function HotelSearchScreen() {
     (hotel) =>
       hotel.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       hotel.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      hotel.address.toLowerCase().includes(searchQuery.toLowerCase()),
+      hotel.address?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleSelectHotel = (hotel: Hotel) => {

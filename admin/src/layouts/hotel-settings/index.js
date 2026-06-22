@@ -24,6 +24,7 @@ function HotelSettings() {
   const [form, setForm] = useState({});
   const [saved, setSaved] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isDirty, setIsDirty] = useState(false);
 
   const { data: hotel, isLoading, error } = useQuery({
     queryKey: ["hotelSettings"],
@@ -31,18 +32,24 @@ function HotelSettings() {
   });
 
   useEffect(() => {
-    if (hotel) setForm(hotel);
-  }, [hotel]);
+    if (hotel && !isDirty) setForm(hotel);
+  }, [hotel, isDirty]);
 
   const saveMutation = useMutation({
     mutationFn: (data) => hotelManagerAPI.updateHotelSettings(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hotelSettings"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelDashboard"] });
+      setIsDirty(false);
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
-  const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  const update = (field) => (e) => {
+    setIsDirty(true);
+    setForm((f) => ({ ...f, [field]: e.target.value }));
+  };
 
   const validate = () => {
     const e = {};

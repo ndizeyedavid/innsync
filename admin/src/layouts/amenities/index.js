@@ -53,6 +53,7 @@ function Amenities() {
   const toggleAvailability = useMutation({
     mutationFn: ({ id, isAvailable }) => hotelManagerAPI.updateAmenity(id, { isAvailable }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelAmenities"] }),
+    onError: () => setSaved(true),
   });
 
   const saveMutation = useMutation({
@@ -73,6 +74,7 @@ function Amenities() {
       setForm(emptyForm);
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const deleteMutation = useMutation({
@@ -82,6 +84,7 @@ function Amenities() {
       setDeleteTarget(null);
       setSaved(true);
     },
+    onError: () => setSaved(true),
   });
 
   const openAdd = () => { setEditing(null); setForm(emptyForm); setDialogOpen(true); };

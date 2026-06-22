@@ -28,6 +28,7 @@ function DigitalKeys() {
   const revokeKey = useMutation({
     mutationFn: (id) => hotelManagerAPI.revokeDigitalKey(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelDigitalKeys"] }),
+    onError: () => {},
   });
 
   const isActive = (key) => !key.revokedAt && new Date(key.expiresAt) > new Date();
@@ -99,7 +100,11 @@ function DigitalKeys() {
                               {active && (
                                 <MDButton
                                   variant="outlined" color="error" size="small" fullWidth
-                                  onClick={() => revokeKey.mutate(key.id)}
+                                  onClick={() => {
+  if (window.confirm("Revoke this digital key? The guest will no longer be able to unlock their room.")) {
+    revokeKey.mutate(key.id);
+  }
+}}
                                   disabled={revokeKey.isPending}
                                 >
                                   {revokeKey.isPending ? "..." : "Revoke"}

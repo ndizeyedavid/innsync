@@ -13,17 +13,17 @@ export default function OrderProgress({ order }: OrderProgressProps) {
   // Map order status to progress steps
   const getStatusText = () => {
     switch (order.status) {
-      case "pending":
+      case "PENDING_REMOTE":
         return "Pending";
-      case "preparing":
+      case "PREPARING":
         return "Preparing";
-      case "on-the-way":
+      case "ON_THE_WAY":
         return "On the way";
-      case "delivered":
+      case "DELIVERED":
         return "Delivered";
-      case "cancelled":
+      case "CANCELLED":
         return "Cancelled";
-      case "failed":
+      case "FAILED":
         return "Failed";
       default:
         return "Processing";
@@ -33,11 +33,11 @@ export default function OrderProgress({ order }: OrderProgressProps) {
   // Get completed steps based on order status
   const getCompletedSteps = () => {
     const steps = ["Preparing", "On the way", "Delivered"];
-    const statusOrder = ["pending", "preparing", "on-the-way", "delivered"];
+    const statusOrder = ["PENDING_REMOTE", "PREPARING", "ON_THE_WAY", "DELIVERED"];
     const currentIndex = statusOrder.indexOf(order.status);
 
     return steps.map((step, index) => {
-      if (order.status === "delivered") {
+      if (order.status === "DELIVERED") {
         return { text: step, isComplete: true };
       }
       return { text: step, isComplete: index < currentIndex };
@@ -64,7 +64,7 @@ export default function OrderProgress({ order }: OrderProgressProps) {
 
         <View>
           <Text className="text-[24px] text-right text-navy">
-            ${(order.total / 100).toFixed(2)}
+            ${(order.totalCents / 100).toFixed(2)}
           </Text>
           <Text className="text-right text-[10px] text-gray-500">
             CHARGED TO

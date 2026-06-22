@@ -78,7 +78,7 @@ export default function ViewFolioScreen() {
       <View className="bg-navy rounded-2xl p-5 mt-4">
         <Text className="text-gray-400 text-sm mb-2">TOTAL BALANCE</Text>
         <Text className="text-white text-4xl font-bold mb-4">
-          {folio ? `${folio.currency} ${folio.balanceDue.toFixed(2)}` : "$0.00"}
+          {folio ? `${folio.currency} ${(folio.totalCents / 100).toFixed(2)}` : "$0.00"}
         </Text>
 
         <View className="flex-row justify-between border-t border-gray-700 pt-3">
@@ -86,7 +86,7 @@ export default function ViewFolioScreen() {
             <Text className="text-gray-400 text-xs">TOTAL</Text>
             <Text className="text-white text-lg font-semibold">
               {folio
-                ? `${folio.currency} ${folio.totalAmount.toFixed(2)}`
+                ? `${folio.currency} ${(folio.totalCents / 100).toFixed(2)}`
                 : "$0.00"}
             </Text>
           </View>
@@ -99,14 +99,13 @@ export default function ViewFolioScreen() {
           <View>
             <Text className="text-xs text-gray-500">GUEST</Text>
             <Text className="text-lg font-semibold text-navy">
-              {folio?.guestName || user?.name || "Guest"}
+              {user?.name || "Guest"}
             </Text>
           </View>
           <View className="text-right">
             <Text className="text-xs text-gray-500">ROOM</Text>
             <Text className="text-lg font-semibold text-navy">
-              {folio?.roomNumber ||
-                currentStay?.roomPreference ||
+              {currentStay?.roomPreference ||
                 "Not assigned"}
             </Text>
           </View>
@@ -155,7 +154,7 @@ export default function ViewFolioScreen() {
                   </View>
                   <View className="flex-col items-end">
                     <Text className="text-lg font-bold text-navy">
-                      {item.currency} {item.amount.toFixed(2)}
+                      {item.currency} {(item.amountCents / 100).toFixed(2)}
                     </Text>
                   </View>
                 </View>

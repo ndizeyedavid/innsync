@@ -145,12 +145,12 @@ export default function ItineraryScreen() {
       ? require("../assets/images/yoga.jpg")
       : require("../assets/images/meal.png"),
     time: `${item.startTime.split("T")[1].substring(0, 5)} - ${item.endTime ? item.endTime.split("T")[1].substring(0, 5) : ""}`,
-    isBooked: item.status === "CONFIRMED" || item.status === "COMPLETED",
+    isBooked: item.status === "booked" || item.status === "completed",
     title: item.title,
     location: item.location || "Hotel",
-    description: item.description || "",
+    description: item.notes || "",
     isIncluded: true,
-    isConfirmed: item.status === "CONFIRMED",
+    isConfirmed: item.status === "booked",
   }));
 
   // Map stay properties to what screen expects

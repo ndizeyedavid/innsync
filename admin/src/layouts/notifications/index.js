@@ -30,6 +30,7 @@ function Notifications() {
   const markReadMut = useMutation({
     mutationFn: (id) => hotelManagerAPI.markNotificationRead(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["adminNotifications"] }),
+    onError: () => {},
   });
 
   const unreadCount = (notifications || []).filter((n) => !n.readAt).length;

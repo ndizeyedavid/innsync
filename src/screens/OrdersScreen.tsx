@@ -146,8 +146,8 @@ export default function OrdersScreen() {
       // Check for price in multiple possible fields
       if (typeof item.price === "number") {
         priceValue = item.price;
-      } else if (typeof item.amount === "number") {
-        priceValue = item.amount;
+      } else if (typeof (item as any).amount === "number") {
+        priceValue = (item as any).amount;
       } else if (typeof (item as any).priceCents === "number") {
         priceValue = (item as any).priceCents / 100;
       } else if (typeof (item as any).priceInCents === "number") {
@@ -254,7 +254,7 @@ export default function OrdersScreen() {
             notes: notes || undefined,
           },
         ],
-        specialInstructions: notes || undefined,
+        notes: notes || undefined,
       };
 
       const newOrder = await ordersService.placeOrder(orderDto);

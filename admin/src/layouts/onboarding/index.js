@@ -27,7 +27,7 @@ function Onboarding() {
   });
 
   useEffect(() => {
-    if (existingSettings?.name && existingSettings.name !== "Demo Hotel") {
+    if (existingSettings?.name && existingSettings.name.trim().length > 0) {
       navigate("/dashboard", { replace: true });
     }
   }, [existingSettings, navigate]);

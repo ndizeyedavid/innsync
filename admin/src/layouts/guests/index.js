@@ -36,17 +36,29 @@ function Guests() {
 
   const checkInMut = useMutation({
     mutationFn: (stayId) => hotelManagerAPI.checkIn(stayId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelDashboard"] });
+    },
+    onError: () => {},
   });
 
   const checkOutMut = useMutation({
     mutationFn: (stayId) => hotelManagerAPI.checkOut(stayId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelDashboard"] });
+    },
+    onError: () => {},
   });
 
   const cancelMut = useMutation({
     mutationFn: (stayId) => hotelManagerAPI.cancelStay(stayId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["hotelStays"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hotelStays"] });
+      queryClient.invalidateQueries({ queryKey: ["hotelDashboard"] });
+    },
+    onError: () => {},
   });
 
   const columns = [
@@ -74,27 +86,27 @@ function Guests() {
       <MDBox display="flex" gap={0.5}>
         {stay.status === "CONFIRMED" && (
           <Tooltip title="Check in">
-            <IconButton size="small" color="success" onClick={() => checkInMut.mutate(stay.id)}>
+            <IconButton aria-label="Check in guest" size="small" color="success" onClick={() => checkInMut.mutate(stay.id)}>
               <span style={{ fontSize: 18 }}>⇥</span>
             </IconButton>
           </Tooltip>
         )}
         {stay.status === "CHECKED_IN" && (
           <Tooltip title="Check out">
-            <IconButton size="small" color="warning" onClick={() => checkOutMut.mutate(stay.id)}>
+            <IconButton aria-label="Check out guest" size="small" color="warning" onClick={() => checkOutMut.mutate(stay.id)}>
               <span style={{ fontSize: 18 }}>⇤</span>
             </IconButton>
           </Tooltip>
         )}
         {(stay.status === "CONFIRMED" || stay.status === "CHECKED_IN") && (
           <Tooltip title="Cancel stay">
-            <IconButton size="small" color="error" onClick={() => { if (window.confirm("Cancel this stay?")) cancelMut.mutate(stay.id); }}>
+            <IconButton aria-label="Cancel stay" size="small" color="error" onClick={() => { if (window.confirm("Cancel this stay?")) cancelMut.mutate(stay.id); }}>
               <Icon fontSize="small">cancel</Icon>
             </IconButton>
           </Tooltip>
         )}
         <Tooltip title="View details">
-          <IconButton size="small" color="info" onClick={() => navigate(`/guests/${stay.id}`)}>
+          <IconButton aria-label="View guest details" size="small" color="info" onClick={() => navigate(`/guests/${stay.id}`)}>
             <span style={{ fontSize: 18 }}>→</span>
           </IconButton>
         </Tooltip>

@@ -1,16 +1,7 @@
 /**
 =========================================================
-* Material Dashboard 2 React - v2.2.0
+* InnSync Hotel Dashboard
 =========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
 // prop-types is a library for typechecking of props
@@ -32,14 +23,7 @@ import Footer from "layouts/authentication/components/Footer";
 function BasicLayout({ image, children }) {
   return (
     <PageLayout>
-      <DefaultNavbar
-        action={{
-          type: "external",
-          route: "https://creative-tim.com/product/material-dashboard-react",
-          label: "free download",
-          color: "dark",
-        }}
-      />
+      <DefaultNavbar />
       <MDBox
         position="absolute"
         width="100%"

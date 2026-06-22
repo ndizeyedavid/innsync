@@ -27,7 +27,11 @@ export const CONFIG = {
 
   // WebSocket Configuration
   WEBSOCKET: {
-    URL: __DEV__ ? "http://localhost:3000" : "https://api.innsync.com",
+    URL: __DEV__ ? "http://192.168.0.225:3000" : "https://api.innsync.com",
+    NAMESPACES: {
+      ORDERS: "/realtime/orders",
+      NOTIFICATIONS: "/realtime/notifications",
+    },
     RECONNECT_ATTEMPTS: 5,
     RECONNECT_DELAY: 3000,
   },

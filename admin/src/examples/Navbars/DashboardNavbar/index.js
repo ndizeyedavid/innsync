@@ -148,6 +148,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 size="small"
                 disableRipple
                 color="inherit"
+                aria-label="Toggle navigation sidebar"
                 sx={navbarMobileMenu}
                 onClick={handleMiniSidenav}
               >
@@ -159,6 +160,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 size="small"
                 disableRipple
                 color="inherit"
+                aria-label="Open settings"
                 sx={navbarIconButton}
                 onClick={handleConfiguratorOpen}
               >
@@ -168,6 +170,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 size="small"
                 disableRipple
                 color="inherit"
+                aria-label="View notifications"
                 sx={navbarIconButton}
                 aria-controls="notification-menu"
                 aria-haspopup="true"

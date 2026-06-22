@@ -107,6 +107,7 @@ const routes = [
     route: "/hotel-settings",
     component: <HotelSettings />,
     protected: true,
+    roles: ["ADMIN"],
   },
   {
     type: "collapse",
@@ -116,6 +117,7 @@ const routes = [
     route: "/staff",
     component: <Staff />,
     protected: true,
+    roles: ["ADMIN"],
   },
   {
     type: "collapse",
@@ -125,6 +127,7 @@ const routes = [
     route: "/disputes",
     component: <Disputes />,
     protected: true,
+    roles: ["ADMIN", "MANAGER"],
   },
   {
     type: "collapse",
@@ -134,6 +137,7 @@ const routes = [
     route: "/audit-logs",
     component: <AuditLogs />,
     protected: true,
+    roles: ["ADMIN"],
   },
   {
     type: "collapse",
@@ -143,6 +147,7 @@ const routes = [
     route: "/feature-flags",
     component: <FeatureFlags />,
     protected: true,
+    roles: ["ADMIN"],
   },
   {
     type: "collapse",
@@ -172,7 +177,7 @@ const routes = [
     protected: true,
   },
   {
-    type: "collapse",
+    type: "hidden",
     name: "Sign In",
     key: "sign-in",
     icon: <Icon fontSize="small">login</Icon>,
@@ -180,7 +185,7 @@ const routes = [
     component: <SignIn />,
   },
   {
-    type: "collapse",
+    type: "hidden",
     name: "Sign Up",
     key: "sign-up",
     icon: <Icon fontSize="small">person_add</Icon>,
@@ -188,7 +193,7 @@ const routes = [
     component: <SignUp />,
   },
   {
-    type: "collapse",
+    type: "hidden",
     name: "Reset Password",
     key: "reset-password",
     icon: <Icon fontSize="small">lock_reset</Icon>,

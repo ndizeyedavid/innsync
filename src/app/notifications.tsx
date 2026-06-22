@@ -70,14 +70,16 @@ export default function NotificationsScreen() {
 
   const getIconForType = (type: string) => {
     switch (type) {
-      case "ORDER_UPDATE":
-        return "fast-food-outline";
-      case "DIGITAL_KEY":
-        return "key-outline";
-      case "HOUSEKEEPING":
-        return "home-outline";
-      case "PROMOTION":
-        return "gift-outline";
+      case "SUCCESS":
+        return "checkmark-circle-outline";
+      case "WARNING":
+        return "warning-outline";
+      case "ERROR":
+        return "alert-circle-outline";
+      case "PENDING":
+        return "time-outline";
+      case "INFO":
+        return "information-circle-outline";
       default:
         return "notifications-outline";
     }
@@ -85,14 +87,16 @@ export default function NotificationsScreen() {
 
   const getIconColor = (type: string) => {
     switch (type) {
-      case "ORDER_UPDATE":
-        return "#F59E0B";
-      case "DIGITAL_KEY":
+      case "SUCCESS":
         return "#10B981";
-      case "HOUSEKEEPING":
+      case "WARNING":
+        return "#F59E0B";
+      case "ERROR":
+        return "#EF4444";
+      case "PENDING":
         return "#6366F1";
-      case "PROMOTION":
-        return "#EC4899";
+      case "INFO":
+        return "#3B82F6";
       default:
         return "#6B7280";
     }
@@ -232,20 +236,20 @@ export default function NotificationsScreen() {
                 {notifications.map((notification, index) => (
                   <TouchableOpacity
                     key={notification.id}
-                    onPress={() => !notification.read && handleMarkAsRead(notification.id)}
+                    onPress={() => !notification.readAt && handleMarkAsRead(notification.id)}
                     className={`p-4 border-b border-[#EFEDE7] ${
-                      notification.read ? "bg-white" : "bg-[#F8F7F2]"
+                      notification.readAt ? "bg-white" : "bg-[#F8F7F2]"
                     } ${index === notifications.length - 1 ? "border-b-0" : ""}`}
                   >
                     <View className="flex-row gap-3">
                       <View 
                         className="size-10 rounded-full items-center justify-center"
-                        style={{ backgroundColor: `${getIconColor(notification.type)}20` }}
+                        style={{ backgroundColor: `${getIconColor(notification.kind)}20` }}
                       >
                         <Ionicons 
-                          name={getIconForType(notification.type)} 
+                          name={getIconForType(notification.kind)} 
                           size={20} 
-                          color={getIconColor(notification.type)} 
+                          color={getIconColor(notification.kind)} 
                         />
                       </View>
                       <View className="flex-1">
@@ -253,15 +257,15 @@ export default function NotificationsScreen() {
                           <Text className="text-base font-semibold flex-1">
                             {notification.title}
                           </Text>
-                          {!notification.read && (
+                          {!notification.readAt && (
                             <View className="size-2 bg-[#DC2626] rounded-full ml-2 mt-1" />
                           )}
                         </View>
                         <Text className="text-sm text-[#6E6B63] mt-1">
-                          {notification.message}
+                          {notification.body}
                         </Text>
                         <Text className="text-xs text-[#ACA9A0] mt-2">
-                          {formatDate(notification.createdAt)}
+                          {formatDate(notification.sentAt)}
                         </Text>
                       </View>
                     </View>
