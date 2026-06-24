@@ -23,7 +23,7 @@ export default function SettingItem({
       onPress={onPress}
     >
       <View className="flex-row items-center gap-2">
-        <View className="size-[43px] rounded-lg bg-sand-100 items-center justify-center">
+        <View className="size-[43px] rounded-full bg-sand-100 items-center justify-center">
           <Ionicons name={icon} size={25} color="#283D5A" />
         </View>
         <View className="gap-1">

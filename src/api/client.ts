@@ -92,12 +92,12 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed - clear tokens and redirect to login
+        // Refresh failed - clear tokens and auth state
         const { clearTokens } = require("../utils/storage");
         await clearTokens();
+        const { useAuthStore } = require("../store/auth.store");
+        useAuthStore.getState().clearAuth();
 
-        // Navigate to login (this will need to be handled by the app)
-        // For now, just reject the error
         return Promise.reject(refreshError);
       }
     }

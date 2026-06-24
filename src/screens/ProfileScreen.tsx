@@ -34,7 +34,7 @@ export default function ProfileScreen() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.replace("/login");
+      router.replace("/guest");
     } catch (error) {
       console.error("Sign out error:", error);
     }
@@ -81,7 +81,7 @@ export default function ProfileScreen() {
 
   return (
     <ScreenLayout>
-      <View className="flex-column mb-4">
+      <View className="flex-column">
               <TouchableOpacity
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
