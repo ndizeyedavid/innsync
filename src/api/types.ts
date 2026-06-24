@@ -21,6 +21,11 @@ export interface SignInDto {
   deviceLabel?: string;
 }
 
+export interface GoogleSignInDto {
+  idToken: string;
+  deviceLabel?: string;
+}
+
 export interface SignUpDto {
   email: string;
   phone?: string;

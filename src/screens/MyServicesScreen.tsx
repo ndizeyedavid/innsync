@@ -359,7 +359,7 @@ export default function MyServicesScreen() {
                   activeOpacity={0.7}
                 >
                   <View
-                    className="size-[44px] rounded-xl items-center justify-center mb-3"
+                    className="size-[44px] rounded-full items-center justify-center mb-3"
                     style={{ backgroundColor: `${action.color}15` }}
                   >
                     <Ionicons

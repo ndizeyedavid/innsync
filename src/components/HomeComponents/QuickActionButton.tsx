@@ -21,7 +21,7 @@ export default function QuickActionButton({
       className="bg-white p-3 pb-5 gap-[16px] rounded-2xl w-[48%]"
       onPress={onPress}
     >
-      <View className="size-[40px] rounded-xl bg-sand-100 items-center justify-center">
+      <View className="size-[40px] rounded-full bg-sand-100 items-center justify-center">
         <Ionicons name={icon} size={20} color="#283D5A" />
       </View>
       <View className="gap-1">

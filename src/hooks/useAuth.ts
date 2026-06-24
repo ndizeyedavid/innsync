@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "../store/auth.store";
 import authService from "../services/auth.service";
-import { SignInDto, SignUpDto } from "../api/types";
+import { SignInDto, SignUpDto, GoogleSignInDto } from "../api/types";
 
 /**
  * Custom hook for authentication management
@@ -73,6 +73,22 @@ export function useAuth() {
   /**
    * Sign out current user
    */
+  const signInWithGoogle = async (credentials: GoogleSignInDto) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await authService.signInWithGoogle(credentials);
+
+      return response;
+    } catch (error: any) {
+      setError(error.message || "Google sign in failed");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     try {
       setLoading(true);
@@ -114,6 +130,7 @@ export function useAuth() {
     // Actions
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
     refreshUser,
 

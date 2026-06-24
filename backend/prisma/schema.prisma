@@ -1,0 +1,701 @@
+// InnSync — Prisma schema
+//
+// Conventions:
+//   - ids are CUID2 generated at the application layer.
+//   - money is stored as Int cents + currency code (ISO 4217).
+//   - external-cache tables (suffix *Cache) hold last-known-good snapshots
+//     for HMS-owned data so we can serve degraded responses on outage.
+//   - JSON columns use Prisma's Json type; shapes are versioned and
+//     enforced at the application layer (TS types in src/).
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Enums ──────────────────────────
+
+enum Role {
+  GUEST
+  STAFF
+  CONCIERGE
+  ADMIN
+}
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum StayStatus {
+  PENDING        // reservation drafted, payment not authorized
+  CONFIRMED      // payment authorized, stay scheduled
+  CHECKED_IN     // guest has checked in
+  CHECKED_OUT    // stay completed
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING_REMOTE // we wrote it locally, outbox will dispatch to HMS
+  PREPARING
+  ON_THE_WAY
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+enum OrderCategory {
+  FOOD
+  DRINKS
+  ACTIVITIES
+  ROOM_SERVICE
+  HOUSEKEEPING
+}
+
+enum NotificationChannel {
+  IN_APP
+  PUSH
+  EMAIL
+  SMS
+}
+
+enum NotificationKind {
+  SUCCESS
+  PENDING
+  WARNING
+  ERROR
+  INFO
+  NEUTRAL
+}
+
+enum PaymentStatus {
+  REQUIRES_ACTION
+  AUTHORIZED
+  CAPTURED
+  REFUNDED
+  FAILED
+}
+
+enum DigitalKeyMethod {
+  BLE
+  PIN
+  NFC
+}
+
+enum DigitalKeyResult {
+  SUCCESS
+  FAILED
+  TIMEOUT
+}
+
+enum DisputeStatus {
+  OPEN
+  RESOLVED
+  REJECTED
+}
+
+enum FolioLineCategory {
+  ROOM
+  FOOD
+  SPA
+  ACTIVITY
+  TAX
+  DISCOUNT
+}
+
+// ───────────────────────── Identity & auth ──────────────────────────
+
+model User {
+  id            String   @id
+  email         String   @unique
+  phone         String?  @unique
+  googleId      String?  @unique
+  passwordHash  String
+  name          String
+  role          Role     @default(GUEST)
+  hotelId       String?
+  emailVerified DateTime?
+  phoneVerified DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  hotel        Hotel?    @relation(fields: [hotelId], references: [id])
+  guestProfile GuestProfile?
+  stays        GuestStay[]
+  sessions     AuthSession[]
+  refreshTokens RefreshToken[]
+  notifications Notification[]
+  digitalKeyEvents DigitalKeyEvent[]
+  loyaltyLedger LoyaltyLedgerEntry[]
+  analyticsEvents AnalyticsEvent[]
+  auditLogs     AuditLog[]
+  resetTokens   PasswordResetToken[]
+  paymentMethods PaymentMethod[]
+  paymentIntents PaymentIntent[]
+
+  @@index([createdAt])
+}
+
+model AuthSession {
+  id          String   @id
+  userId      String
+  deviceLabel String?
+  userAgent   String?
+  ip          String?
+  createdAt   DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  revokedAt   DateTime?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId, revokedAt])
+}
+
+model RefreshToken {
+  id         String   @id
+  sessionId  String
+  userId     String
+  tokenHash  String   @unique     // SHA-256 of the actual token; we never store the secret
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  revokedAt  DateTime?
+  replacedById String? @unique   // rotation chain — null if currently active
+
+  session    AuthSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model PasswordResetToken {
+  id        String   @id
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId])
+}
+
+// ───────────────────────── Guest domain (owned) ──────────────────────────
+
+model GuestProfile {
+  id                  String      @id
+  userId              String      @unique
+  loyaltyTier         LoyaltyTier @default(BRONZE)
+  loyaltyPoints       Int         @default(0)
+  dietaryRestrictions String[]    @default([])
+  preferredVibes      String[]    @default([])  // ItineraryVibe codes
+  preferredLanguage   String      @default("en")
+  preferredCurrency   String      @default("USD")
+  // Free-form preferences (frontend-driven shape; validated at app layer)
+  preferences         Json?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GuestStay {
+  id                    String     @id
+  userId                String
+  hotelId               String?    // external hotel id when applicable
+  externalReservationId String?    @unique  // link to HMS (null until provisioned)
+  status                StayStatus @default(PENDING)
+  checkIn               DateTime
+  checkOut              DateTime
+  nights                Int
+  adults                Int        @default(1)
+  children              Int        @default(0)
+  roomPreference        String?
+  bedPreference         String?
+  floorPreference       String?
+  mealPlan              String?
+  specialRequests       String?
+  itineraryVibes        String[]   @default([])
+  dietaryRestrictions   String[]   @default([])
+  // Onboarding flags driven by the frontend's /onboarding flow
+  onboardingCompleted   Boolean    @default(false)
+  paymentAuthorized     Boolean    @default(false)
+  idUploaded            Boolean    @default(false)
+  carbonOffset          Boolean    @default(false)
+  selectedRoomId        String?    // external room id once chosen
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  user                  User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  orders                Order[]
+  itineraryItems        ItineraryItem[]
+  digitalKeys           DigitalKey[]
+  disputes              Dispute[]
+  invoices              Invoice[]
+  paymentIntents        PaymentIntent[]
+
+  @@index([userId, status])
+  @@index([externalReservationId])
+  @@index([hotelId])
+}
+
+model MenuItem {
+  id          String   @id
+  hotelId     String
+  category    String
+  name        String
+  description String?
+  priceCents  Int
+  image       String?
+  prepMinutes Int?
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@index([hotelId, category])
+}
+
+// ───────────────────────── Hotel management (owned) ──────────────────────────
+
+model Hotel {
+  id                 String   @id
+  name               String
+  address            String?
+  description        String?
+  phone              String?
+  email              String?
+  checkInTime        String   @default("14:00")
+  checkOutTime       String   @default("11:00")
+  currency           String   @default("USD")
+  timezone           String   @default("UTC")
+  cancellationPolicy String?
+  socialLinks        Json?
+  imageUrl           String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  amenities          Amenity[]
+  rooms              Room[]
+  menuItems          MenuItem[]
+  staff              User[]
+  invoices           Invoice[]
+}
+
+model Room {
+  id          String   @id
+  hotelId     String
+  number      String
+  type        String
+  priceCents  Int
+  floor       String?
+  imageUrl    String?
+  amenities   String[] @default([])
+  status      String   @default("available")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@unique([hotelId, number])
+  @@index([hotelId, status])
+}
+
+model Amenity {
+  id          String   @id
+  hotelId     String
+  name        String
+  description String?
+  isAvailable Boolean  @default(true)
+  priceCents  Int      @default(0)
+  imageUrl    String?
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hotel       Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  @@index([hotelId])
+}
+
+// ───────────────────────── External-data caches ──────────────────────────
+// These mirror HMS-owned aggregates so we can serve reads under degraded
+// conditions. Truth always lives upstream; we reconcile periodically.
+
+model ReservationCache {
+  externalId   String   @id              // HMS reservation id
+  snapshot     Json                       // full domain-model snapshot
+  fetchedAt    DateTime @default(now())
+  expiresAt    DateTime?
+  staleAfter   DateTime?                  // freshness contract; consult vs. refetch
+
+  @@index([fetchedAt])
+}
+
+model RoomCache {
+  externalId   String   @id
+  hotelId      String?
+  snapshot     Json
+  fetchedAt    DateTime @default(now())
+
+  @@index([hotelId])
+}
+
+model FolioCache {
+  // One per stay (external reservation id)
+  externalReservationId String   @id
+  snapshot              Json
+  totalCents            Int
+  currency              String   @default("USD")
+  fetchedAt             DateTime @default(now())
+}
+
+model RoomServiceTicketCache {
+  externalId   String   @id              // HMS ticket id
+  orderId      String?                    // our internal Order.id for join lookups
+  snapshot     Json
+  fetchedAt    DateTime @default(now())
+
+  @@index([orderId])
+}
+
+model HousekeepingTaskCache {
+  externalId   String   @id
+  hotelId      String?
+  snapshot     Json
+  fetchedAt    DateTime @default(now())
+}
+
+model ActivityCache {
+  externalId   String   @id
+  hotelId      String?
+  day          Int?
+  snapshot     Json
+  fetchedAt    DateTime @default(now())
+
+  @@index([hotelId, day])
+}
+
+// ───────────────────────── Orders (owned shell, HMS body) ──────────────────────────
+
+model Order {
+  id                String        @id
+  guestStayId       String
+  userId            String                            // denormalized for fast user-scope queries
+  idempotencyKey    String        @unique
+  status            OrderStatus   @default(PENDING_REMOTE)
+  category          OrderCategory @default(FOOD)
+  totalCents        Int
+  currency          String        @default("USD")
+  etaMinutes        Int?
+  externalTicketId  String?       @unique
+  placedAt          DateTime      @default(now())
+  deliveredAt       DateTime?
+  cancelledAt       DateTime?
+  lastSyncedAt      DateTime?
+  failureReason     String?
+  metadata          Json?
+
+  stay              GuestStay     @relation(fields: [guestStayId], references: [id], onDelete: Restrict)
+  items             OrderItem[]
+  events            OrderEvent[]
+
+  @@index([userId, status])
+  @@index([guestStayId, placedAt])
+  @@index([status, placedAt])
+}
+
+model OrderItem {
+  id              String   @id
+  orderId         String
+  externalMenuItemId String
+  nameSnapshot    String
+  quantity        Int
+  unitPriceCents  Int
+  note            String?
+  prepMinutes     Int?
+
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model OrderEvent {
+  id          String      @id
+  orderId     String
+  status      OrderStatus
+  occurredAt  DateTime    @default(now())
+  source      String                                  // 'system' | 'hms' | 'staff' | 'guest'
+  payload     Json?
+
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, occurredAt])
+}
+
+// ───────────────────────── Itinerary (owned picks, external catalog) ──────────────────────────
+
+model ItineraryItem {
+  id                  String   @id
+  guestStayId         String
+  externalActivityId  String?                                // null = custom item user added
+  day                 Int
+  startTime           String                                 // "HH:mm" — display only
+  endTime             String?
+  title               String
+  location            String?
+  status              String   @default("planned")           // 'planned' | 'booked' | 'cancelled'
+  permitsRequested    Int?
+  customNotes         String?
+  priceCents          Int?
+  createdAt           DateTime @default(now())
+
+  stay                GuestStay @relation(fields: [guestStayId], references: [id], onDelete: Cascade)
+
+  @@index([guestStayId, day])
+}
+
+// ───────────────────────── Loyalty (owned) ──────────────────────────
+
+model LoyaltyLedgerEntry {
+  id            String   @id
+  userId        String
+  pointsDelta   Int                                    // signed; positive = award, negative = redeem
+  reason        String                                 // 'order' | 'stay' | 'redemption' | 'adjustment'
+  relatedOrderId String?
+  relatedStayId  String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// ───────────────────────── Billing & disputes ──────────────────────────
+
+model Dispute {
+  id              String        @id
+  guestStayId     String
+  folioLineId     String?       // external folio line id, free-text since shapes may vary
+  amountCents     Int?
+  reason          String
+  status          DisputeStatus @default(OPEN)
+  resolution      String?
+  createdAt       DateTime      @default(now())
+  resolvedAt      DateTime?
+
+  stay            GuestStay     @relation(fields: [guestStayId], references: [id], onDelete: Restrict)
+
+  @@index([guestStayId, status])
+}
+
+// ───────────────────────── Payments (we only store tokens) ──────────────────────────
+
+model PaymentMethod {
+  id              String   @id
+  userId          String
+  brand           String                                  // visa | mc | amex | momo
+  last4           String
+  expMonth        Int?
+  expYear         Int?
+  // Token from the payment provider; never card data itself
+  providerCustomerId String?
+  providerPaymentMethodId String
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  deletedAt       DateTime?
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PaymentIntent {
+  id                  String        @id
+  userId              String
+  guestStayId         String?
+  amountCents         Int
+  currency            String        @default("USD")
+  status              PaymentStatus @default(REQUIRES_ACTION)
+  providerIntentId    String        @unique
+  providerCustomerId  String?
+  metadata            Json?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  stay                GuestStay?    @relation(fields: [guestStayId], references: [id], onDelete: SetNull)
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([guestStayId])
+}
+
+// ───────────────────────── Digital key ──────────────────────────
+
+model DigitalKey {
+  id              String   @id
+  guestStayId     String
+  externalRoomId  String
+  issuedAt        DateTime @default(now())
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  pinHash         String?                                // backup PIN, argon2id-hashed
+
+  stay            GuestStay @relation(fields: [guestStayId], references: [id], onDelete: Cascade)
+  events          DigitalKeyEvent[]
+}
+
+model DigitalKeyEvent {
+  id              String           @id
+  digitalKeyId    String
+  userId          String
+  method          DigitalKeyMethod
+  result          DigitalKeyResult
+  attemptCount    Int              @default(1)
+  occurredAt      DateTime         @default(now())
+  metadata        Json?
+
+  key             DigitalKey       @relation(fields: [digitalKeyId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, occurredAt])
+}
+
+// ───────────────────────── Notifications ──────────────────────────
+
+model Notification {
+  id            String              @id
+  userId        String
+  channel       NotificationChannel @default(IN_APP)
+  kind          NotificationKind    @default(INFO)
+  title         String
+  body          String?
+  payload       Json?
+  sentAt        DateTime            @default(now())
+  readAt        DateTime?
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, sentAt])
+}
+
+// ───────────────────────── Outbox + idempotency + audit + analytics ──────────────────────────
+
+model OutboxEvent {
+  id           String   @id
+  aggregateId  String
+  aggregateType String
+  eventType    String
+  payload      Json
+  occurredAt   DateTime @default(now())
+  publishedAt  DateTime?
+  attempts     Int      @default(0)
+  lastError    String?
+  nextAttemptAt DateTime?
+
+  @@index([publishedAt, nextAttemptAt])
+  @@index([aggregateType, aggregateId])
+}
+
+model IdempotencyRecord {
+  // (userId, key, route) is logically unique; we collapse to one PK
+  id              String   @id                          // hash of (userId,key,route)
+  userId          String
+  key             String
+  route           String
+  requestHash     String                                // hash of normalized body
+  responseStatus  Int?
+  responseBody    Json?
+  inFlightUntil   DateTime?                             // first-write-wins lock
+  completedAt     DateTime?
+  expiresAt       DateTime
+
+  @@index([userId, key])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id          String   @id
+  actorUserId String?
+  action      String
+  resourceType String
+  resourceId  String?
+  payload     Json?
+  ip          String?
+  userAgent   String?
+  occurredAt  DateTime @default(now())
+
+  actor       User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, occurredAt])
+  @@index([resourceType, resourceId])
+}
+
+model AnalyticsEvent {
+  // Append-only; partition by occurredAt month in production.
+  id          String   @id
+  userId      String?
+  eventType   String                                    // 'menu.item.viewed' | 'order.placed' | ...
+  properties  Json
+  sessionId   String?
+  occurredAt  DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, occurredAt])
+  @@index([eventType, occurredAt])
+}
+
+// ───────────────────────── Invoice ──────────────────────────
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  VOID
+  CANCELLED
+}
+
+model Invoice {
+  id                String        @id
+  hotelId           String
+  guestStayId       String
+  invoiceNumber     String        @unique
+  status            InvoiceStatus @default(DRAFT)
+  totalCents        Int
+  currency          String        @default("USD")
+  folioSnapshot     Json
+  dueDate           DateTime?
+  notes             String?
+  issuedAt          DateTime?
+  paidAt            DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  hotel             Hotel         @relation(fields: [hotelId], references: [id])
+  stay              GuestStay     @relation(fields: [guestStayId], references: [id])
+
+  @@index([hotelId, status])
+  @@index([guestStayId])
+}
+
+model FeatureFlag {
+  key            String   @id
+  enabled        Boolean  @default(false)
+  rolloutPercent Int      @default(0)
+  scope          String?                                // optional segment expression
+  value          Json?
+  updatedAt      DateTime @updatedAt
+}

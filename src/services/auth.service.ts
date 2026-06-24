@@ -2,6 +2,7 @@ import { authEndpoints } from "../api/endpoints";
 import {
   SignInDto,
   SignUpDto,
+  GoogleSignInDto,
   RefreshTokenDto,
   AuthResponse,
   User,
@@ -40,6 +41,31 @@ class AuthService {
       return result;
     } catch (error) {
       console.error("Sign in error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Sign in with Google ID token
+   */
+  async signInWithGoogle(credentials: GoogleSignInDto): Promise<AuthResponse> {
+    try {
+      const deviceInfo = await getDeviceInfo();
+      const result = await authEndpoints.googleSignIn({
+        ...credentials,
+        deviceLabel: deviceInfo.deviceId,
+      });
+
+      const { tokens, user } = result;
+
+      await setTokens(tokens.accessToken, tokens.refreshToken);
+      await setUserData({ tokens, user });
+
+      useAuthStore.getState().setAuth(user, tokens);
+
+      return result;
+    } catch (error) {
+      console.error("Google sign in error:", error);
       throw error;
     }
   }

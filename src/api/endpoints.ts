@@ -3,6 +3,7 @@ import {
   AuthResponse,
   SignInDto,
   SignUpDto,
+  GoogleSignInDto,
   RefreshTokenDto,
   GuestStay,
   CreateStayDto,
@@ -41,6 +42,11 @@ export const authEndpoints = {
       .then((r) => r.data.data),
 
   signOut: () => apiClient.post("/auth/sign-out"),
+
+  googleSignIn: (dto: GoogleSignInDto) =>
+    apiClient
+      .post<ApiResponse<AuthResponse>>("/auth/google", dto)
+      .then((r) => r.data.data),
 
   getMe: () =>
     apiClient.get<ApiResponse<User>>("/auth/me").then((r) => r.data.data),
