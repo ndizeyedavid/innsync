@@ -8,6 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ScreenLayout from "../layout/ScreenLayout";
+import HomeScreenSkeleton from "../components/SkeletonLayouts/HomeScreenSkeleton";
 import TabHeader from "../components/TabHeader";
 import Notification from "../components/Notification";
 import DigitalKey from "../components/HomeComponents/DigitalKey";
@@ -35,33 +36,28 @@ export default function HomeScreen() {
 
   const quickActions = [
     {
-      icon: "restaurant",
-      title: "Order food",
-      description: "12 min Avg",
+      icon: "sparkles",
+      title: "Plan with AI",
+      description: "AI-powered trip planning",
+      onPress: () => router.push("/ai-itinerary"),
+    },
+    {
+      icon: "heart",
+      title: "For You",
+      description: "Personalized recommendations",
       onPress: () => router.push("/(tabs)/orders"),
     },
     {
-      icon: "calendar-clear",
-      title: "Itinerary",
-      description: currentStay ? "View your itinerary" : "View itinerary",
-      onPress: () => router.push("/(tabs)/itinerary"),
+      icon: "trophy",
+      title: "My Rewards",
+      description: "Loyalty points & perks",
+      onPress: () => router.push("/profile"),
     },
     {
-      icon: "home-outline",
-      title: "Housekeeping",
-      description: "Cleaning, towels, etc..",
-      onPress: () => router.push("/housekeeping"),
-    },
-    {
-      icon: "cash",
-      title: "View folio",
-      description: "Invoice profoma & receipts",
-      onPress: () =>
-        currentStay &&
-        router.push({
-          pathname: "/view-folio",
-          params: { stayId: currentStay.id },
-        }),
+      icon: "notifications",
+      title: "Updates",
+      description: "Messages & alerts",
+      onPress: () => router.push("/notifications"),
     },
   ];
 
@@ -123,9 +119,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <ScreenLayout>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#283D5A" />
-        </View>
+        <HomeScreenSkeleton />
       </ScreenLayout>
     );
   }
@@ -142,7 +136,10 @@ export default function HomeScreen() {
           title="Good Afternoon,"
           description={user?.name || "Guest"}
         />
-        <TouchableOpacity className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative">
+        <TouchableOpacity
+          onPress={() => router.push("/notifications")}
+          className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative"
+        >
           <Ionicons name="notifications-outline" color="#283D5A" size={24} />
           <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" />
         </TouchableOpacity>

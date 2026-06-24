@@ -11,6 +11,7 @@ import {
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import ScreenLayout from "../layout/ScreenLayout";
+import GuestHomeSkeleton from "../components/SkeletonLayouts/GuestHomeSkeleton";
 import HotelCard from "../components/GuestComponents/HotelCard";
 import AmenitiesSection from "../components/GuestComponents/AmenitiesSection";
 import HotelDetailsModal from "../components/GuestComponents/HotelDetailsModal";
@@ -149,9 +150,7 @@ export default function GuestHomeScreen() {
   if (loading) {
     return (
       <ScreenLayout>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#283D5A" />
-        </View>
+        <GuestHomeSkeleton />
       </ScreenLayout>
     );
   }

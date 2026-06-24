@@ -107,8 +107,8 @@ apiClient.interceptors.response.use(
     const apiError: ApiError = {
       statusCode: error.response?.status || 0,
       message:
-        responseData.title ||
         responseData.detail ||
+        responseData.title ||
         responseData.message ||
         error.message ||
         "An error occurred",

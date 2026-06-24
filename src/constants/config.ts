@@ -10,6 +10,14 @@ export const CONFIG = {
 
   // External APIs
   EXTERNAL: {
+    GEMINI: {
+      API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY || "",
+      MODEL: "gemini-2.0-flash",
+    },
+    GROQ: {
+      API_KEY: process.env.EXPO_PUBLIC_GROQ_API_KEY || "",
+      MODEL: "llama-3.1-8b-instant",
+    },
     GOOGLE_MAPS: {
       API_KEY: "",
       PLACES_BASE_URL: "https://maps.googleapis.com/maps/api/place",
@@ -27,7 +35,7 @@ export const CONFIG = {
 
   // WebSocket Configuration
   WEBSOCKET: {
-    URL: __DEV__ ? "http://192.168.0.225:3000" : "https://api.innsync.com",
+    URL: __DEV__ ? "http://192.168.1.83:3000" : "https://api.innsync.com",
     NAMESPACES: {
       ORDERS: "/realtime/orders",
       NOTIFICATIONS: "/realtime/notifications",
@@ -60,5 +68,5 @@ export const CONFIG = {
     DEVICE_ID: "device_id",
   } as const,
 };
-
+console.log(process.env.EXPO_PUBLIC_GROQ_API_KEY);
 export default CONFIG;

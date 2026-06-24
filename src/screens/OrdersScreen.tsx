@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
+import OrdersScreenSkeleton from "../components/SkeletonLayouts/OrdersScreenSkeleton";
 import TabHeader from "../components/TabHeader";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -334,9 +335,7 @@ export default function OrdersScreen() {
       </View>
 
       {loading ? (
-        <Text className="text-center text-gray-500 mt-10">
-          Loading orders...
-        </Text>
+        <OrdersScreenSkeleton />
       ) : (
         <View className="mt-4">
           <Text className="text-[15px] text-gray-500 uppercase">
