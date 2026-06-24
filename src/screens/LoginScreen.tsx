@@ -41,9 +41,12 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [googleRequest, googleResponse, googlePromptAsync] =
-    Google.useAuthRequest({
-      clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-    });
+    Google.useIdTokenAuthRequest(
+      {
+        webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+      },
+      { useProxy: true },
+    );
 
   const handleOptionPress = (option: "email" | "phone") => {
     setSelectedOption(option);

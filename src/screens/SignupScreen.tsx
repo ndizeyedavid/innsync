@@ -38,6 +38,7 @@ export default function SignupScreen() {
   const [googleRequest, googleResponse, googlePromptAsync] =
     Google.useAuthRequest({
       clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+      useProxy: true,
     });
 
   const handleSignUp = async () => {

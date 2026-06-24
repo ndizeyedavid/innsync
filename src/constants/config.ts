@@ -68,5 +68,4 @@ export const CONFIG = {
     DEVICE_ID: "device_id",
   } as const,
 };
-console.log(process.env.EXPO_PUBLIC_GROQ_API_KEY);
 export default CONFIG;
