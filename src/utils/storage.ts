@@ -9,7 +9,24 @@ const STORAGE_KEYS = {
   ONBOARDING_PROGRESS: "onboarding_progress",
   BACKUP_PIN: "backup_pin",
   QR_ACCESS_TOKEN: "qr_access_token",
+  PAYMENT_METHODS: "payment_methods",
 } as const;
+
+export interface SavedPaymentMethod {
+  id: string;
+  type: "card" | "mobile_money" | "apple_pay" | "paypal";
+  name: string;
+  description: string;
+  isDefault: boolean;
+  details: {
+    cardNumber?: string;
+    cardholderName?: string;
+    expiry?: string;
+    provider?: string;
+    phoneNumber?: string;
+    email?: string;
+  };
+}
 
 // Token Management
 export async function setTokens(
@@ -246,4 +263,78 @@ export async function clearQrAccessToken(): Promise<void> {
     console.error("Error clearing QR access token:", error);
     throw error;
   }
+}
+
+// Payment Methods Management
+export async function getPaymentMethods(): Promise<SavedPaymentMethod[]> {
+  try {
+    const raw = await SecureStore.getItemAsync(STORAGE_KEYS.PAYMENT_METHODS);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    console.error("Error getting payment methods:", error);
+    return [];
+  }
+}
+
+export async function savePaymentMethods(
+  methods: SavedPaymentMethod[],
+): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(
+      STORAGE_KEYS.PAYMENT_METHODS,
+      JSON.stringify(methods),
+    );
+  } catch (error) {
+    console.error("Error saving payment methods:", error);
+    throw error;
+  }
+}
+
+export async function addPaymentMethod(
+  method: SavedPaymentMethod,
+): Promise<SavedPaymentMethod[]> {
+  const methods = await getPaymentMethods();
+  if (method.isDefault) {
+    methods.forEach((m) => (m.isDefault = false));
+  }
+  methods.push(method);
+  await savePaymentMethods(methods);
+  return methods;
+}
+
+export async function updatePaymentMethod(
+  id: string,
+  updates: Partial<SavedPaymentMethod>,
+): Promise<SavedPaymentMethod[]> {
+  const methods = await getPaymentMethods();
+  const idx = methods.findIndex((m) => m.id === id);
+  if (idx === -1) return methods;
+  if (updates.isDefault) {
+    methods.forEach((m) => (m.isDefault = false));
+  }
+  methods[idx] = { ...methods[idx], ...updates };
+  await savePaymentMethods(methods);
+  return methods;
+}
+
+export async function deletePaymentMethod(
+  id: string,
+): Promise<SavedPaymentMethod[]> {
+  const methods = await getPaymentMethods();
+  const filtered = methods.filter((m) => m.id !== id);
+  // If we removed the default, make the first remaining the default
+  if (
+    methods.find((m) => m.id === id)?.isDefault &&
+    filtered.length > 0
+  ) {
+    filtered[0].isDefault = true;
+  }
+  await savePaymentMethods(filtered);
+  return filtered;
+}
+
+export async function setDefaultPaymentMethod(
+  id: string,
+): Promise<SavedPaymentMethod[]> {
+  return updatePaymentMethod(id, { isDefault: true });
 }
