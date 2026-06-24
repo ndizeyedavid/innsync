@@ -141,7 +141,7 @@ export default function HomeScreen() {
           className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative"
         >
           <Ionicons name="notifications-outline" color="#283D5A" size={24} />
-          <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" />
+          {/* <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" /> */}
         </TouchableOpacity>
       </View>
       <View className="mt-3">

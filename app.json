@@ -6,6 +6,7 @@
     "web": {
       "output": "static"
     },
+
     "icon": "./src/assets/images/logo/logo-single.png",
     "name": "innsync",
     "slug": "innsync",

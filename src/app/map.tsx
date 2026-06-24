@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TouchableOpacity,
@@ -14,6 +14,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import MapView, { Marker } from "react-native-maps";
 import * as Haptics from "expo-haptics";
 import { StatusBar } from "expo-status-bar";
+import { fetchWeather, WeatherData } from "../services/weather.service";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -58,16 +59,6 @@ const KIGALI_MARKERS = [
     type: "venue",
   },
 ];
-
-interface WeatherData {
-  temp: number;
-  condition: string;
-  feelsLike: number;
-  wind: number;
-  humidity: number;
-  activitySuitability: string;
-  icon: string;
-}
 
 const MOCK_WEATHER: WeatherData = {
   temp: 24,
@@ -182,6 +173,27 @@ const MOCK_NEARBY = [
 export default function MapScreen() {
   const router = useRouter();
   const [activeOverlay, setActiveOverlay] = useState<MapOverlayType>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+
+  // Fetch real weather on mount
+  useEffect(() => {
+    let mounted = true;
+    setWeatherLoading(true);
+    fetchWeather(KIGALI_REGION.latitude, KIGALI_REGION.longitude)
+      .then((data) => {
+        if (mounted) setWeather(data);
+      })
+      .catch(() => {
+        if (mounted) setWeather(null); // fall back to mock
+      })
+      .finally(() => {
+        if (mounted) setWeatherLoading(false);
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  const displayWeather = weather ?? MOCK_WEATHER;
 
   const overlayButtons = [
     { id: "weather" as const, label: "Weather", icon: "cloudy-outline" },
@@ -199,38 +211,56 @@ export default function MapScreen() {
   const renderWeatherPanel = () => (
     <View style={styles.overlayPanel}>
       <Text style={styles.overlayPanelTitle}>Kigali Weather</Text>
-      <View style={styles.weatherMain}>
-        <View style={styles.weatherLeft}>
-          <Text style={styles.weatherTemp}>{MOCK_WEATHER.temp}°C</Text>
-          <Text style={styles.weatherCondition}>{MOCK_WEATHER.condition}</Text>
+      {weatherLoading ? (
+        <View style={{ gap: 10 }}>
+          <View style={[styles.skelBlock, { width: 100, height: 40 }]} />
+          <View style={[styles.skelBlock, { width: 140, height: 16 }]} />
+          <View style={[styles.skelBlock, { width: 120, height: 14 }]} />
+          <View style={[styles.skelBlock, { width: 160, height: 14 }]} />
+          <View style={[styles.skelBlock, { width: 90, height: 14 }]} />
         </View>
-        <View style={styles.weatherRight}>
-          <Ionicons name={MOCK_WEATHER.icon} size={60} color="#4ab3de" />
-        </View>
-      </View>
-      <View style={styles.weatherDetails}>
-        <View style={styles.weatherDetailItem}>
-          <Ionicons name="thermometer-outline" size={20} color="#9CA3AF" />
-          <Text style={styles.weatherDetailText}>
-            Feels like {MOCK_WEATHER.feelsLike}°
+      ) : (
+        <>
+          <View style={styles.weatherMain}>
+            <View style={styles.weatherLeft}>
+              <Text style={styles.weatherTemp}>{displayWeather.temp}°C</Text>
+              <Text style={styles.weatherCondition}>
+                {displayWeather.condition}
+              </Text>
+            </View>
+            <View style={styles.weatherRight}>
+              <Ionicons
+                name={displayWeather.icon}
+                size={60}
+                color="#4ab3de"
+              />
+            </View>
+          </View>
+          <View style={styles.weatherDetails}>
+            <View style={styles.weatherDetailItem}>
+              <Ionicons name="thermometer-outline" size={20} color="#9CA3AF" />
+              <Text style={styles.weatherDetailText}>
+                Feels like {displayWeather.feelsLike}°
+              </Text>
+            </View>
+            <View style={styles.weatherDetailItem}>
+              <Ionicons name="leaf-outline" size={20} color="#9CA3AF" />
+              <Text style={styles.weatherDetailText}>
+                Wind {displayWeather.wind} km/h
+              </Text>
+            </View>
+            <View style={styles.weatherDetailItem}>
+              <Ionicons name="water-outline" size={20} color="#9CA3AF" />
+              <Text style={styles.weatherDetailText}>
+                Humidity {displayWeather.humidity}%
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.weatherSuitability}>
+            {displayWeather.activitySuitability}
           </Text>
-        </View>
-        <View style={styles.weatherDetailItem}>
-          <Ionicons name="leaf-outline" size={20} color="#9CA3AF" />
-          <Text style={styles.weatherDetailText}>
-            Wind {MOCK_WEATHER.wind} km/h
-          </Text>
-        </View>
-        <View style={styles.weatherDetailItem}>
-          <Ionicons name="water-outline" size={20} color="#9CA3AF" />
-          <Text style={styles.weatherDetailText}>
-            Humidity {MOCK_WEATHER.humidity}%
-          </Text>
-        </View>
-      </View>
-      <Text style={styles.weatherSuitability}>
-        {MOCK_WEATHER.activitySuitability}
-      </Text>
+        </>
+      )}
     </View>
   );
 
@@ -562,5 +592,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#4ab3de",
     fontWeight: "500",
+  },
+  skelBlock: {
+    backgroundColor: "#E5E7EB",
+    borderRadius: 8,
   },
 });

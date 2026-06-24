@@ -10,7 +10,7 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import SocialLoginButton from "../components/SocialLoginButton";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -23,6 +23,9 @@ import { useToast } from "../contexts/ToastContext";
 import reservationsService from "../services/reservations.service";
 import { BlurView } from "expo-blur";
 import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -35,11 +38,33 @@ export default function SignupScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const googlePromptRef = useRef(false);
+
   const [googleRequest, googleResponse, googlePromptAsync] =
-    Google.useAuthRequest({
+    Google.useIdTokenAuthRequest({
       clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-      useProxy: true,
+      redirectUri: "https://auth.expo.io/@davidndizeye/innsync",
     });
+
+  useEffect(() => {
+    if (googleResponse?.type !== "success" || !googlePromptRef.current) return;
+    googlePromptRef.current = false;
+    const idToken = googleResponse.params?.id_token;
+    if (!idToken) {
+      showToast("error", "No ID token received", "top");
+      return;
+    }
+    (async () => {
+      try {
+        await signInWithGoogle({ idToken });
+        showToast("success", "Signed up with Google!", "top");
+        router.replace("/welcome");
+      } catch (error: any) {
+        showToast("error", error.message || "Google sign-in failed", "top");
+      }
+    })();
+  }, [googleResponse]);
 
   const handleSignUp = async () => {
     try {
@@ -88,28 +113,9 @@ export default function SignupScreen() {
     }
   };
 
-  // Handle Google auth response
-  useEffect(() => {
-    if (googleResponse?.type === "success") {
-      const idToken = googleResponse.params.id_token;
-      if (idToken) {
-        handleGoogleSignIn(idToken);
-      }
-    }
-  }, [googleResponse]);
-
-  const handleGoogleSignIn = async (idToken: string) => {
-    try {
-      await signInWithGoogle({ idToken });
-      showToast("success", "Signed up with Google!", "top");
-      router.replace("/welcome");
-    } catch (error: any) {
-      showToast(
-        "error",
-        error.message || "Google sign-in failed",
-        "top",
-      );
-    }
+  const handleGoogleSignIn = () => {
+    googlePromptRef.current = true;
+    googlePromptAsync();
   };
 
   return (
@@ -148,7 +154,7 @@ export default function SignupScreen() {
           <SocialLoginButton
             buttonLogo={require("../assets/google-logo.png")}
             buttonText="Google"
-            onPress={() => googlePromptAsync()}
+            onPress={handleGoogleSignIn}
           />
           <SocialLoginButton
             buttonLogo={require("../assets/apple-logo.png")}
