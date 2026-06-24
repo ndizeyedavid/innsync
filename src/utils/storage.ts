@@ -7,6 +7,8 @@ const STORAGE_KEYS = {
   USER_DATA: "user_data",
   DEVICE_ID: "device_id",
   ONBOARDING_PROGRESS: "onboarding_progress",
+  BACKUP_PIN: "backup_pin",
+  QR_ACCESS_TOKEN: "qr_access_token",
 } as const;
 
 // Token Management
@@ -174,6 +176,74 @@ export async function clearOnboardingProgress(): Promise<void> {
     await SecureStore.deleteItemAsync(STORAGE_KEYS.ONBOARDING_PROGRESS);
   } catch (error) {
     console.error("Error clearing onboarding progress:", error);
+    throw error;
+  }
+}
+
+// Backup PIN Management
+export async function setBackupPin(pin: string): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(STORAGE_KEYS.BACKUP_PIN, pin);
+  } catch (error) {
+    console.error("Error storing backup PIN:", error);
+    throw error;
+  }
+}
+
+export async function getBackupPin(): Promise<string | null> {
+  try {
+    return await SecureStore.getItemAsync(STORAGE_KEYS.BACKUP_PIN);
+  } catch (error) {
+    console.error("Error getting backup PIN:", error);
+    return null;
+  }
+}
+
+export async function hasBackupPin(): Promise<boolean> {
+  const pin = await getBackupPin();
+  return pin !== null;
+}
+
+export async function clearBackupPin(): Promise<void> {
+  try {
+    await SecureStore.deleteItemAsync(STORAGE_KEYS.BACKUP_PIN);
+  } catch (error) {
+    console.error("Error clearing backup PIN:", error);
+    throw error;
+  }
+}
+
+// QR Access Token Management
+export async function setQrAccessToken(token: string): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(STORAGE_KEYS.QR_ACCESS_TOKEN, token);
+  } catch (error) {
+    console.error("Error storing QR access token:", error);
+    throw error;
+  }
+}
+
+export async function getQrAccessToken(): Promise<string | null> {
+  try {
+    return await SecureStore.getItemAsync(STORAGE_KEYS.QR_ACCESS_TOKEN);
+  } catch (error) {
+    console.error("Error getting QR access token:", error);
+    return null;
+  }
+}
+
+export async function generateQrAccessToken(): Promise<string> {
+  const token =
+    `innsync_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+  await setQrAccessToken(token);
+  return token;
+}
+
+export async function clearQrAccessToken(): Promise<void> {
+  try {
+    await SecureStore.deleteItemAsync(STORAGE_KEYS.QR_ACCESS_TOKEN);
+  } catch (error) {
+    console.error("Error clearing QR access token:", error);
     throw error;
   }
 }
