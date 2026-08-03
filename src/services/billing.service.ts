@@ -7,8 +7,7 @@ class BillingService {
    */
   async getFolio(stayId: string): Promise<Folio> {
     try {
-      const response = await billingEndpoints.getFolio(stayId);
-      return response.data;
+      return await billingEndpoints.getFolio(stayId);
     } catch (error) {
       console.error('Error fetching folio:', error);
       throw error;

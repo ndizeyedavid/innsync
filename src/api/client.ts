@@ -27,7 +27,7 @@ const apiClient: AxiosInstance = axios.create({
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
-  async (config: AxiosRequestConfig) => {
+  async (config: any) => {
     // Import here to avoid circular dependency
     const { getAccessToken } = require("../utils/storage");
 
@@ -92,24 +92,29 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed - clear tokens and redirect to login
+        // Refresh failed - clear tokens and auth state
         const { clearTokens } = require("../utils/storage");
         await clearTokens();
+        const { useAuthStore } = require("../store/auth.store");
+        useAuthStore.getState().clearAuth();
 
-        // Navigate to login (this will need to be handled by the app)
-        // For now, just reject the error
         return Promise.reject(refreshError);
       }
     }
 
-    // Handle other errors
+    // Handle other errors (backends sends RFC 7807: title/detail)
+    const responseData = (error.response?.data || {}) as Record<string, any>;
     const apiError: ApiError = {
       statusCode: error.response?.status || 0,
       message:
-        error.response?.data?.message || error.message || "An error occurred",
-      error: error.response?.data?.error,
-      timestamp: error.response?.data?.timestamp,
-      path: error.response?.data?.path,
+        responseData.detail ||
+        responseData.title ||
+        responseData.message ||
+        error.message ||
+        "An error occurred",
+      error: responseData.error || responseData.code,
+      timestamp: responseData.timestamp,
+      path: responseData.path || responseData.instance,
     };
 
     return Promise.reject(apiError);
@@ -121,7 +126,7 @@ export async function requestWithRetry<T>(
   requestFn: () => Promise<T>,
   maxRetries: number = API_CONFIG.retryAttempts,
 ): Promise<T> {
-  let lastError: Error;
+  let lastError: Error | undefined;
 
   for (let i = 0; i < maxRetries; i++) {
     try {

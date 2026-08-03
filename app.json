@@ -1,12 +1,20 @@
 {
   "expo": {
-    "scheme": "acme",
+    "scheme": "innsync",
     "userInterfaceStyle": "automatic",
     "orientation": "default",
     "web": {
       "output": "static"
     },
+
+    "icon": "./src/assets/images/logo/logo-single.png",
     "name": "innsync",
-    "slug": "innsync"
+    "slug": "innsync",
+    "extra": {
+      "eas": {
+        "projectId": "306c48cd-7937-40bb-b4e0-aa1e47ccfb6d"
+      }
+    },
+    "owner": "davidndizeye"
   }
 }

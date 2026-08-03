@@ -14,16 +14,22 @@ export default function OrderProgress({ order }: OrderProgressProps) {
   const getStatusText = () => {
     switch (order.status) {
       case "pending":
+      case "PENDING_REMOTE":
         return "Pending";
       case "preparing":
+      case "PREPARING":
         return "Preparing";
       case "on-the-way":
+      case "ON_THE_WAY":
         return "On the way";
       case "delivered":
+      case "DELIVERED":
         return "Delivered";
       case "cancelled":
+      case "CANCELLED":
         return "Cancelled";
       case "failed":
+      case "FAILED":
         return "Failed";
       default:
         return "Processing";
@@ -64,7 +70,7 @@ export default function OrderProgress({ order }: OrderProgressProps) {
 
         <View>
           <Text className="text-[24px] text-right text-navy">
-            ${(order.total / 100).toFixed(2)}
+            ${(((order as any).total ?? order.totalCents ?? 0) / 100).toFixed(2)}
           </Text>
           <Text className="text-right text-[10px] text-gray-500">
             CHARGED TO

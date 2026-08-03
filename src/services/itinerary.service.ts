@@ -32,7 +32,7 @@ class ItineraryService {
    */
   async getScheduledItems(stayId: string): Promise<ItineraryItem[]> {
     const items = await this.getForStay(stayId);
-    return items.filter(item => item.status === 'SCHEDULED');
+    return items.filter(item => item.status === 'booked');
   }
 
   /**
@@ -40,7 +40,7 @@ class ItineraryService {
    */
   async getConfirmedItems(stayId: string): Promise<ItineraryItem[]> {
     const items = await this.getForStay(stayId);
-    return items.filter(item => item.status === 'CONFIRMED');
+    return items.filter(item => item.status === 'booked');
   }
 
   /**
@@ -48,7 +48,7 @@ class ItineraryService {
    */
   async getCompletedItems(stayId: string): Promise<ItineraryItem[]> {
     const items = await this.getForStay(stayId);
-    return items.filter(item => item.status === 'COMPLETED');
+    return items.filter(item => item.status === 'completed');
   }
 }
 

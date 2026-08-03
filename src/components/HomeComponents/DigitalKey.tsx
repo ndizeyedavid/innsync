@@ -27,9 +27,9 @@ export default function DigitalKey({ stay, hotelName }: DigitalKeyProps) {
   const [progress, setProgress] = useState(0);
   const [countdown, setCountdown] = useState(5);
   const lastHapticRef = useRef(0);
-  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const autoLockTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progressRef = useRef(0);
 
   const buttonScale = useRef(new Animated.Value(1)).current;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import TabHeader from "../components/TabHeader";
@@ -8,7 +8,10 @@ import itineraryService from "../services/itinerary.service";
 import reservationsService from "../services/reservations.service";
 import { ItineraryItem, GuestStay } from "../api/types";
 import { useToast } from "../contexts/ToastContext";
-
+import { useRouter } from "expo-router";
+// @ts-ignore
+import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Haptics from "expo-haptics";
 // Helper to generate days between checkIn and checkOut
 const generateStayDays = (checkIn: string, checkOut: string) => {
   const days = [];
@@ -65,10 +68,13 @@ export default function ItineraryScreen() {
   const [itineraryItems, setItineraryItems] = useState<ItineraryItem[]>([]);
   const [currentStay, setCurrentStay] = useState<GuestStay | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { showToast } = useToast();
 
   const scrollViewRef = useRef<ScrollView>(null);
   const dayCardWidth = 100; // Approximate width of each day card + gap
+
+  const router = useRouter();
 
   // Generate stay days when currentStay changes
   const stayDays = useMemo(() => {
@@ -99,6 +105,26 @@ export default function ItineraryScreen() {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const stays = await reservationsService.listMine();
+      const activeStay =
+        stays.find((s) => s.status === "CHECKED_IN") || stays[0];
+      setCurrentStay(activeStay);
+      if (activeStay) {
+        const items = await itineraryService.getForStay(activeStay.id);
+        setItineraryItems(Array.isArray(items) ? items : []);
+      } else {
+        setItineraryItems([]);
+      }
+    } catch {
+      // silent
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   const loadData = async () => {
@@ -140,12 +166,12 @@ export default function ItineraryScreen() {
       ? require("../assets/images/yoga.jpg")
       : require("../assets/images/meal.png"),
     time: `${item.startTime.split("T")[1].substring(0, 5)} - ${item.endTime ? item.endTime.split("T")[1].substring(0, 5) : ""}`,
-    isBooked: item.status === "CONFIRMED" || item.status === "COMPLETED",
+    isBooked: item.status === "booked" || item.status === "completed",
     title: item.title,
     location: item.location || "Hotel",
-    description: item.description || "",
+    description: item.notes || "",
     isIncluded: true,
-    isConfirmed: item.status === "CONFIRMED",
+    isConfirmed: item.status === "booked",
   }));
 
   // Map stay properties to what screen expects
@@ -157,8 +183,8 @@ export default function ItineraryScreen() {
   };
 
   return (
-    <ScreenLayout>
-      <View className="flex-row justify-between items-center">
+    <ScreenLayout refreshing={refreshing} onRefresh={onRefresh}>
+      <View className="flex-row justify-between">
         <TabHeader
           alt={stayDisplay.hotelName}
           title="Your itinerary,"
@@ -169,10 +195,15 @@ export default function ItineraryScreen() {
           }
           descriptionStyle="text-[12px] text-gray-500"
         />
-        <View className="px-[11px] py-[5px] bg-success-light flex-row gap-1 items-center rounded-2xl">
-          <View className="size-[6px] bg-success rounded-full" />
-          <Text className="text-[13px] text-success">LIVE</Text>
-        </View>
+        <TouchableOpacity
+          className="size-[47px] bg-sand-100 rounded-full items-center justify-center"
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/profile");
+          }}
+        >
+          <Ionicons name="person-outline" color="#283D5A" size={24} />
+        </TouchableOpacity>
       </View>
 
       <View className="my-[17px]">

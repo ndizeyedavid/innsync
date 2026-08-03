@@ -1,17 +1,17 @@
 import "../global.css";
-import { Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import { Stack, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../store/auth.store";
-import LoadingScreen from "../components/LoadingScreen";
 import { ToastProvider } from "../contexts/ToastContext";
-import LoadingComponent from "../components/LoadingComponent";
 
 export default function Layout() {
-  const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
+  const router = useRouter();
+  const { isAuthenticated, isLoading, hasInitialized, initializeAuth } =
+    useAuthStore();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const wasAuthenticated = useRef(false);
 
   useEffect(() => {
-    // Initialize authentication on app start
     const initAuth = async () => {
       await initializeAuth();
       setIsInitialLoad(false);
@@ -19,10 +19,15 @@ export default function Layout() {
     initAuth();
   }, []);
 
-  // Only show loading screen on initial load, not on navigation
-  if (isInitialLoad || isLoading) {
-    // return <LoadingComponent />;
-  }
+  // Redirect to guest when session expires mid-session
+  useEffect(() => {
+    if (!isInitialLoad && hasInitialized) {
+      if (wasAuthenticated.current && !isAuthenticated && !isLoading) {
+        router.replace("/guest");
+      }
+      wasAuthenticated.current = isAuthenticated;
+    }
+  }, [isAuthenticated, isLoading, hasInitialized, isInitialLoad]);
 
   return (
     <ToastProvider>

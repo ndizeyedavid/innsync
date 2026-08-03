@@ -39,9 +39,11 @@ export default function TwoFactorScreen() {
       setIsLoading(true);
       // TODO: Call backend to start 2FA setup and get QR code/secret
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+
       // Mock data for demo
-      setQrUrl("https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/Innsync:user@example.com?secret=JBSWY3DPEHPK3PXP");
+      setQrUrl(
+        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/Innsync:user@example.com?secret=JBSWY3DPEHPK3PXP",
+      );
       setSecret("JBSWY3DPEHPK3PXP");
       setStep("setup");
     } catch (error) {
@@ -62,7 +64,7 @@ export default function TwoFactorScreen() {
       setIsLoading(true);
       // TODO: Call backend to verify code and enable 2FA
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       setIsEnabled(true);
       setStep("initial");
       showToast("success", "Two-Factor Authentication enabled!");
@@ -80,7 +82,7 @@ export default function TwoFactorScreen() {
       setIsLoading(true);
       // TODO: Call backend to disable 2FA
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       setIsEnabled(false);
       showToast("success", "Two-Factor Authentication disabled");
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -117,11 +119,17 @@ export default function TwoFactorScreen() {
             <View className="gap-4">
               <View className="flex-row items-start gap-3">
                 <View className="size-10 bg-[#F5F4EF] rounded-full items-center justify-center">
-                  <Ionicons name="shield-checkmark-outline" size={20} color={isEnabled ? "#3F6B4F" : "#9C988E"} />
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={20}
+                    color={isEnabled ? "#3F6B4F" : "#9C988E"}
+                  />
                 </View>
                 <View className="flex-1">
                   <Text className="text-base font-semibold">
-                    {isEnabled ? "Two-Factor Authentication is Enabled" : "Enable Two-Factor Authentication"}
+                    {isEnabled
+                      ? "Two-Factor Authentication is Enabled"
+                      : "Enable Two-Factor Authentication"}
                   </Text>
                   <Text className="text-sm text-[#6E6B63] mt-1">
                     {isEnabled
@@ -135,24 +143,33 @@ export default function TwoFactorScreen() {
                 onPress={isEnabled ? handleDisable : handleEnable}
                 disabled={isLoading}
                 className={`py-3 rounded-xl mt-4 items-center flex-row justify-center gap-2 ${
-                  isEnabled
-                    ? "bg-red-50"
-                    : "bg-black"
+                  isEnabled ? "bg-red-50" : "bg-black"
                 } ${isLoading ? "opacity-50" : ""}`}
               >
                 {isLoading ? (
-                  <ActivityIndicator size="small" color={isEnabled ? "#DC2626" : "white"} />
+                  <ActivityIndicator
+                    size="small"
+                    color={isEnabled ? "#DC2626" : "white"}
+                  />
                 ) : (
                   <>
                     <Ionicons
-                      name={isEnabled ? "shield-off-outline" : "shield-checkmark-outline"}
+                      name={
+                        isEnabled
+                          ? "shield-outline"
+                          : "shield-checkmark-outline"
+                      }
                       size={20}
                       color={isEnabled ? "#DC2626" : "white"}
                     />
-                    <Text className={`text-base font-semibold ${
-                      isEnabled ? "text-red-600" : "text-white"
-                    }`}>
-                      {isEnabled ? "Disable Two-Factor Auth" : "Enable Two-Factor Auth"}
+                    <Text
+                      className={`text-base font-semibold ${
+                        isEnabled ? "text-red-600" : "text-white"
+                      }`}
+                    >
+                      {isEnabled
+                        ? "Disable Two-Factor Auth"
+                        : "Enable Two-Factor Auth"}
                     </Text>
                   </>
                 )}
@@ -168,22 +185,30 @@ export default function TwoFactorScreen() {
                 {/* TODO: Replace with real QR code component */}
                 <View className="w-48 h-48 bg-gray-100 rounded-xl items-center justify-center">
                   <Ionicons name="qr-code-outline" size={64} color="#9C988E" />
-                  <Text className="text-sm text-[#6E6B63] mt-2 text-center">QR Code Placeholder</Text>
+                  <Text className="text-sm text-[#6E6B63] mt-2 text-center">
+                    QR Code Placeholder
+                  </Text>
                 </View>
               </View>
 
               <View className="bg-[#F5F4EF] rounded-xl p-4">
-                <Text className="text-xs text-[#A4A097] mb-1">Manual Setup Key</Text>
+                <Text className="text-xs text-[#A4A097] mb-1">
+                  Manual Setup Key
+                </Text>
                 <Text className="text-base font-mono">{secret}</Text>
               </View>
 
               <View className="mt-4">
-                <Text className="text-xs text-[#A4A097] mb-1">Enter Verification Code</Text>
+                <Text className="text-xs text-[#A4A097] mb-1">
+                  Enter Verification Code
+                </Text>
                 <TextInput
                   className="border border-[#EFEDE7] rounded-xl p-3 text-center text-2xl font-semibold tracking-widest"
                   placeholder="000000"
                   value={code}
-                  onChangeText={(text) => setCode(text.replace(/[^0-9]/g, "").slice(0, 6))}
+                  onChangeText={(text) =>
+                    setCode(text.replace(/[^0-9]/g, "").slice(0, 6))
+                  }
                   keyboardType="number-pad"
                   maxLength={6}
                 />
@@ -207,8 +232,14 @@ export default function TwoFactorScreen() {
                     <ActivityIndicator size="small" color="white" />
                   ) : (
                     <>
-                      <Ionicons name="checkmark-outline" size={20} color="white" />
-                      <Text className="text-white text-base font-semibold">Verify</Text>
+                      <Ionicons
+                        name="checkmark-outline"
+                        size={20}
+                        color="white"
+                      />
+                      <Text className="text-white text-base font-semibold">
+                        Verify
+                      </Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -219,9 +250,14 @@ export default function TwoFactorScreen() {
 
         {step === "initial" && (
           <View className="bg-[#F5F4EF] rounded-2xl p-4">
-            <Text className="text-base font-semibold mb-2">What is Two-Factor Authentication?</Text>
+            <Text className="text-base font-semibold mb-2">
+              What is Two-Factor Authentication?
+            </Text>
             <Text className="text-sm text-[#6E6B63]">
-              Two-factor authentication adds an extra layer of security to your account. When enabled, you'll need to enter a verification code from your authenticator app in addition to your password when logging in.
+              Two-factor authentication adds an extra layer of security to your
+              account. When enabled, you'll need to enter a verification code
+              from your authenticator app in addition to your password when
+              logging in.
             </Text>
           </View>
         )}

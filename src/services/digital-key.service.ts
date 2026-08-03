@@ -33,7 +33,7 @@ class DigitalKeyService {
   async recordTapUnlock(digitalKeyId: string): Promise<void> {
     return this.recordUnlock({
       digitalKeyId,
-      method: 'TAP',
+      method: 'BLE',
       result: 'SUCCESS',
     });
   }
@@ -44,7 +44,7 @@ class DigitalKeyService {
   async recordFailedTapUnlock(digitalKeyId: string): Promise<void> {
     return this.recordUnlock({
       digitalKeyId,
-      method: 'TAP',
+      method: 'BLE',
       result: 'FAILED',
     });
   }
@@ -55,8 +55,8 @@ class DigitalKeyService {
   async recordCancelledTapUnlock(digitalKeyId: string): Promise<void> {
     return this.recordUnlock({
       digitalKeyId,
-      method: 'TAP',
-      result: 'CANCELLED',
+      method: 'BLE',
+      result: 'TIMEOUT',
     });
   }
 }

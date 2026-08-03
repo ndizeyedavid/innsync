@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -17,11 +17,12 @@ import TravelDetails from "../components/onboarding/TravelDetails";
 import Preference from "../components/onboarding/Preference";
 import OnboardingHeader from "../components/OnboardingHeader";
 import VibeDetails from "../components/onboarding/VibeDetails";
-import ReviewAndPay from "../components/onboarding/ReviewAndPay";
+import ReviewAndConfirm from "../components/onboarding/ReviewAndConfirm";
 import PaymentSummary from "../components/PaymentSummary";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import apiClient from "../api/client";
+import { hotelEndpoints } from "../api/endpoints";
 import { useToast } from "../contexts/ToastContext";
 import {
   CreateStayDto,
@@ -33,9 +34,24 @@ import {
 import { mealPlans } from "../constants/mealPlans";
 import { vibeCards } from "../constants/vibeCards";
 import reservationsService from "../services/reservations.service";
+import ContextualLoadingComponent from "../components/ContextualLoadingComponent";
+import {
+  setOnboardingProgress,
+  getOnboardingProgress,
+  clearOnboardingProgress,
+} from "../utils/storage";
 
-export default function OnboardingScreen() {
+interface OnboardingScreenProps {
+  hotelId?: string;
+  hotelName?: string;
+}
+
+export default function OnboardingScreen({
+  hotelId: propHotelId,
+  hotelName: propHotelName,
+}: OnboardingScreenProps) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
   const [adults, setAdults] = useState(1);
@@ -48,13 +64,138 @@ export default function OnboardingScreen() {
   const [specialRequests, setSpecialRequests] = useState<string>();
   const [selectedVibeIndices, setSelectedVibeIndices] = useState<number[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
+  const [roomOptions, setRoomOptions] = useState<{ label: string; value: string }[]>([]);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [checkingStays, setCheckingStays] = useState(true);
+  const [checkingStays, setCheckingStays] = useState(!propHotelId);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+  const [hotelId, setHotelId] = useState<string | undefined>(propHotelId);
+  const [hotelName, setHotelName] = useState<string | undefined>(propHotelName);
 
-  // Check if user already has stays on load
+  // Save progress to storage whenever relevant state changes
+  const saveProgress = useCallback(() => {
+    const progress = {
+      hotelId,
+      hotelName,
+      step,
+      checkIn: checkIn?.toISOString(),
+      checkOut: checkOut?.toISOString(),
+      adults,
+      children,
+      roomPreference,
+      bedPreference,
+      floorPreference,
+      selectedMealPlanId,
+      specialRequests,
+      selectedVibeIndices,
+      dietaryRestrictions,
+    };
+    setOnboardingProgress(progress);
+  }, [
+    hotelId,
+    hotelName,
+    step,
+    checkIn,
+    checkOut,
+    adults,
+    children,
+    roomPreference,
+    bedPreference,
+    floorPreference,
+    selectedMealPlanId,
+    specialRequests,
+    selectedVibeIndices,
+    dietaryRestrictions,
+  ]);
+
+  // Load progress from storage on mount
+  useEffect(() => {
+    const loadProgress = async () => {
+      try {
+        // First try to load current stay to pre-fill data
+        const stays = await reservationsService.listMine();
+        const existingStay = stays.find((s) => s.status === "CHECKED_IN") || stays[0];
+        
+        if (existingStay) {
+          // Pre-fill with existing stay data
+          if (!propHotelId) {
+            setHotelId(existingStay.hotelId);
+            setHotelName(existingStay.hotelName);
+            setCheckingStays(false);
+          }
+          if (existingStay.checkIn) setCheckIn(new Date(existingStay.checkIn));
+          if (existingStay.checkOut) setCheckOut(new Date(existingStay.checkOut));
+          setAdults(existingStay.adults || 1);
+          setChildren(existingStay.children || 0);
+          if (existingStay.roomPreference) setRoomPreference(existingStay.roomPreference);
+          if (existingStay.bedPreference) setBedPreference(existingStay.bedPreference);
+          if (existingStay.floorPreference) setFloorPreference(existingStay.floorPreference);
+          if (existingStay.mealPlan) setSelectedMealPlanId(existingStay.mealPlan);
+          if (existingStay.specialRequests) setSpecialRequests(existingStay.specialRequests);
+          if (existingStay.dietaryRestrictions) setDietaryRestrictions(existingStay.dietaryRestrictions);
+        }
+        
+        // Then try to load saved progress (which overrides existing stay data)
+        const progress = await getOnboardingProgress();
+        if (progress) {
+          if (!propHotelId && progress.hotelId) {
+            setHotelId(progress.hotelId);
+            setHotelName(progress.hotelName);
+          }
+          if (progress.step) setStep(progress.step);
+          if (progress.checkIn) setCheckIn(new Date(progress.checkIn));
+          if (progress.checkOut) setCheckOut(new Date(progress.checkOut));
+          if (progress.adults !== undefined) setAdults(progress.adults);
+          if (progress.children !== undefined) setChildren(progress.children);
+          if (progress.roomPreference) setRoomPreference(progress.roomPreference);
+          if (progress.bedPreference) setBedPreference(progress.bedPreference);
+          if (progress.floorPreference) setFloorPreference(progress.floorPreference);
+          if (progress.selectedMealPlanId) setSelectedMealPlanId(progress.selectedMealPlanId);
+          if (progress.specialRequests) setSpecialRequests(progress.specialRequests);
+          if (progress.selectedVibeIndices) setSelectedVibeIndices(progress.selectedVibeIndices);
+          if (progress.dietaryRestrictions) setDietaryRestrictions(progress.dietaryRestrictions);
+        }
+      } catch (error) {
+        console.error("Error loading onboarding progress:", error);
+      } finally {
+        setLoadingProgress(false);
+      }
+    };
+
+    loadProgress();
+  }, [propHotelId]);
+
+  // Fetch available room types from the backend
+  useEffect(() => {
+    const fetchRooms = async () => {
+      if (!hotelId) return;
+      try {
+        const rooms = await hotelEndpoints.getRooms(hotelId);
+        const types = [...new Set(rooms.map((r) => r.type))];
+        setRoomOptions(types.map((t) => ({ label: t, value: t })));
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+      }
+    };
+    fetchRooms();
+  }, [hotelId]);
+
+  // Save progress whenever it changes
+  useEffect(() => {
+    if (!loadingProgress) {
+      saveProgress();
+    }
+  }, [loadingProgress, saveProgress]);
+
+  // Check if user already has stays on load (only if no hotelId provided)
   useEffect(() => {
     const checkExistingStays = async () => {
+      if (hotelId) {
+        // If we have a hotelId, no need to check stays
+        setCheckingStays(false);
+        return;
+      }
+
       try {
         const stays = await reservationsService.listMine();
         if (stays.length > 0) {
@@ -69,7 +210,7 @@ export default function OnboardingScreen() {
     };
 
     checkExistingStays();
-  }, []);
+  }, [hotelId, router]);
 
   const onBoardingHeaders = [
     {
@@ -85,16 +226,17 @@ export default function OnboardingScreen() {
       description: "Pick the experiences that excite you most.",
     },
     {
-      title: "Review & pay",
+      title: "Review & confirm",
       description: "Confirm your booking details before check-in.",
     },
   ];
 
   const handleContinue = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     if (step === 4) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await handleSubmit();
     } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setStep((prev) => prev + 1);
     }
   };
@@ -109,6 +251,12 @@ export default function OnboardingScreen() {
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
+
+      if (!hotelId) {
+        showToast("error", "Please select a hotel first");
+        router.replace("/hotel-search");
+        return;
+      }
 
       if (!checkIn || !checkOut) {
         showToast("error", "Please select check-in and check-out dates");
@@ -132,6 +280,7 @@ export default function OnboardingScreen() {
       const mealPlan: MealPlanDto = selectedMealPlanId as MealPlanDto;
 
       const createStayDto: CreateStayDto = {
+        hotelId,
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
         nights,
@@ -173,6 +322,7 @@ export default function OnboardingScreen() {
       );
 
       showToast("success", "Onboarding completed!");
+      await clearOnboardingProgress();
       router.replace("/(tabs)");
     } catch (error: any) {
       console.error("Onboarding error:", error);
@@ -185,11 +335,30 @@ export default function OnboardingScreen() {
     }
   };
 
-  if (checkingStays) {
+  if (checkingStays || loadingProgress) {
+    return <ContextualLoadingComponent text="Loading onboarding..." />;
+  }
+
+  // If no hotelId, show a prompt to select hotel
+  if (!hotelId) {
     return (
       <ScreenLayout>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#000" />
+        <View className="flex-1 items-center justify-center px-6">
+          <Ionicons name="bed-outline" size={64} color="#E8E5DD" />
+          <Text className="text-2xl font-semibold text-navy text-center mt-6">
+            Select a Hotel First
+          </Text>
+          <Text className="text-gray-500 text-center mt-2">
+            You need to select a hotel before continuing with booking
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            className="mt-8 px-6 py-4 bg-[#283D5A] rounded-2xl flex-row items-center gap-2"
+            onPress={() => router.replace("/hotel-search")}
+          >
+            <Text className="text-white font-semibold">Select Hotel</Text>
+            <Ionicons name="arrow-forward" size={18} color="white" />
+          </TouchableOpacity>
         </View>
       </ScreenLayout>
     );
@@ -200,6 +369,29 @@ export default function OnboardingScreen() {
       className="flex-1 bg-[#fafaf7] pt-[50px]"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      {/* Selected Hotel Header */}
+      <View className="px-5 pb-4">
+        <View className="flex-row items-center gap-3 bg-white p-4 rounded-2xl border border-gray-100">
+          <View className="w-10 h-10 rounded-xl bg-[#F5F4EF] items-center justify-center">
+            <Ionicons name="bed-outline" size={20} color="#283D5A" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm font-medium text-gray-500">
+              Selected Hotel
+            </Text>
+            <Text className="text-lg font-semibold text-navy">
+              {hotelName || "Hotel"}
+            </Text>
+          </View>
+          <TouchableOpacity
+            className="px-3 py-1 bg-[#F5F4EF] rounded-full"
+            onPress={() => router.replace("/hotel-search")}
+          >
+            <Text className="text-xs font-medium text-[#283D5A]">Change</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <OnboardingProgress step={step} setProgress={setStep} />
       <ScrollView
         className="flex-1 px-5"
@@ -238,6 +430,7 @@ export default function OnboardingScreen() {
             setSpecialRequests={setSpecialRequests}
             dietaryRestrictions={dietaryRestrictions}
             setDietaryRestrictions={setDietaryRestrictions}
+            roomOptions={roomOptions}
           />
         )}
 
@@ -249,7 +442,7 @@ export default function OnboardingScreen() {
         )}
 
         {step === 4 && (
-          <ReviewAndPay
+          <ReviewAndConfirm
             checkIn={checkIn}
             checkOut={checkOut}
             adults={adults}
@@ -279,7 +472,7 @@ export default function OnboardingScreen() {
           ) : (
             <>
               <Text className="text-white text-base font-semibold">
-                {step === 4 ? "Complete" : "Continue"}
+                {step === 4 ? "Confirm Booking" : "Continue"}
               </Text>
               <Ionicons name="arrow-forward" size={18} color="white" />
             </>

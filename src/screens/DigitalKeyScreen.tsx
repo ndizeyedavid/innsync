@@ -1,11 +1,5 @@
-import {
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
-  useState,
-  useEffect,
-} from "react-native";
+import { Text, TouchableOpacity, View, ScrollView, Switch } from "react-native";
+import { useState, useEffect } from "react";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
@@ -14,8 +8,8 @@ import ScreenLayout from "../layout/ScreenLayout";
 import * as Haptics from "expo-haptics";
 import digitalKeyService from "../services/digital-key.service";
 import reservationsService from "../services/reservations.service";
-import { Reservation, DigitalKey } from "../api/types";
-import { useDigitalKeyEvents } from "../hooks/useWebSocket";
+import { GuestStay as Reservation } from "../api/types";
+import { hasBackupPin } from "../utils/storage";
 
 export default function DigitalKeyScreen() {
   const router = useRouter();
@@ -27,18 +21,16 @@ export default function DigitalKeyScreen() {
   const [bluetoothEnabled, setBluetoothEnabled] = useState(true);
   const [autoConnect, setAutoConnect] = useState(true);
   const [lastUnlockTime, setLastUnlockTime] = useState<string | null>(null);
+  const [pinSet, setPinSet] = useState(false);
 
   useEffect(() => {
     loadCurrentReservation();
+    checkPin();
   }, []);
 
-  // Listen to real-time digital key events
-  useDigitalKeyEvents((data) => {
-    console.log("Digital key event:", data);
-    if (data.event === "KEY_REVOKED") {
-      setDigitalKeyStatus("REVOKED");
-    }
-  });
+  const checkPin = async () => {
+    setPinSet(await hasBackupPin());
+  };
 
   const loadCurrentReservation = async () => {
     try {
@@ -54,17 +46,9 @@ export default function DigitalKeyScreen() {
   const handleUnlock = async () => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-
-      if (!currentReservation) {
-        return;
-      }
-
-      // Record unlock attempt
+      if (!currentReservation) return;
       await digitalKeyService.recordTapUnlock(currentReservation.id);
-
-      // Update last unlock time
       setLastUnlockTime(new Date().toLocaleTimeString());
-
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error("Unlock error:", error);
@@ -104,7 +88,7 @@ export default function DigitalKeyScreen() {
           </View>
         </View>
         <Text className="text-gray-400 text-xs">
-          Connected to {currentReservation?.roomNumber || "Suite 1207"}
+          Connected to {currentReservation?.roomPreference || "Suite 1207"}
         </Text>
         {lastUnlockTime && (
           <Text className="text-gray-400 text-xs mt-1">
@@ -134,105 +118,91 @@ export default function DigitalKeyScreen() {
       </TouchableOpacity>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+
         {/* Bluetooth Settings */}
         <Text className="text-[18px] text-gray-500 mt-6 mb-3">BLUETOOTH</Text>
+
+        <View className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
+            <View className="flex-1 mr-4">
+              <Text className="text-base font-semibold text-navy">Bluetooth</Text>
+              <Text className="text-sm text-gray-500">Enable digital key access</Text>
+            </View>
+            <Switch
+              value={bluetoothEnabled}
+              onValueChange={(value) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setBluetoothEnabled(value);
+              }}
+              trackColor={{ false: "#EFEDE7", true: "#283D5A" }}
+              thumbColor="#fff"
+            />
+          </View>
+
+          <View className="p-4 flex-row items-center justify-between">
+            <View className="flex-1 mr-4">
+              <Text className="text-base font-semibold text-navy">Auto-connect</Text>
+              <Text className="text-sm text-gray-500">Connect when near door</Text>
+            </View>
+            <Switch
+              value={autoConnect}
+              onValueChange={(value) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setAutoConnect(value);
+              }}
+              trackColor={{ false: "#EFEDE7", true: "#283D5A" }}
+              thumbColor="#fff"
+            />
+          </View>
+        </View>
+
+        {/* Backup Access */}
+        <Text className="text-[18px] text-gray-500 mt-6 mb-3">BACKUP ACCESS</Text>
 
         <View className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           <TouchableOpacity
             className="p-4 border-b border-gray-200 flex-row items-center justify-between"
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setBluetoothEnabled(!bluetoothEnabled);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push("/backup-pin");
             }}
           >
-            <View>
-              <Text className="text-base font-semibold text-navy">Bluetooth</Text>
-              <Text className="text-sm text-gray-500">
-                Enable digital key access
-              </Text>
+            <View className="flex-row items-center gap-3 flex-1">
+              <View className="size-10 bg-sand-100 rounded-full items-center justify-center">
+                <Ionicons name="key-outline" size={20} color="#283D5A" />
+              </View>
+              <View>
+                <Text className="text-base font-semibold text-navy">Backup PIN</Text>
+                <Text className="text-sm text-gray-500">
+                  {pinSet ? "PIN set" : "Not set — tap to create"}
+                </Text>
+              </View>
             </View>
-            <View
-              className={`w-12 h-7 ${bluetoothEnabled ? "bg-cobalt" : "bg-gray-300"} rounded-full items-center justify-end px-1`}
-            >
-              <View
-                className={`w-5 h-5 bg-white rounded-full ${bluetoothEnabled ? "" : "ml-auto"}`}
-              />
+            <View className="flex-row items-center gap-2">
+              {pinSet && (
+                <View className="size-2 bg-success rounded-full" />
+              )}
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
             className="p-4 flex-row items-center justify-between"
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setAutoConnect(!autoConnect);
-            }}
-          >
-            <View>
-              <Text className="text-base font-semibold text-navy">Auto-connect</Text>
-              <Text className="text-sm text-gray-500">
-                Connect when near door
-              </Text>
-            </View>
-            <View
-              className={`w-12 h-7 ${autoConnect ? "bg-cobalt" : "bg-gray-300"} rounded-full items-center justify-end px-1`}
-            >
-              <View
-                className={`w-5 h-5 bg-white rounded-full ${autoConnect ? "" : "ml-auto"}`}
-              />
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Backup PIN */}
-        <Text className="text-[18px] text-gray-500 mt-6 mb-3">
-          BACKUP ACCESS
-        </Text>
-
-        <View className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-          <TouchableOpacity
-            className="p-4 border-b border-gray-200"
-            onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push("/qr-access");
             }}
           >
-            <View className="flex-row items-center justify-between mb-2">
-              <View className="flex-row items-center gap-3">
-                <View className="size-10 bg-sand-100 rounded-full items-center justify-center">
-                  <Ionicons name="key-outline" size={20} color="#283D5A" />
-                </View>
-                <View>
-                  <Text className="text-base font-semibold text-navy">Backup PIN</Text>
-                  <Text className="text-sm text-gray-500">
-                    Use when Bluetooth unavailable
-                  </Text>
-                </View>
+            <View className="flex-row items-center gap-3 flex-1">
+              <View className="size-10 bg-sand-100 rounded-full items-center justify-center">
+                <Ionicons name="qr-code-outline" size={20} color="#283D5A" />
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="p-4"
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            }}
-          >
-            <View className="flex-row items-center justify-between mb-2">
-              <View className="flex-row items-center gap-3">
-                <View className="size-10 bg-sand-100 rounded-full items-center justify-center">
-                  <Ionicons name="qr-code-outline" size={20} color="#283D5A" />
-                </View>
-                <View>
-                  <Text className="text-base font-semibold text-navy">
-                    QR Code Access
-                  </Text>
-                  <Text className="text-sm text-gray-500">
-                    Alternative entry method
-                  </Text>
-                </View>
+              <View>
+                <Text className="text-base font-semibold text-navy">QR Code Access</Text>
+                <Text className="text-sm text-gray-500">Alternative entry method</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
             </View>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
           </TouchableOpacity>
         </View>
 
@@ -260,7 +230,9 @@ export default function DigitalKeyScreen() {
         >
           <View className="flex-row items-center gap-3">
             <Ionicons name="help-circle-outline" size={20} color="#283D5A" />
-            <Text className="text-base font-semibold text-navy">Troubleshooting</Text>
+            <Text className="text-base font-semibold text-navy">
+              Troubleshooting
+            </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
         </TouchableOpacity>

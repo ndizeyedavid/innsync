@@ -4,9 +4,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import ScreenLayout from "../layout/ScreenLayout";
+import OrdersScreenSkeleton from "../components/SkeletonLayouts/OrdersScreenSkeleton";
 import TabHeader from "../components/TabHeader";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -22,8 +24,12 @@ import {
   MenuItem,
   GuestStay,
   PlaceOrderDto,
+  OrderUpdateEvent,
 } from "../api/types";
 import { useToast } from "../contexts/ToastContext";
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { useOrderUpdates } from "../hooks/useWebSocket";
 
 export default function OrdersScreen() {
   const [selectedCategory, setSelectedCategory] = useState<number>(0);
@@ -31,11 +37,20 @@ export default function OrdersScreen() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [stays, setStays] = useState<GuestStay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(
     null,
   );
   const { showToast } = useToast();
+  const router = useRouter();
+
+  // Real-time order updates
+  useOrderUpdates((event: OrderUpdateEvent) => {
+    console.log("Order update received:", event);
+    loadData();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  });
 
   // Categories mapped to backend MenuItem.category enum
   const categories = [
@@ -61,6 +76,24 @@ export default function OrdersScreen() {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const [ordersData, menuData, staysData] = await Promise.all([
+        ordersService.getActiveOrders(),
+        menuService.list(),
+        reservationsService.listMine(),
+      ]);
+      setActiveOrders(Array.isArray(ordersData) ? ordersData : []);
+      setMenuItems(Array.isArray(menuData) ? menuData : []);
+      setStays(Array.isArray(staysData) ? staysData : []);
+    } catch {
+      // silent
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   const loadData = async () => {
@@ -133,8 +166,8 @@ export default function OrdersScreen() {
       // Check for price in multiple possible fields
       if (typeof item.price === "number") {
         priceValue = item.price;
-      } else if (typeof item.amount === "number") {
-        priceValue = item.amount;
+      } else if (typeof (item as any).amount === "number") {
+        priceValue = (item as any).amount;
       } else if (typeof (item as any).priceCents === "number") {
         priceValue = (item as any).priceCents / 100;
       } else if (typeof (item as any).priceInCents === "number") {
@@ -195,17 +228,17 @@ export default function OrdersScreen() {
 
   // Map MenuItem category to backend order category
   const mapCategoryToOrderCategory = (
-    category: MenuItem['category']
-  ): PlaceOrderDto['category'] => {
-    const mapping: Record<MenuItem['category'], PlaceOrderDto['category']> = {
-      BREAKFAST: 'FOOD',
-      LUNCH: 'FOOD',
-      DINNER: 'FOOD',
-      SNACKS: 'FOOD',
-      BEVERAGES: 'DRINKS',
-      DESSERT: 'FOOD',
+    category: MenuItem["category"],
+  ): PlaceOrderDto["category"] => {
+    const mapping: Record<MenuItem["category"], PlaceOrderDto["category"]> = {
+      BREAKFAST: "FOOD",
+      LUNCH: "FOOD",
+      DINNER: "FOOD",
+      SNACKS: "FOOD",
+      BEVERAGES: "DRINKS",
+      DESSERT: "FOOD",
     };
-    return mapping[category] || 'FOOD';
+    return mapping[category] || "FOOD";
   };
 
   // Place the order
@@ -220,9 +253,12 @@ export default function OrdersScreen() {
     }
 
     // Check if current stay is in a status that allows ordering
-    const currentStay = stays.find(s => s.id === currentStayId);
+    const currentStay = stays.find((s) => s.id === currentStayId);
     if (currentStay && currentStay.status === "PENDING") {
-      showToast("error", "Cannot order while stay is pending. Please check in first.");
+      showToast(
+        "error",
+        "Cannot order while stay is pending. Please check in first.",
+      );
       handleCloseModal();
       return;
     }
@@ -238,7 +274,7 @@ export default function OrdersScreen() {
             notes: notes || undefined,
           },
         ],
-        specialInstructions: notes || undefined,
+        notes: notes || undefined,
       };
 
       const newOrder = await ordersService.placeOrder(orderDto);
@@ -250,26 +286,37 @@ export default function OrdersScreen() {
       handleCloseModal(); // Close modal only on success
     } catch (error: any) {
       console.error("Error placing order:", error);
-      
+
       // Show detailed error message
-      const errorMessage = 
-        error?.response?.data?.message || 
-        error?.message || 
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
         "Failed to place order";
-      
+
       showToast("error", errorMessage);
       handleCloseModal(); // Close modal on error
     }
   };
 
   return (
-    <ScreenLayout>
-      <TabHeader
-        alt="CONCIERGE"
-        title="Order anything"
-        description="In-room dining, drinks, activities, housekeeping."
-        descriptionStyle="text-[16px] text-gray-500 mt-1"
-      />
+    <ScreenLayout refreshing={refreshing} onRefresh={onRefresh}>
+      <View className="flex-row justify-between">
+        <TabHeader
+          alt="CONCIERGE"
+          title="Order anything"
+          description="In-room dining, drinks, activities, housekeeping."
+          descriptionStyle="text-[16px] text-gray-500 mt-1"
+        />
+        <TouchableOpacity
+          className="size-[47px] bg-sand-100 rounded-full items-center justify-center"
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/profile");
+          }}
+        >
+          <Ionicons name="person-outline" color="#283D5A" size={24} />
+        </TouchableOpacity>
+      </View>
 
       <View className="relative justify-center mt-4">
         <Ionicons
@@ -288,9 +335,7 @@ export default function OrdersScreen() {
       </View>
 
       {loading ? (
-        <Text className="text-center text-gray-500 mt-10">
-          Loading orders...
-        </Text>
+        <OrdersScreenSkeleton />
       ) : (
         <View className="mt-4">
           <Text className="text-[15px] text-gray-500 uppercase">

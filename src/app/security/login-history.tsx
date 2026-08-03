@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import TabHeader from "../../components/TabHeader";
 import ScreenLayout from "../../layout/ScreenLayout";
 import * as Haptics from "expo-haptics";
-import { userEndpoints } from "../../api/endpoints";
+import usersService from "../../services/users.service";
 import { AuthSession } from "../../api/types";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../contexts/ToastContext";
@@ -32,38 +32,8 @@ export default function LoginHistoryScreen() {
   const loadSessions = async () => {
     try {
       setLoading(true);
-      // TODO: Uncomment when backend endpoint is available
-      // const data = await userEndpoints.getLoginHistory();
-      // setSessions(data);
-      
-      // Mock data for demo
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setSessions([
-        {
-          id: "1",
-          userId: user?.id || "",
-          deviceLabel: "iPhone 15 Pro",
-          ip: "192.168.1.100",
-          userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: "2",
-          userId: user?.id || "",
-          deviceLabel: "MacBook Pro",
-          ip: "192.168.1.101",
-          userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)",
-          createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-        },
-        {
-          id: "3",
-          userId: user?.id || "",
-          deviceLabel: "Unknown Device",
-          ip: "10.0.0.5",
-          userAgent: "",
-          createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-        },
-      ]);
+      const data = await usersService.getLoginHistory();
+      setSessions(data);
     } catch (error) {
       console.error("Load login history error:", error);
       showToast("error", "Failed to load login history");
@@ -76,10 +46,7 @@ export default function LoginHistoryScreen() {
     try {
       setRevokingId(sessionId);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      // TODO: Uncomment when backend endpoint is available
-      // await userEndpoints.revokeSession(sessionId);
-      
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await usersService.revokeSession(sessionId);
       setSessions(sessions.filter((s) => s.id !== sessionId));
       showToast("success", "Session revoked successfully");
     } catch (error) {
@@ -102,7 +69,7 @@ export default function LoginHistoryScreen() {
     if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
     if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
     if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
-    
+
     return date.toLocaleDateString();
   };
 
@@ -139,7 +106,9 @@ export default function LoginHistoryScreen() {
                     <View className="size-10 bg-[#F5F4EF] rounded-full items-center justify-center">
                       <Ionicons
                         name={
-                          session.deviceLabel?.toLowerCase().includes("iphone") ||
+                          session.deviceLabel
+                            ?.toLowerCase()
+                            .includes("iphone") ||
                           session.deviceLabel?.toLowerCase().includes("android")
                             ? "phone-portrait-outline"
                             : "desktop-outline"
@@ -201,9 +170,13 @@ export default function LoginHistoryScreen() {
         )}
 
         <View className="bg-[#F5F4EF] rounded-2xl p-4 mt-6">
-          <Text className="text-base font-semibold mb-2">About Login History</Text>
+          <Text className="text-base font-semibold mb-2">
+            About Login History
+          </Text>
           <Text className="text-sm text-[#6E6B63]">
-            This shows all devices that are currently logged into your account. If you see a device you don't recognize, you can revoke its access immediately.
+            This shows all devices that are currently logged into your account.
+            If you see a device you don't recognize, you can revoke its access
+            immediately.
           </Text>
         </View>
       </ScrollView>

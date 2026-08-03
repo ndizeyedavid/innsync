@@ -14,7 +14,7 @@ export default function TabHeader({
   descriptionStyle,
 }: ITabHeader) {
   return (
-    <View>
+    <View className="flex-1">
       <Text className="uppercase text-[12px] text-gray-500">{alt}</Text>
       <Text className="text-[32px] font-semibold text-navy">{title}</Text>
       <Text

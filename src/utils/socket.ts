@@ -3,154 +3,96 @@ import { getAccessToken } from './storage';
 import CONFIG from '../constants/config';
 
 class SocketService {
-  private socket: Socket | null = null;
+  private orderSocket: Socket | null = null;
+  private notifSocket: Socket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = CONFIG.WEBSOCKET.RECONNECT_ATTEMPTS;
 
   /**
-   * Connect to WebSocket server
+   * Connect to WebSocket servers (orders + notifications namespaces)
    */
-  async connect(): Promise<void> {
+  connect(): void {
     try {
-      const token = await getAccessToken();
-      
-      if (!token) {
-        console.warn('No auth token available for WebSocket connection');
-        return;
-      }
+      if (this.orderSocket || this.notifSocket) return;
 
-      this.socket = io(CONFIG.WEBSOCKET.URL, {
-        auth: {
-          token,
+      const baseUrl = CONFIG.WEBSOCKET.URL;
+      const opts: any = {
+        auth: (cb: any) => {
+          getAccessToken().then((token) => {
+            cb({ token });
+          });
         },
         transports: ['websocket'],
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
         reconnectionDelay: CONFIG.WEBSOCKET.RECONNECT_DELAY,
-      });
+      };
+
+      this.orderSocket = io(`${baseUrl}${CONFIG.WEBSOCKET.NAMESPACES.ORDERS}`, opts);
+      this.notifSocket = io(`${baseUrl}${CONFIG.WEBSOCKET.NAMESPACES.NOTIFICATIONS}`, opts);
 
       this.setupEventListeners();
-      
-      console.log('WebSocket connected');
     } catch (error) {
       console.error('WebSocket connection error:', error);
-      this.handleReconnect();
     }
   }
 
   /**
-   * Disconnect from WebSocket server
+   * Disconnect from WebSocket servers
    */
   disconnect(): void {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
-      this.reconnectAttempts = 0;
-      console.log('WebSocket disconnected');
-    }
+    this.orderSocket?.disconnect();
+    this.notifSocket?.disconnect();
+    this.orderSocket = null;
+    this.notifSocket = null;
+    this.reconnectAttempts = 0;
   }
 
   /**
    * Setup event listeners
    */
   private setupEventListeners(): void {
-    if (!this.socket) return;
+    const onConnect = () => { this.reconnectAttempts = 0; };
 
-    this.socket.on('connect', () => {
-      console.log('WebSocket connected successfully');
-      this.reconnectAttempts = 0;
-    });
-
-    this.socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason);
-      this.handleReconnect();
-    });
-
-    this.socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
-      this.handleReconnect();
-    });
-
-    this.socket.on('error', (error) => {
-      console.error('WebSocket error:', error);
+    [this.orderSocket, this.notifSocket].forEach((s) => {
+      if (!s) return;
+      s.on('connect', onConnect);
     });
   }
 
   /**
-   * Handle reconnection logic
-   */
-  private handleReconnect(): void {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-      
-      setTimeout(() => {
-        this.connect();
-      }, CONFIG.WEBSOCKET.RECONNECT_DELAY);
-    } else {
-      console.error('Max reconnection attempts reached');
-    }
-  }
-
-  /**
-   * Subscribe to order updates
+   * Subscribe to order status updates (backend gateway emits: order.statusChanged)
    */
   onOrderUpdate(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on('order:update', callback);
-    }
+    this.orderSocket?.on('order.statusChanged', callback);
   }
 
   /**
-   * Subscribe to digital key events
-   */
-  onDigitalKeyEvent(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on('digital-key:event', callback);
-    }
-  }
-
-  /**
-   * Subscribe to notifications
+   * Subscribe to notifications (backend event: notification.new)
    */
   onNotification(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on('notification', callback);
-    }
+    this.notifSocket?.on('notification.new', callback);
   }
 
   /**
    * Unsubscribe from order updates
    */
   offOrderUpdate(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.off('order:update', callback);
-    }
-  }
-
-  /**
-   * Unsubscribe from digital key events
-   */
-  offDigitalKeyEvent(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.off('digital-key:event', callback);
-    }
+    this.orderSocket?.off('order.statusChanged', callback);
   }
 
   /**
    * Unsubscribe from notifications
    */
   offNotification(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.off('notification', callback);
-    }
+    this.notifSocket?.off('notification.new', callback);
   }
 
   /**
-   * Check if socket is connected
+   * Check if sockets are connected
    */
   isConnected(): boolean {
-    return this.socket?.connected || false;
+    return (this.orderSocket?.connected || false) && (this.notifSocket?.connected || false);
   }
 }
 

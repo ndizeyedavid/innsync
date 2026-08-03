@@ -8,9 +8,38 @@ export const CONFIG = {
     RETRY_DELAY: 1000,
   },
 
+  // External APIs
+  EXTERNAL: {
+    GEMINI: {
+      API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY || "",
+      MODEL: "gemini-2.0-flash",
+    },
+    GROQ: {
+      API_KEY: process.env.EXPO_PUBLIC_GROQ_API_KEY || "",
+      MODEL: "llama-3.1-8b-instant",
+    },
+    GOOGLE_MAPS: {
+      API_KEY: "",
+      PLACES_BASE_URL: "https://maps.googleapis.com/maps/api/place",
+      MAPS_BASE_URL: "https://maps.googleapis.com/maps/api",
+    },
+    OPEN_WEATHER: {
+      API_KEY: "",
+      BASE_URL: "https://api.openweathermap.org/data/2.5",
+    },
+    EVENTBRITE: {
+      API_KEY: "",
+      BASE_URL: "https://www.eventbriteapi.com/v3",
+    },
+  },
+
   // WebSocket Configuration
   WEBSOCKET: {
-    URL: __DEV__ ? "http://localhost:3000" : "https://api.innsync.com",
+    URL: __DEV__ ? "http://192.168.1.83:3000" : "https://api.innsync.com",
+    NAMESPACES: {
+      ORDERS: "/realtime/orders",
+      NOTIFICATIONS: "/realtime/notifications",
+    },
     RECONNECT_ATTEMPTS: 5,
     RECONNECT_DELAY: 3000,
   },
@@ -39,5 +68,4 @@ export const CONFIG = {
     DEVICE_ID: "device_id",
   } as const,
 };
-
 export default CONFIG;

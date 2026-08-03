@@ -16,10 +16,11 @@ import * as Haptics from "expo-haptics";
 import { useAuth } from "../hooks/useAuth";
 import { User } from "../api/types";
 import { useToast } from "../contexts/ToastContext";
+import { setUserData, getUserData } from "../utils/storage";
 
 export default function PersonalInfoScreen() {
   const router = useRouter();
-  const { user, setUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const { showToast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,11 +37,39 @@ export default function PersonalInfoScreen() {
   }, [user]);
 
   const handleSave = async () => {
-    // TODO: Implement update user endpoint when available
-    // For now, just show a toast
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    showToast("success", "Saved! (API not yet implemented)");
-    setIsEditing(false);
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+      const updatedUser = {
+        ...user,
+        name,
+        email,
+        phone: phone || undefined,
+      };
+
+      // Update local state and storage
+      updateUser(updatedUser);
+
+      // Also update stored user data
+      const currentUserData = await getUserData();
+      if (currentUserData) {
+        await setUserData({
+          ...currentUserData,
+          user: updatedUser,
+        });
+      }
+
+      showToast("success", "Saved!");
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      showToast("error", "Failed to save changes");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

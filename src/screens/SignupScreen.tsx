@@ -10,7 +10,7 @@ import {
   Image,
   StyleSheet,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import SocialLoginButton from "../components/SocialLoginButton";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -22,10 +22,14 @@ import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../contexts/ToastContext";
 import reservationsService from "../services/reservations.service";
 import { BlurView } from "expo-blur";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignupScreen() {
   const router = useRouter();
-  const { signUp, isLoading } = useAuth();
+  const { signUp, signInWithGoogle, isLoading } = useAuth();
   const { showToast } = useToast();
 
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -34,6 +38,33 @@ export default function SignupScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const googlePromptRef = useRef(false);
+
+  const [googleRequest, googleResponse, googlePromptAsync] =
+    Google.useIdTokenAuthRequest({
+      clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+      redirectUri: "https://auth.expo.io/@davidndizeye/innsync",
+    });
+
+  useEffect(() => {
+    if (googleResponse?.type !== "success" || !googlePromptRef.current) return;
+    googlePromptRef.current = false;
+    const idToken = googleResponse.params?.id_token;
+    if (!idToken) {
+      showToast("error", "No ID token received", "top");
+      return;
+    }
+    (async () => {
+      try {
+        await signInWithGoogle({ idToken });
+        showToast("success", "Signed up with Google!", "top");
+        router.replace("/welcome");
+      } catch (error: any) {
+        showToast("error", error.message || "Google sign-in failed", "top");
+      }
+    })();
+  }, [googleResponse]);
 
   const handleSignUp = async () => {
     try {
@@ -71,13 +102,8 @@ export default function SignupScreen() {
 
       showToast("success", "Account created successfully!", "top");
 
-      // Check if user already has stays
-      const stays = await reservationsService.listMine();
-      if (stays.length > 0) {
-        router.replace("/(tabs)");
-      } else {
-        router.replace("/onboarding");
-      }
+      // Navigate to welcome screen
+      router.replace("/welcome");
     } catch (error: any) {
       showToast(
         "error",
@@ -85,6 +111,11 @@ export default function SignupScreen() {
         "top",
       );
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    googlePromptRef.current = true;
+    googlePromptAsync();
   };
 
   return (
@@ -123,6 +154,7 @@ export default function SignupScreen() {
           <SocialLoginButton
             buttonLogo={require("../assets/google-logo.png")}
             buttonText="Google"
+            onPress={handleGoogleSignIn}
           />
           <SocialLoginButton
             buttonLogo={require("../assets/apple-logo.png")}

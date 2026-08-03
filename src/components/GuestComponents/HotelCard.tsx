@@ -12,6 +12,7 @@ interface HotelCardProps {
   price: number;
   image: any;
   amenities: string[];
+  availableRooms?: number;
   onPress: () => void;
 }
 
@@ -22,6 +23,7 @@ export default function HotelCard({
   price,
   image,
   amenities,
+  availableRooms,
   onPress,
 }: HotelCardProps) {
   return (
@@ -52,10 +54,17 @@ export default function HotelCard({
 
         {/* Price Badge */}
         <View className="absolute bottom-3 left-3 bg-white px-3 py-1 rounded-full">
-          <Text className="text-black font-semibold text-lg">
-            ${price}
-            <Text className="text-sm text-gray-500">/night</Text>
-          </Text>
+          {price > 0 ? (
+            <Text className="text-black font-semibold text-lg">
+              ${price}
+              <Text className="text-sm text-gray-500">/night</Text>
+            </Text>
+          ) : availableRooms != null ? (
+            <Text className="text-black font-semibold text-lg">
+              {availableRooms}
+              <Text className="text-sm text-gray-500"> rooms</Text>
+            </Text>
+          ) : null}
         </View>
       </View>
 

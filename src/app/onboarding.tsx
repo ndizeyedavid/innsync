@@ -1,12 +1,13 @@
 import OnboardingScreen from "../screens/OnboardingScreen";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { View, ActivityIndicator } from "react-native";
 import reservationsService from "../services/reservations.service";
+import ContextualLoadingComponent from "../components/ContextualLoadingComponent";
 
 export default function Onboarding() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [checkingStays, setCheckingStays] = useState(true);
 
@@ -20,6 +21,13 @@ export default function Onboarding() {
       }
 
       try {
+        // If we have hotelId OR it's a restart, skip checking stays and go straight to onboarding
+        if (params.hotelId || params.restart) {
+          setCheckingStays(false);
+          return;
+        }
+
+        // Otherwise check if user already has stays
         const stays = await reservationsService.listMine();
         if (stays.length > 0) {
           router.replace("/(tabs)");
@@ -32,15 +40,16 @@ export default function Onboarding() {
     };
 
     checkStatus();
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, params.hotelId, params.restart]);
 
   if (authLoading || checkingStays) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#000" />
-      </View>
-    );
+    return <ContextualLoadingComponent text="Checking for your stays..." />;
   }
 
-  return <OnboardingScreen />;
+  return (
+    <OnboardingScreen
+      hotelId={params.hotelId as string}
+      hotelName={params.hotelName as string}
+    />
+  );
 }

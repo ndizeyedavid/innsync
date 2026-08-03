@@ -1,12 +1,17 @@
 import React from "react";
 import { Text, TextInput, View, TouchableOpacity } from "react-native";
 import SelectField from "../SelectField";
-import { roomOptions } from "../../constants/roomOptions";
+import { roomOptions as fallbackRoomOptions } from "../../constants/roomOptions";
 import { bedTypes } from "../../constants/bedTypes";
-import { floorPreference } from "../../constants/floorPreference";
+import { floorPreference as floorPreferenceOptions } from "../../constants/floorPreference";
 import MealPlanButton from "../MealPlanButton";
 import { mealPlans } from "../../constants/mealPlans";
 import { dietaryRestrictionOptions } from "../../constants/dietaryRestrictions";
+
+interface RoomOption {
+  label: string;
+  value: string;
+}
 
 interface PreferenceProps {
   roomPreference: string | undefined;
@@ -21,6 +26,7 @@ interface PreferenceProps {
   setSpecialRequests: (value: string | undefined) => void;
   dietaryRestrictions: string[];
   setDietaryRestrictions: (restrictions: string[]) => void;
+  roomOptions?: RoomOption[];
 }
 
 export default function Preference({
@@ -36,7 +42,10 @@ export default function Preference({
   setSpecialRequests,
   dietaryRestrictions,
   setDietaryRestrictions,
+  roomOptions,
 }: PreferenceProps) {
+  const rooms = roomOptions && roomOptions.length > 0 ? roomOptions : fallbackRoomOptions;
+
   const toggleDietaryRestriction = (restriction: string) => {
     if (dietaryRestrictions.includes(restriction)) {
       setDietaryRestrictions(
@@ -61,7 +70,7 @@ export default function Preference({
               label="Room Type"
               placeholder="Choose your room type"
               iconName="home-outline"
-              items={roomOptions}
+              items={rooms}
               selectedValue={roomPreference}
               onValueChange={setRoomPreference}
             />
@@ -85,7 +94,7 @@ export default function Preference({
               label="Floor Preference"
               placeholder="Choose your floor preference"
               iconName="layers-outline"
-              items={floorPreference}
+              items={floorPreferenceOptions}
               selectedValue={floorPreference}
               onValueChange={setFloorPreference}
             />

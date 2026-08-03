@@ -13,15 +13,15 @@ export default function Notification({ notification, onClose }: NotificationProp
 
   // Get icon based on notification type
   const getIcon = () => {
-    switch (notification.type) {
-      case "ORDER_UPDATE":
-        return "restaurant";
-      case "DIGITAL_KEY":
-        return "key";
-      case "HOUSEKEEPING":
-        return "home";
-      case "PROMOTION":
-        return "pricetag";
+    switch (notification.kind) {
+      case "SUCCESS":
+        return "checkmark-circle";
+      case "WARNING":
+        return "warning";
+      case "ERROR":
+        return "alert-circle";
+      case "PENDING":
+        return "time";
       default:
         return "notifications";
     }
@@ -39,7 +39,7 @@ export default function Notification({ notification, onClose }: NotificationProp
             {notification.title}
           </Text>
           <Text className="text-[12px] text-[#7E7A72]">
-            {notification.message}
+            {notification.body}
           </Text>
         </View>
       </View>

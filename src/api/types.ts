@@ -21,6 +21,11 @@ export interface SignInDto {
   deviceLabel?: string;
 }
 
+export interface GoogleSignInDto {
+  idToken: string;
+  deviceLabel?: string;
+}
+
 export interface SignUpDto {
   email: string;
   phone?: string;
@@ -58,9 +63,13 @@ export interface User {
 export interface GuestProfile {
   id: string;
   userId: string;
+  loyaltyTier?: string;
+  loyaltyPoints?: number;
+  dietaryRestrictions?: string[];
+  preferredVibes?: string[];
+  preferredLanguage?: string;
+  preferredCurrency?: string;
   preferences?: Record<string, any>;
-  language?: string;
-  currency?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -117,6 +126,7 @@ export interface GuestStay {
   id: string;
   userId: string;
   hotelId?: string;
+  hotelName?: string;
   externalReservationId?: string;
   status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   checkIn: string;
@@ -173,7 +183,7 @@ export interface PlaceOrderDto {
   stayId: string;
   category: 'FOOD' | 'DRINKS' | 'ACTIVITIES' | 'ROOM_SERVICE' | 'HOUSEKEEPING';
   items: OrderItem[];
-  specialInstructions?: string;
+  notes?: string;
   deliveryRoom?: string;
 }
 
@@ -191,12 +201,12 @@ export interface Order {
   totalAmount: number;
   currency: string;
   status:
-    | "PENDING"
-    | "CONFIRMED"
+    | "PENDING_REMOTE"
     | "PREPARING"
-    | "DELIVERING"
+    | "ON_THE_WAY"
     | "DELIVERED"
-    | "CANCELLED";
+    | "CANCELLED"
+    | "FAILED";
   specialInstructions?: string;
   deliveryRoom?: string;
   estimatedDeliveryTime?: string;
@@ -209,8 +219,8 @@ export interface OrderResponseDto {
   id: string;
   placedAt: string;
   etaMinutes?: number;
-  status: 'preparing' | 'on-the-way' | 'delivered' | 'cancelled' | 'failed' | 'pending';
-  total: number; // cents
+  status: 'pending' | 'preparing' | 'on-the-way' | 'delivered' | 'cancelled' | 'failed';
+  total: number;
   currency: string;
   items: { name: string; quantity: number }[];
 }
@@ -238,21 +248,18 @@ export interface MenuItem {
 // Digital Key Types
 export interface DigitalKey {
   id: string;
-  userId: string;
-  stayId: string;
-  roomNumber: string;
-  pin: string;
-  status: "ACTIVE" | "REVOKED" | "EXPIRED";
-  validFrom: string;
-  validUntil: string;
-  createdAt: string;
-  updatedAt: string;
+  guestStayId: string;
+  externalRoomId: string;
+  issuedAt: string;
+  expiresAt: string;
+  revokedAt?: string;
+  hasPin: boolean;
 }
 
 export interface UnlockDto {
   digitalKeyId: string;
-  method: "TAP" | "PIN" | "BIOMETRIC";
-  result: "SUCCESS" | "FAILED" | "CANCELLED";
+  method: "BLE" | "PIN" | "NFC";
+  result: "SUCCESS" | "FAILED" | "TIMEOUT";
 }
 
 export interface VerifyPinDto {
@@ -263,17 +270,16 @@ export interface VerifyPinDto {
 // Itinerary Types
 export interface ItineraryItem {
   id: string;
-  stayId: string;
-  type: "DINING" | "ACTIVITY" | "SPA" | "EXCURSION" | "SERVICE";
-  title: string;
-  description?: string;
+  guestStayId: string;
+  externalActivityId: string;
+  day: number;
   startTime: string;
   endTime?: string;
+  title: string;
   location?: string;
-  status: "SCHEDULED" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
-  bookingId?: string;
-  createdAt: string;
-  updatedAt: string;
+  status: "booked" | "cancelled" | "completed";
+  priceCents: number;
+  notes?: string;
 }
 
 export interface Activity {
@@ -292,40 +298,30 @@ export interface Activity {
 export interface FolioLine {
   id: string;
   description: string;
-  amount: number;
+  amountCents: number;
   currency: string;
   date: string;
   category?: string;
 }
 
 export interface Folio {
-  id: string;
-  stayId: string;
-  roomNumber: string;
-  guestName: string;
   lines: FolioLine[];
-  totalAmount: number;
+  totalCents: number;
   currency: string;
-  balanceDue: number;
-  createdAt: string;
-  updatedAt: string;
+  finalized: boolean;
 }
 
 // Notification Types
 export interface Notification {
   id: string;
   userId: string;
-  type:
-    | "ORDER_UPDATE"
-    | "DIGITAL_KEY"
-    | "HOUSEKEEPING"
-    | "GENERAL"
-    | "PROMOTION";
+  channel: "IN_APP" | "PUSH" | "EMAIL" | "SMS";
+  kind: "SUCCESS" | "PENDING" | "WARNING" | "ERROR" | "INFO" | "NEUTRAL";
   title: string;
-  message: string;
-  data?: Record<string, any>;
-  read: boolean;
-  createdAt: string;
+  body?: string;
+  payload?: Record<string, any>;
+  sentAt: string;
+  readAt?: string;
 }
 
 // WebSocket Event Types
@@ -344,6 +340,45 @@ export interface DigitalKeyEvent {
 export interface NotificationEvent {
   notificationId: string;
   title: string;
-  message: string;
+  body: string;
+  kind: string;
+}
+
+// Hotel Types
+export interface Room {
+  id: string;
+  hotelId: string;
+  number: string;
   type: string;
+  priceCents: number;
+  floor?: string;
+  imageUrl?: string;
+  amenities: string[];
+  status: string;
+}
+
+export interface Hotel {
+  id: string;
+  name: string;
+  address?: string;
+  description?: string;
+  phone?: string;
+  email?: string;
+  imageUrl?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  currency?: string;
+  timezone?: string;
+  rating?: number;
+  city?: string;
+  amenities?: string[];
+  availableRooms?: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface LinkReservationDto {
+  confirmationNumber: string;
+  email?: string;
+  phone?: string;
 }

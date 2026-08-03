@@ -1,20 +1,28 @@
-import { Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
-import { useEffect, useState } from "react";
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
+import { useCallback, useEffect, useState } from "react";
 // @ts-ignore
 import Ionicons from "@expo/vector-icons/Ionicons";
 import ScreenLayout from "../layout/ScreenLayout";
+import HomeScreenSkeleton from "../components/SkeletonLayouts/HomeScreenSkeleton";
 import TabHeader from "../components/TabHeader";
 import Notification from "../components/Notification";
 import DigitalKey from "../components/HomeComponents/DigitalKey";
 import QuickActionButton from "../components/HomeComponents/QuickActionButton";
 import reservationsService from "../services/reservations.service";
 import authService from "../services/auth.service";
+import notificationsService from "../services/notifications.service";
 import {
   GuestStay,
   User,
   Notification as NotificationType,
 } from "../api/types";
 import { useToast } from "../contexts/ToastContext";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const [stays, setStays] = useState<GuestStay[]>([]);
@@ -22,24 +30,34 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const { showToast } = useToast();
+  const router = useRouter();
 
   const quickActions = [
-    { icon: "restaurant", title: "Order food", description: "12 min Avg" },
     {
-      icon: "calendar-clear",
-      title: "Itinerary",
-      description: currentStay ? "View your itinerary" : "View itinerary",
+      icon: "sparkles",
+      title: "Plan with AI",
+      description: "AI-powered trip planning",
+      onPress: () => router.push("/ai-itinerary"),
     },
     {
-      icon: "bonfire",
-      title: "Book activity",
-      description: "Swimming, Hiking, etc..",
+      icon: "heart",
+      title: "For You",
+      description: "Personalized recommendations",
+      onPress: () => router.push("/(tabs)/orders"),
     },
     {
-      icon: "cash",
-      title: "View folio",
-      description: "Invoice profoma & receipts",
+      icon: "trophy",
+      title: "My Rewards",
+      description: "Loyalty points & perks",
+      onPress: () => router.push("/profile"),
+    },
+    {
+      icon: "notifications",
+      title: "Updates",
+      description: "Messages & alerts",
+      onPress: () => router.push("/notifications"),
     },
   ];
 
@@ -47,17 +65,39 @@ export default function HomeScreen() {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
     try {
-      setLoading(true);
-      const [userData, staysData] = await Promise.all([
+      const [userData, staysData, notificationsData] = await Promise.all([
         authService.getCurrentUser(),
         reservationsService.listMine(),
+        notificationsService.listMine(),
       ]);
       setUser(userData);
       setStays(staysData);
-      // TODO: Load notifications from API once endpoint is available
-      setNotifications([]);
+      setNotifications(notificationsData);
+      const active =
+        staysData.find((s) => s.status === "CHECKED_IN") || staysData[0];
+      setCurrentStay(active);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      showToast("error", "Failed to refresh");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [showToast]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [userData, staysData, notificationsData] = await Promise.all([
+        authService.getCurrentUser(),
+        reservationsService.listMine(),
+        notificationsService.listMine(),
+      ]);
+      setUser(userData);
+      setStays(staysData);
+      setNotifications(notificationsData);
 
       // Find current active stay (checked in)
       const active =
@@ -79,15 +119,13 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <ScreenLayout>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#283D5A" />
-        </View>
+        <HomeScreenSkeleton />
       </ScreenLayout>
     );
   }
 
   return (
-    <ScreenLayout>
+    <ScreenLayout refreshing={refreshing} onRefresh={onRefresh}>
       <View className="flex-row justify-between">
         <TabHeader
           alt={
@@ -98,18 +136,19 @@ export default function HomeScreen() {
           title="Good Afternoon,"
           description={user?.name || "Guest"}
         />
-        <TouchableOpacity className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative">
+        <TouchableOpacity
+          onPress={() => router.push("/notifications")}
+          className="size-[47px] bg-sand-100 rounded-full items-center justify-center relative"
+        >
           <Ionicons name="notifications-outline" color="#283D5A" size={24} />
-          <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" />
+          {/* <View className="size-[8px] bg-error rounded-full absolute top-2 right-3" /> */}
         </TouchableOpacity>
       </View>
-      {/* Notification */}
       <View className="mt-3">
         {notifications.length > 0 && (
           <Notification
             notification={notifications[0]}
             onClose={() => {
-              // TODO: Mark notification as read via API
               setNotifications((prev) => prev.slice(1));
             }}
           />
@@ -130,6 +169,7 @@ export default function HomeScreen() {
               icon={data.icon}
               title={data.title}
               description={data.description}
+              onPress={data.onPress}
             />
           ))}
         </View>
